@@ -661,6 +661,7 @@ function renderHeader() {
 
 function switchTarget(id) {
   DATA = ALL_DATA.targets[id];
+  if (!_researchRunning) _researchPanel(false);  // hide stale hint/error panel on switch
   renderHeader();
   renderOverview();
   applyFilters();
@@ -671,6 +672,7 @@ function switchTarget(id) {
 
 // --- Online research (search -> agent -> cache -> display) ---
 var _researchTimer = null;
+var _researchRunning = false;
 
 function _researchPanel(show) {
   document.getElementById('research-panel').style.display = show ? 'block' : 'none';
@@ -704,6 +706,7 @@ async function startResearch() {
     return;
   }
   document.getElementById('search-btn').disabled = true;
+  _researchRunning = true;
   _researchPanel(true);
   _researchSetState('研究「' + q + '」中… agent 正在执行 搜索 → 核验 → 合入 → 评分', '');
   document.getElementById('research-steps').innerHTML = '';
@@ -716,12 +719,14 @@ async function startResearch() {
     if (!resp.ok) {
       const err = await resp.json().catch(() => ({}));
       const msg = (err.detail && err.detail.message) || ('HTTP ' + resp.status);
+      _researchRunning = false;
       _researchSetState('启动失败：' + msg, 'failed');
       return;
     }
     const { job_id } = await resp.json();
     pollResearch(job_id, q);
   } catch (e) {
+    _researchRunning = false;
     _researchSetState('网络错误：' + e.message, 'failed');
   } finally {
     document.getElementById('search-btn').disabled = false;
@@ -740,13 +745,16 @@ function pollResearch(jobId, query) {
         _researchSetState('完成：' + job.result.name + '（' + job.result.companies + ' 公司 / ' +
           job.result.relationships + ' 关系 / ' + job.result.evidence + ' 证据），已加入切换列表', 'done');
         await loadTargetIntoDashboard(tid);
+        _researchRunning = false;
         document.getElementById('search-input').value = '';
       } else if (job.status === 'failed') {
         clearInterval(_researchTimer); _researchTimer = null;
+        _researchRunning = false;
         _researchSetState('研究失败：' + (job.error || 'unknown error'), 'failed');
       }
     } catch (e) {
       clearInterval(_researchTimer); _researchTimer = null;
+      _researchRunning = false;
       _researchSetState('轮询错误：' + e.message, 'failed');
     }
   }, 1500);
