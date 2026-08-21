@@ -17,7 +17,7 @@ class TestHealthAndStats:
         payload = json.loads(result.stdout)
         assert payload["status"] == "ok"
         assert payload["dataset"] == "nvidia"
-        assert payload["companies"] == 21
+        assert payload["companies"] == 22
 
     def test_stats(self, runner):
         result = runner.invoke(app, ["stats"])
@@ -31,7 +31,7 @@ class TestCompanies:
         result = runner.invoke(app, ["companies", "--json", "--page-size", "100"])
         assert result.exit_code == 0
         payload = json.loads(result.stdout)
-        assert payload["total"] == 21
+        assert payload["total"] == 22
 
     def test_list_filter(self, runner):
         result = runner.invoke(app, ["companies", "--name", "micro", "--json"])
@@ -71,8 +71,10 @@ class TestRelationships:
         )
         assert result.exit_code == 0
         payload = json.loads(result.stdout)
-        assert payload["total"] == 19
-        assert "rel_par_004" not in {i["id"] for i in payload["items"]}
+        assert payload["total"] == 20
+        ids = {i["id"] for i in payload["items"]}
+        assert "rel_par_004" not in ids
+        assert "rel_par_005" in ids
 
     def test_list_invalid_date_exits_1(self, runner):
         result = runner.invoke(app, ["relationships", "--valid-as-of", "2024-13-99"])
@@ -125,8 +127,8 @@ class TestGraph:
         assert result.exit_code == 0
         payload = json.loads(result.stdout)
         assert payload["research_target"] == "nvidia"
-        assert len(payload["nodes"]) == 21
-        assert len(payload["edges"]) == 20
+        assert len(payload["nodes"]) == 22
+        assert len(payload["edges"]) == 21
 
 
 class TestHumanReadableOutput:

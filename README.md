@@ -14,8 +14,8 @@
 | 公司实体 | NVIDIA Corporation（美国特拉华州注册，总部 Santa Clara, CA） |
 | 证券标识 | 股票代码 **NVDA**，交易所 **NASDAQ** |
 | 研究时间截点（as-of） | **2026-08-21**（`data/dataset.json` 中的 `as_of`） |
-| 覆盖范围 | 20 家关联上市公司、5 类关系（20 条）、26 条证据 |
-| 覆盖实体 | TSMC、SK Hynix、Micron、ASML、Microsoft、Meta、Amazon、Alphabet、Dell、Accenture、ServiceNow、Snowflake、Cisco、CoreWeave、Recursion、SoundHound、AMD、Intel、Broadcom、Qualcomm |
+| 覆盖范围 | 21 家关联上市公司、5 类关系（21 条）、29 条证据 |
+| 覆盖实体 | TSMC、SK Hynix、Micron、ASML、Microsoft、Meta、Amazon、Alphabet、Dell、Accenture、ServiceNow、Snowflake、Cisco、Oracle、CoreWeave、Recursion、SoundHound、AMD、Intel、Broadcom、Qualcomm |
 
 **不覆盖边界（explicitly out of scope）：**
 
@@ -62,9 +62,9 @@
 ```
 data/
   dataset.json         # schema_version / as_of / research_target
-  companies.json       # 21 家公司
-  relationships.json   # 20 条关系（含 confidence_score、status、时效、证据引用）
-  evidence.json        # 26 条证据（URL、publisher、时间、locator、许可）
+  companies.json       # 22 家公司
+  relationships.json   # 21 条关系（含 confidence_score、status、时效、证据引用）
+  evidence.json        # 29 条证据（URL、publisher、时间、locator、许可）
   raw_edgar/           # NVIDIA 10-K 原文与公司提及抽取结果（采集管线副产品）
 ```
 
@@ -135,7 +135,7 @@ docker compose up
 
 | 地址 | 说明 |
 |---|---|
-| `http://localhost:8000/` | **交互式仪表盘**（21 家公司 / 20 条关系 / 26 条证据，可筛选/搜索/排序/关系图谱） |
+| `http://localhost:8000/` | **交互式仪表盘**（22 家公司 / 21 条关系 / 29 条证据，可筛选/搜索/排序/关系图谱） |
 | `http://localhost:8000/docs` | OpenAPI / Swagger UI（交互式 API 文档） |
 | `http://localhost:8000/api/v1/stats` | 数据集统计 JSON |
 | `http://localhost:8000/api/v1/graph` | 关系图 JSON |
@@ -211,6 +211,8 @@ python scripts/research_harvest.py --check data/staging/candidates.json
 ```
 
 staged candidate 未经核验**禁止**直接合入 `data/evidence.json`（红线见 protocol §2）。
+
+**首个完整闭环案例（NVIDIA ↔ Oracle，`rel_par_005`）**：agent 真实搜索 → 4 条候选 → 3 条核验通过（Oracle 官方 PR ×2 + NVIDIA 官方博客，含 quote / locator / 消歧备注）+ 1 条被共现防误判拒绝（仅行情并列、无关系动词）→ 合入主数据集 → 引擎重算得分 80（confirmed）。全流程产物存档于 `data/staging/oracle_candidates.json`（含 `merged_into` 审计标记）。
 
 评分/状态是**派生物**而非人工输入：`sync_scores.py --write` 用引擎 + 证据重算 `confidence_score` 并按带映射推导 `status` 写回，dry-run 会报告任何与引擎不一致的人工状态；`validate_data.py` 独立检查 schema、引用完整性、时间窗合法性与引擎一致性。
 

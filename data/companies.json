@@ -229,5 +229,16 @@
     "entity_type": "related",
     "sector": "Semiconductors (mobile / SoC)",
     "description": "Competitor in edge/automotive/SoC computing. Named in NVIDIA's 10-K as a competitor in embedded and automotive devices."
+  },
+  {
+    "id": "oracle",
+    "name": "Oracle Corporation",
+    "stock_code": "ORCL",
+    "exchange": "NYSE",
+    "isin": "US68389X1054",
+    "country": "US",
+    "entity_type": "related",
+    "sector": "Enterprise software / cloud (OCI hyperscaler)",
+    "description": "Enterprise software and cloud infrastructure provider (Oracle Cloud Infrastructure). First hyperscaler selected by NVIDIA to offer DGX Cloud (2023); deploying NVIDIA Blackwell/GB200 at scale and partnering with NVIDIA on sovereign AI worldwide."
   }
 ]

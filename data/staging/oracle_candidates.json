@@ -86,5 +86,13 @@
       "agent_rejected": true,
       "agent_review_notes": "REJECTED: stock-price co-movement mention, no relational verb; fails co-occurrence guard"
     }
-  ]
+  ],
+  "merged": true,
+  "merged_into": "rel_par_005",
+  "merged_evidence_ids": [
+    "ev_par_005",
+    "ev_par_005b",
+    "ev_par_005c"
+  ],
+  "merged_at": "2026-08-21"
 }

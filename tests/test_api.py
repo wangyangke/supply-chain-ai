@@ -8,9 +8,9 @@ class TestMeta:
         body = resp.json()
         assert body["status"] == "ok"
         assert body["dataset"] == "nvidia"
-        assert body["companies"] == 21
-        assert body["relationships"] == 20
-        assert body["evidence"] == 26
+        assert body["companies"] == 22
+        assert body["relationships"] == 21
+        assert body["evidence"] == 29
 
     def test_stats(self, client):
         resp = client.get("/api/v1/stats")
@@ -19,7 +19,8 @@ class TestMeta:
         assert body["research_target"] == "nvidia"
         assert body["relationships_by_type"]["supplier"] == 4
         assert body["relationships_by_type"]["customer"] == 5
-        assert body["relationships_by_status"]["confirmed"] == 16
+        assert body["relationships_by_type"]["partner"] == 5
+        assert body["relationships_by_status"]["confirmed"] == 17
         assert body["relationships_by_status"]["inferred"] == 4
 
 
@@ -28,8 +29,8 @@ class TestCompanies:
         resp = client.get("/api/v1/companies", params={"page_size": 100})
         assert resp.status_code == 200
         body = resp.json()
-        assert body["total"] == 21
-        assert len(body["items"]) == 21
+        assert body["total"] == 22
+        assert len(body["items"]) == 22
         assert body["has_next"] is False
 
     def test_list_filter_and_pagination(self, client):
@@ -62,8 +63,8 @@ class TestRelationships:
         resp = client.get("/api/v1/relationships", params={"page_size": 100})
         assert resp.status_code == 200
         body = resp.json()
-        assert body["total"] == 20
-        assert len(body["items"]) == 20
+        assert body["total"] == 21
+        assert len(body["items"]) == 21
 
     def test_filter_by_type_and_score(self, client):
         resp = client.get(
@@ -105,8 +106,10 @@ class TestRelationships:
         )
         assert resp.status_code == 200
         body = resp.json()
-        assert body["total"] == 19
-        assert "rel_par_004" not in {i["id"] for i in body["items"]}
+        assert body["total"] == 20
+        ids = {i["id"] for i in body["items"]}
+        assert "rel_par_004" not in ids  # valid_from 2025-02-01, after 2024-06-30
+        assert "rel_par_005" in ids      # oracle partnership valid since 2023-03-21
 
     def test_invalid_valid_as_of_422(self, client):
         resp = client.get("/api/v1/relationships", params={"valid_as_of": "not-a-date"})
@@ -166,14 +169,14 @@ class TestGraph:
         assert resp.status_code == 200
         body = resp.json()
         assert body["research_target"] == "nvidia"
-        assert len(body["nodes"]) == 21
-        assert len(body["edges"]) == 20
+        assert len(body["nodes"]) == 22
+        assert len(body["edges"]) == 21
         node_ids = {n["id"] for n in body["nodes"]}
         assert node_ids == {
             "nvidia", "tsmc", "sk_hynix", "micron", "asml", "microsoft",
             "meta", "amazon", "alphabet", "dell", "accenture", "servicenow",
             "snowflake", "cisco", "coreweave", "recursion", "soundhound",
-            "amd", "intel", "broadcom", "qualcomm",
+            "amd", "intel", "broadcom", "qualcomm", "oracle",
         }
         # Every edge references known nodes.
         for e in body["edges"]:

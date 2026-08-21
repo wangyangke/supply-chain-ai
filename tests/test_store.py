@@ -15,9 +15,9 @@ from src.store import DatasetError, Store
 
 class TestLoading:
     def test_load_real_dataset(self, store):
-        assert len(store.companies) == 21
-        assert len(store.relationships) == 20
-        assert len(store.evidence) == 26
+        assert len(store.companies) == 22
+        assert len(store.relationships) == 21
+        assert len(store.evidence) == 29
 
     def test_dataset_metadata(self, dataset):
         assert dataset.schema_version == "1.0"
@@ -63,7 +63,7 @@ class TestCompanies:
 
     def test_list_all(self, store):
         result = store.list_companies(page_size=100)
-        assert result.total == 21
+        assert result.total == 22
         assert result.total_pages == 1
         assert not result.has_next
 
@@ -80,12 +80,12 @@ class TestCompanies:
     def test_pagination(self, store):
         page1 = store.list_companies(page=1, page_size=10)
         assert len(page1.items) == 10
-        assert page1.total == 21
+        assert page1.total == 22
         assert page1.total_pages == 3
         assert page1.has_next and not page1.has_previous
 
         page3 = store.list_companies(page=3, page_size=10)
-        assert len(page3.items) == 1
+        assert len(page3.items) == 2
         assert not page3.has_next and page3.has_previous
 
 
@@ -96,7 +96,7 @@ class TestCompanies:
 class TestRelationships:
     def test_list_all(self, store):
         result = store.list_relationships(page_size=100)
-        assert result.total == 20
+        assert result.total == 21
 
     def test_default_sorted_by_score_desc(self, store):
         result = store.list_relationships(page_size=100)
@@ -137,8 +137,10 @@ class TestRelationships:
     def test_filter_by_valid_as_of_excludes_future_relationship(self, store):
         # Cisco partnership began 2025-02-01 → not valid on 2024-06-30.
         result = store.list_relationships(valid_as_of=date(2024, 6, 30), page_size=100)
-        assert result.total == 19
+        assert result.total == 20
         assert "rel_par_004" not in {r.id for r in result.items}
+        # Oracle partnership began 2023-03-21 → valid on 2024-06-30.
+        assert "rel_par_005" in {r.id for r in result.items}
         # SoundHound investment (2017-01-01 -> 2025-02-14) WAS valid then.
         assert "rel_inv_003" in {r.id for r in result.items}
 
@@ -150,11 +152,11 @@ class TestRelationships:
     def test_pagination(self, store):
         page1 = store.list_relationships(page=1, page_size=5)
         assert len(page1.items) == 5
-        assert page1.total == 20
-        assert page1.total_pages == 4
-        page4 = store.list_relationships(page=4, page_size=5)
-        assert len(page4.items) == 5
-        assert not page4.has_next
+        assert page1.total == 21
+        assert page1.total_pages == 5
+        page5 = store.list_relationships(page=5, page_size=5)
+        assert len(page5.items) == 1
+        assert not page5.has_next
 
 
 # ---------------------------------------------------------------------------
@@ -185,7 +187,7 @@ class TestEvidence:
 class TestStats:
     def test_stats(self, store):
         stats = store.stats()
-        assert stats["companies"] == 21
-        assert stats["relationships"] == 20
-        assert stats["evidence"] == 26
+        assert stats["companies"] == 22
+        assert stats["relationships"] == 21
+        assert stats["evidence"] == 29
         assert stats["as_of"] == "2026-08-21"

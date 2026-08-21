@@ -304,5 +304,22 @@
       "ev_peer_004"
     ],
     "summary": "Qualcomm competes with NVIDIA in edge computing, automotive SoCs and embedded devices. Named in NVIDIA's 10-K as a competitor in those segments."
+  },
+  {
+    "id": "rel_par_005",
+    "source_company_id": "oracle",
+    "target_company_id": "nvidia",
+    "type": "partner",
+    "direction": "oracle <-> nvidia (bidirectional)",
+    "status": "confirmed",
+    "confidence_score": 80,
+    "valid_from": "2023-03-21",
+    "valid_until": null,
+    "evidence_ids": [
+      "ev_par_005",
+      "ev_par_005b",
+      "ev_par_005c"
+    ],
+    "summary": "Oracle and NVIDIA are strategic cloud partners: NVIDIA selected OCI as the first hyperscale cloud for DGX Cloud (2023), the companies co-deliver sovereign AI worldwide (2024), and Oracle is deploying thousands of NVIDIA Blackwell/GB200 GPUs on OCI and DGX Cloud (2025)."
   }
 ]

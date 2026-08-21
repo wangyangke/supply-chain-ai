@@ -336,5 +336,44 @@
     "access_restriction": "public",
     "license_note": "SEC filings are public domain under U.S. law; EDGAR is a public service.",
     "quote": "such as Ambarella, Inc., AMD, Broadcom, Intel, Qualcomm Incorporated, Renesas Electronics Corporation, and Samsung, or companies with internal teams designing SoC products for their own products and services, such as Tesla, Inc."
+  },
+  {
+    "id": "ev_par_005",
+    "relationship_id": "rel_par_005",
+    "source_url": "https://www.oracle.com/dk/news/announcement/nvidia-chooses-oracle-cloud-infrastructure-for-ai-services-2023-03-21/",
+    "publisher": "Oracle Corporation",
+    "source_type": "company_press_release",
+    "published_at": "2023-03-21",
+    "accessed_at": "2026-08-21",
+    "evidence_locator": "Oracle press release 'NVIDIA Chooses Oracle Cloud Infrastructure for AI Services', lead paragraph",
+    "access_restriction": "public",
+    "license_note": "Public company press release.",
+    "quote": "NVIDIA has selected OCI as the first hyperscale cloud provider to offer NVIDIA DGX Cloud, an AI supercomputing service, at massive scale."
+  },
+  {
+    "id": "ev_par_005b",
+    "relationship_id": "rel_par_005",
+    "source_url": "https://www.oracle.com/cy/news/announcement/oracle-and-nvidia-to-deliver-sovereign-ai-worldwide-2024-03-18/",
+    "publisher": "Oracle Corporation",
+    "source_type": "company_press_release",
+    "published_at": "2024-03-18",
+    "accessed_at": "2026-08-21",
+    "evidence_locator": "Oracle press release 'Oracle and NVIDIA to Deliver Sovereign AI Worldwide', 'NVIDIA Grace Blackwell Comes to DGX Cloud on OCI' section",
+    "access_restriction": "public",
+    "license_note": "Public company press release.",
+    "quote": "To meet escalating customer demand for increasingly complex AI models, the companies are adding NVIDIA Grace Blackwell to NVIDIA DGX Cloud on OCI."
+  },
+  {
+    "id": "ev_par_005c",
+    "relationship_id": "rel_par_005",
+    "source_url": "https://blogs.nvidia.com/blog/oracle-cloud-infrastructure-blackwell-gpus-agentic-ai-reasoning-models",
+    "publisher": "NVIDIA Corporation",
+    "source_type": "company_ir",
+    "published_at": "2025-03-18",
+    "accessed_at": "2026-08-21",
+    "evidence_locator": "NVIDIA official blog, 'Oracle Cloud Infrastructure Deploys Thousands of NVIDIA Blackwell GPUs', opening paragraphs",
+    "access_restriction": "public",
+    "license_note": "Public company blog post.",
+    "quote": "Oracle has stood up and optimized its first wave of liquid-cooled NVIDIA GB200 NVL72 racks in its data centers. Thousands of NVIDIA Blackwell GPUs are now being deployed and ready for customer use on NVIDIA DGX Cloud and Oracle Cloud Infrastructure (OCI)."
   }
 ]
