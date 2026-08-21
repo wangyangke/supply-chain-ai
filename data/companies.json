@@ -1,0 +1,233 @@
+[
+  {
+    "id": "nvidia",
+    "name": "NVIDIA Corporation",
+    "stock_code": "NVDA",
+    "exchange": "NASDAQ",
+    "isin": "US67066G1040",
+    "country": "US",
+    "entity_type": "target",
+    "sector": "Semiconductors (GPU / accelerated computing)",
+    "description": "Research target. NVIDIA designs GPUs and accelerated-computing platforms for AI training/inference, data centers, gaming, and automotive. Fabless: relies on foundries and contract manufacturers."
+  },
+  {
+    "id": "tsmc",
+    "name": "Taiwan Semiconductor Manufacturing Company (TSMC)",
+    "stock_code": "TSM / 2330.TW",
+    "exchange": "NYSE / TWSE",
+    "isin": "US8740391003",
+    "country": "TW",
+    "entity_type": "related",
+    "sector": "Semiconductor foundry",
+    "description": "World's largest dedicated semiconductor foundry; primary manufacturing partner for NVIDIA's most advanced GPUs (wafer fabrication)."
+  },
+  {
+    "id": "sk_hynix",
+    "name": "SK Hynix Inc.",
+    "stock_code": "000660.KS",
+    "exchange": "KRX",
+    "isin": "KR7000660001",
+    "country": "KR",
+    "entity_type": "related",
+    "sector": "Memory semiconductors",
+    "description": "Leading memory maker; primary supplier of HBM (High Bandwidth Memory) used in NVIDIA AI accelerators."
+  },
+  {
+    "id": "micron",
+    "name": "Micron Technology, Inc.",
+    "stock_code": "MU",
+    "exchange": "NASDAQ",
+    "isin": "US5951121038",
+    "country": "US",
+    "entity_type": "related",
+    "sector": "Memory semiconductors",
+    "description": "US memory manufacturer; named by NVIDIA in its 10-K as a memory supplier."
+  },
+  {
+    "id": "asml",
+    "name": "ASML Holding N.V.",
+    "stock_code": "ASML",
+    "exchange": "NASDAQ / Euronext Amsterdam",
+    "isin": "USN070592100",
+    "country": "NL",
+    "entity_type": "related",
+    "sector": "Semiconductor lithography equipment",
+    "description": "Sole producer of EUV lithography machines. Indirect supplier: sells to foundries (TSMC, Samsung, Intel) that manufacture for NVIDIA; not a direct NVIDIA vendor."
+  },
+  {
+    "id": "microsoft",
+    "name": "Microsoft Corporation",
+    "stock_code": "MSFT",
+    "exchange": "NASDAQ",
+    "isin": "US5949181045",
+    "country": "US",
+    "entity_type": "related",
+    "sector": "Software / cloud (hyperscaler)",
+    "description": "Largest estimated customer of NVIDIA data-center GPUs (Omdia/Bloomberg estimates); also a strategic partner (Azure AI, NVIDIA partnership)."
+  },
+  {
+    "id": "meta",
+    "name": "Meta Platforms, Inc.",
+    "stock_code": "META",
+    "exchange": "NASDAQ",
+    "isin": "US30303M1027",
+    "country": "US",
+    "entity_type": "related",
+    "sector": "Internet / social media (hyperscaler)",
+    "description": "Major AI infrastructure spender; second-largest estimated NVIDIA GPU customer after Microsoft (Omdia estimates)."
+  },
+  {
+    "id": "amazon",
+    "name": "Amazon.com, Inc.",
+    "stock_code": "AMZN",
+    "exchange": "NASDAQ",
+    "isin": "US0231351067",
+    "country": "US",
+    "entity_type": "related",
+    "sector": "E-commerce / cloud (AWS hyperscaler)",
+    "description": "Hyperscaler running NVIDIA GPUs in AWS; estimated top-4 NVIDIA customer. Also develops custom chips (Trainium/Inferentia), partially competing with NVIDIA."
+  },
+  {
+    "id": "alphabet",
+    "name": "Alphabet Inc. (Google)",
+    "stock_code": "GOOGL",
+    "exchange": "NASDAQ",
+    "isin": "US02079K3059",
+    "country": "US",
+    "entity_type": "related",
+    "sector": "Internet / cloud (Google Cloud hyperscaler)",
+    "description": "Google Cloud and Google TPU developer; estimated top-4 NVIDIA customer while also building custom accelerators."
+  },
+  {
+    "id": "dell",
+    "name": "Dell Technologies Inc.",
+    "stock_code": "DELL",
+    "exchange": "NYSE",
+    "isin": "US24703L2025",
+    "country": "US",
+    "entity_type": "related",
+    "sector": "Enterprise IT / AI servers",
+    "description": "Leading OEM of NVIDIA-powered AI servers (AI Factory initiative with NVIDIA); major channel customer for enterprise AI."
+  },
+  {
+    "id": "accenture",
+    "name": "Accenture plc",
+    "stock_code": "ACN",
+    "exchange": "NYSE",
+    "isin": "IE00B4BNMY34",
+    "country": "IE",
+    "entity_type": "related",
+    "sector": "IT services / consulting",
+    "description": "Global professional services firm; strategic partner running an NVIDIA Business Group (30,000 trained professionals) around the AI Refinery platform."
+  },
+  {
+    "id": "servicenow",
+    "name": "ServiceNow, Inc.",
+    "stock_code": "NOW",
+    "exchange": "NYSE",
+    "isin": "US81762P1021",
+    "country": "US",
+    "entity_type": "related",
+    "sector": "Enterprise software / AI workflows",
+    "description": "Enterprise workflow AI platform; expanded strategic partnership with NVIDIA to co-develop agentic AI (NVIDIA NIM Agent Blueprints)."
+  },
+  {
+    "id": "snowflake",
+    "name": "Snowflake Inc.",
+    "stock_code": "SNOW",
+    "exchange": "NYSE",
+    "isin": "US8334451098",
+    "country": "US",
+    "entity_type": "related",
+    "sector": "Cloud data platform",
+    "description": "Data Cloud company; partnership with NVIDIA to run NVIDIA NeMo on the Snowflake platform for enterprise generative AI."
+  },
+  {
+    "id": "cisco",
+    "name": "Cisco Systems, Inc.",
+    "stock_code": "CSCO",
+    "exchange": "NASDAQ",
+    "isin": "US17275R1023",
+    "country": "US",
+    "entity_type": "related",
+    "sector": "Networking equipment",
+    "description": "Networking leader; partner on 'Cisco Secure AI Factory with NVIDIA' and co-developer of NVIDIA Spectrum-X Ethernet-based switches (N9100 series)."
+  },
+  {
+    "id": "coreweave",
+    "name": "CoreWeave, Inc.",
+    "stock_code": "CRWV",
+    "exchange": "NASDAQ",
+    "isin": "US21871C1018",
+    "country": "US",
+    "entity_type": "related",
+    "sector": "AI cloud / GPU cloud services",
+    "description": "GPU-cloud provider; NVIDIA invested $100M (2023) and $2B (2026), and is its largest GPU supplier. CoreWeave builds AI data centers for NVIDIA."
+  },
+  {
+    "id": "recursion",
+    "name": "Recursion Pharmaceuticals, Inc.",
+    "stock_code": "RXRX",
+    "exchange": "NASDAQ",
+    "isin": "US75629V1044",
+    "country": "US",
+    "entity_type": "related",
+    "sector": "TechBio / AI drug discovery",
+    "description": "AI-driven drug discovery company; NVIDIA invested $50M (July 2023) and collaborates on foundation models and DGX Cloud compute (BioHive supercomputer)."
+  },
+  {
+    "id": "soundhound",
+    "name": "SoundHound AI, Inc.",
+    "stock_code": "SOUN",
+    "exchange": "NASDAQ",
+    "isin": "US8361001077",
+    "country": "US",
+    "entity_type": "related",
+    "sector": "Voice AI / conversational AI",
+    "description": "Voice-AI company. NVIDIA participated in its 2017 $75M funding round but disclosed selling its stake in February 2025 — a now-expired investment relationship."
+  },
+  {
+    "id": "amd",
+    "name": "Advanced Micro Devices, Inc. (AMD)",
+    "stock_code": "AMD",
+    "exchange": "NASDAQ",
+    "isin": "US0079031078",
+    "country": "US",
+    "entity_type": "related",
+    "sector": "Semiconductors (GPU / CPU)",
+    "description": "Primary direct competitor in data-center GPUs and AI accelerators (MI-series). Named in NVIDIA's 10-K as a competitor."
+  },
+  {
+    "id": "intel",
+    "name": "Intel Corporation",
+    "stock_code": "INTC",
+    "exchange": "NASDAQ",
+    "isin": "US4581401001",
+    "country": "US",
+    "entity_type": "related",
+    "sector": "Semiconductors (CPU / GPU / foundry)",
+    "description": "Competitor in CPUs, AI accelerators (Gaudi) and emerging foundry services. Named in NVIDIA's 10-K as a competitor."
+  },
+  {
+    "id": "broadcom",
+    "name": "Broadcom Inc.",
+    "stock_code": "AVGO",
+    "exchange": "NASDAQ",
+    "isin": "US11135F1012",
+    "country": "US",
+    "entity_type": "related",
+    "sector": "Semiconductors (networking / custom ASIC)",
+    "description": "Competitor in data-center networking (DPUs, switches) and custom AI ASIC design for hyperscalers. Named in NVIDIA's 10-K."
+  },
+  {
+    "id": "qualcomm",
+    "name": "Qualcomm Incorporated",
+    "stock_code": "QCOM",
+    "exchange": "NASDAQ",
+    "isin": "US7475251036",
+    "country": "US",
+    "entity_type": "related",
+    "sector": "Semiconductors (mobile / SoC)",
+    "description": "Competitor in edge/automotive/SoC computing. Named in NVIDIA's 10-K as a competitor in embedded and automotive devices."
+  }
+]

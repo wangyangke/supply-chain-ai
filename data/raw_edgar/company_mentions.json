@@ -1,0 +1,141 @@
+{
+  "tsmc": [
+    {
+      "term": "TSMC",
+      "snippet": "Latin America. We utilize foundries, such as Taiwan Semiconductor Manufacturing Company Limited, or TSMC, and Samsung Electronics Co., Ltd., or Samsung, to produce our semiconductor wafers. We purchase memory from SK Hynix Inc., Micron Technology, Inc., and Samsung. We utilize CoWoS technology for semiconductor packaging. We engage with independent subcontra"
+    },
+    {
+      "term": "Taiwan Semiconductor Manufacturing",
+      "snippet": "ncentrated in Asia, we are expanding into the U.S. and Latin America. We utilize foundries, such as Taiwan Semiconductor Manufacturing Company Limited, or TSMC, and Samsung Electronics Co., Ltd., or Samsung, to produce our semiconductor wafers. We purchase memory from SK Hynix Inc., Micron Technology, Inc., and Samsung. We utilize CoWoS technology for semico"
+    }
+  ],
+  "sk_hynix": [
+    {
+      "term": "SK Hynix",
+      "snippet": "ung Electronics Co., Ltd., or Samsung, to produce our semiconductor wafers. We purchase memory from SK Hynix Inc., Micron Technology, Inc., and Samsung. We utilize CoWoS technology for semiconductor packaging. We engage with independent subcontractors and contract manufacturers such as Hon Hai Precision Industry Co., Ltd., Wistron Corporation, and Fabrinet t"
+    },
+    {
+      "term": "Hynix",
+      "snippet": "Electronics Co., Ltd., or Samsung, to produce our semiconductor wafers. We purchase memory from SK Hynix Inc., Micron Technology, Inc., and Samsung. We utilize CoWoS technology for semiconductor packaging. We engage with independent subcontractors and contract manufacturers such as Hon Hai Precision Industry Co., Ltd., Wistron Corporation, and Fabrinet to p"
+    }
+  ],
+  "micron": [
+    {
+      "term": "Micron",
+      "snippet": "Co., Ltd., or Samsung, to produce our semiconductor wafers. We purchase memory from SK Hynix Inc., Micron Technology, Inc., and Samsung. We utilize CoWoS technology for semiconductor packaging. We engage with independent subcontractors and contract manufacturers such as Hon Hai Precision Industry Co., Ltd., Wistron Corporation, and Fabrinet to perform assem"
+    }
+  ],
+  "amkor": [],
+  "ase_technology": [],
+  "asml": [],
+  "microsoft": [
+    {
+      "term": "Microsoft",
+      "snippet": "platforms, such as Alibaba Group, Alphabet Inc., Amazon, Inc., or Amazon, Baidu, Inc., Huawei, and Microsoft Corporation, or Microsoft; &#8226; suppliers of Arm-based CPUs and companies that incorporate hardware and software for CPUs as part of their internal solutions or platforms, such as Amazon, Huawei, and Microsoft; &#8226; suppliers of hardware and so"
+    },
+    {
+      "term": "Microsoft",
+      "snippet": "a Group, Alphabet Inc., Amazon, Inc., or Amazon, Baidu, Inc., Huawei, and Microsoft Corporation, or Microsoft; &#8226; suppliers of Arm-based CPUs and companies that incorporate hardware and software for CPUs as part of their internal solutions or platforms, such as Amazon, Huawei, and Microsoft; &#8226; suppliers of hardware and software for SoC products th"
+    },
+    {
+      "term": "Microsoft",
+      "snippet": "and software for CPUs as part of their internal solutions or platforms, such as Amazon, Huawei, and Microsoft; &#8226; suppliers of hardware and software for SoC products that are used in servers or embedded into automobiles, autonomous machines, and gaming devices, such as Ambarella, Inc., AMD, Broadcom, Intel, Qualcomm Incorporated, Renesas Electronics Cor"
+    }
+  ],
+  "meta": [],
+  "amazon": [
+    {
+      "term": "Amazon",
+      "snippet": "nctionality as part of their internal solutions or platforms, such as Alibaba Group, Alphabet Inc., Amazon, Inc., or Amazon, Baidu, Inc., Huawei, and Microsoft Corporation, or Microsoft; &#8226; suppliers of Arm-based CPUs and companies that incorporate hardware and software for CPUs as part of their internal solutions or platforms, such as Amazon, Huawei, a"
+    },
+    {
+      "term": "Amazon",
+      "snippet": "rt of their internal solutions or platforms, such as Alibaba Group, Alphabet Inc., Amazon, Inc., or Amazon, Baidu, Inc., Huawei, and Microsoft Corporation, or Microsoft; &#8226; suppliers of Arm-based CPUs and companies that incorporate hardware and software for CPUs as part of their internal solutions or platforms, such as Amazon, Huawei, and Microsoft; &#8"
+    },
+    {
+      "term": "Amazon",
+      "snippet": "ncorporate hardware and software for CPUs as part of their internal solutions or platforms, such as Amazon, Huawei, and Microsoft; &#8226; suppliers of hardware and software for SoC products that are used in servers or embedded into automobiles, autonomous machines, and gaming devices, such as Ambarella, Inc., AMD, Broadcom, Intel, Qualcomm Incorporated, Ren"
+    }
+  ],
+  "google": [
+    {
+      "term": "Alphabet",
+      "snippet": "AI computing functionality as part of their internal solutions or platforms, such as Alibaba Group, Alphabet Inc., Amazon, Inc., or Amazon, Baidu, Inc., Huawei, and Microsoft Corporation, or Microsoft; &#8226; suppliers of Arm-based CPUs and companies that incorporate hardware and software for CPUs as part of their internal solutions or platforms, such as Am"
+    }
+  ],
+  "dell": [],
+  "hpe": [
+    {
+      "term": "Hewlett Packard Enterprise",
+      "snippet": "ns (including optical modules) include such as AMD, Arista Networks, Broadcom, Cisco Systems, Inc., Hewlett Packard Enterprise Company, Huawei, Intel, Lumentum Holdings Inc., and Marvell Technology, Inc, as well as internal teams of system vendors and large cloud services companies. Patents and Proprietary Rights We rely primarily on a combination of patents"
+    }
+  ],
+  "accenture": [],
+  "servicenow": [],
+  "snowflake": [],
+  "cisco": [
+    {
+      "term": "Cisco",
+      "snippet": "s), and cable solutions (including optical modules) include such as AMD, Arista Networks, Broadcom, Cisco Systems, Inc., Hewlett Packard Enterprise Company, Huawei, Intel, Lumentum Holdings Inc., and Marvell Technology, Inc, as well as internal teams of system vendors and large cloud services companies. Patents and Proprietary Rights We rely primarily on a c"
+    },
+    {
+      "term": "Cisco",
+      "snippet": "ident and Chief Financial Officer of the Business Technology and Operations Finance organization at Cisco Systems, Inc., a networking equipment company, since 2010. At Cisco, Ms. Kress was responsible for financial strategy, planning, reporting and business development for all business segments, engineering and operations. From 1997 to 2010 Ms. Kress held a"
+    },
+    {
+      "term": "Cisco",
+      "snippet": "rations Finance organization at Cisco Systems, Inc., a networking equipment company, since 2010. At Cisco, Ms. Kress was responsible for financial strategy, planning, reporting and business development for all business segments, engineering and operations. From 1997 to 2010 Ms. Kress held a variety of positions at Microsoft, a software company, including, be"
+    }
+  ],
+  "coreweave": [],
+  "soundhound": [],
+  "recursion": [],
+  "amd": [
+    {
+      "term": "AMD",
+      "snippet": "d computing solutions, including solutions offered for AI, such as Advanced Micro Devices, Inc., or AMD, Huawei Technologies Co. Ltd., or Huawei, and Intel Corporation, or Intel; &#8226; large cloud services companies with internal teams designing hardware and software that incorporate accelerated or AI computing functionality as part of their internal solut"
+    },
+    {
+      "term": "AMD",
+      "snippet": "ers or embedded into automobiles, autonomous machines, and gaming devices, such as Ambarella, Inc., AMD, Broadcom, Intel, Qualcomm Incorporated, Renesas Electronics Corporation, and Samsung, or companies with internal teams designing SoC products for their own products and services, such as Tesla, Inc.; and &#8226; networking products consisting of switches,"
+    },
+    {
+      "term": "AMD",
+      "snippet": "network adapters (including DPUs), and cable solutions (including optical modules) include such as AMD, Arista Networks, Broadcom, Cisco Systems, Inc., Hewlett Packard Enterprise Company, Huawei, Intel, Lumentum Holdings Inc., and Marvell Technology, Inc, as well as internal teams of system vendors and large cloud services companies. Patents and Proprietary"
+    },
+    {
+      "term": "Advanced Micro Devices",
+      "snippet": "custom chips and other accelerated computing solutions, including solutions offered for AI, such as Advanced Micro Devices, Inc., or AMD, Huawei Technologies Co. Ltd., or Huawei, and Intel Corporation, or Intel; &#8226; large cloud services companies with internal teams designing hardware and software that incorporate accelerated or AI computing functionalit"
+    }
+  ],
+  "intel": [
+    {
+      "term": "Intel",
+      "snippet": "ployment of NVIDIA accelerated computing for computationally intensive workloads such as artificial intelligence, or AI, model training and inference, data analytics, scientific computing, robotics, and 3D graphics, with vertical-specific optimizations to address industries ranging from healthcare and telecom to automotive and manufacturing. Introduced with"
+    },
+    {
+      "term": "Intel",
+      "snippet": "n imagination, enabling the virtual worlds of video games and films. Today, it also simulates human intelligence, enabling a deeper understanding of language, science, and the physical world. Its parallel processing capabilities, supported by tens of thousands of computing cores, are essential for deep learning algorithms. This form of AI, in which software"
+    },
+    {
+      "term": "Intel",
+      "snippet": "an open, modular DRIVE software platform for autonomous driving, mapping, and parking services, and intelligent in-vehicle experiences. Business Strategies NVIDIA&#8217;s key strategies that shape our overall business approach include: Advancing the NVIDIA accelerated computing platform. Our accelerated computing platform can solve complex problems in signif"
+    }
+  ],
+  "broadcom": [
+    {
+      "term": "Broadcom",
+      "snippet": "r embedded into automobiles, autonomous machines, and gaming devices, such as Ambarella, Inc., AMD, Broadcom, Intel, Qualcomm Incorporated, Renesas Electronics Corporation, and Samsung, or companies with internal teams designing SoC products for their own products and services, such as Tesla, Inc.; and &#8226; networking products consisting of switches, netw"
+    },
+    {
+      "term": "Broadcom",
+      "snippet": "luding DPUs), and cable solutions (including optical modules) include such as AMD, Arista Networks, Broadcom, Cisco Systems, Inc., Hewlett Packard Enterprise Company, Huawei, Intel, Lumentum Holdings Inc., and Marvell Technology, Inc, as well as internal teams of system vendors and large cloud services companies. Patents and Proprietary Rights We rely primar"
+    }
+  ],
+  "qualcomm": [
+    {
+      "term": "Qualcomm",
+      "snippet": "utomobiles, autonomous machines, and gaming devices, such as Ambarella, Inc., AMD, Broadcom, Intel, Qualcomm Incorporated, Renesas Electronics Corporation, and Samsung, or companies with internal teams designing SoC products for their own products and services, such as Tesla, Inc.; and &#8226; networking products consisting of switches, network adapters (inc"
+    }
+  ]
+}

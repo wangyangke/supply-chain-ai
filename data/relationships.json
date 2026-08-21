@@ -1,0 +1,308 @@
+[
+  {
+    "id": "rel_sup_001",
+    "source_company_id": "tsmc",
+    "target_company_id": "nvidia",
+    "type": "supplier",
+    "direction": "tsmc -> nvidia",
+    "status": "confirmed",
+    "confidence_score": 83,
+    "valid_from": "2010-01-01",
+    "valid_until": null,
+    "evidence_ids": [
+      "ev_sup_001"
+    ],
+    "summary": "TSMC is NVIDIA's primary foundry partner for its most advanced GPU wafers (fabless manufacturing); NVIDIA's 10-K explicitly names TSMC as a foundry supplier."
+  },
+  {
+    "id": "rel_sup_002",
+    "source_company_id": "sk_hynix",
+    "target_company_id": "nvidia",
+    "type": "supplier",
+    "direction": "sk_hynix -> nvidia",
+    "status": "confirmed",
+    "confidence_score": 77,
+    "valid_from": "2019-01-01",
+    "valid_until": null,
+    "evidence_ids": [
+      "ev_sup_002"
+    ],
+    "summary": "SK Hynix is a named memory (incl. HBM) supplier to NVIDIA per NVIDIA's 10-K; HBM is critical for AI accelerators."
+  },
+  {
+    "id": "rel_sup_003",
+    "source_company_id": "micron",
+    "target_company_id": "nvidia",
+    "type": "supplier",
+    "direction": "micron -> nvidia",
+    "status": "confirmed",
+    "confidence_score": 77,
+    "valid_from": "2015-01-01",
+    "valid_until": null,
+    "evidence_ids": [
+      "ev_sup_003"
+    ],
+    "summary": "Micron is a named memory supplier to NVIDIA per NVIDIA's 10-K (memory + HBM candidate supplier)."
+  },
+  {
+    "id": "rel_sup_004",
+    "source_company_id": "asml",
+    "target_company_id": "nvidia",
+    "type": "supplier",
+    "direction": "asml -> (via foundries) -> nvidia",
+    "status": "inferred",
+    "confidence_score": 60,
+    "valid_from": "2018-01-01",
+    "valid_until": null,
+    "evidence_ids": [
+      "ev_sup_004"
+    ],
+    "summary": "ASML is an INDIRECT supplier: it sells EUV lithography machines to foundries (mainly TSMC) that fabricate NVIDIA chips. ASML does not sell directly to NVIDIA; the link is inferred from the supply chain structure."
+  },
+  {
+    "id": "rel_cus_001",
+    "source_company_id": "nvidia",
+    "target_company_id": "microsoft",
+    "type": "customer",
+    "direction": "nvidia -> microsoft",
+    "status": "confirmed",
+    "confidence_score": 72,
+    "valid_from": "2020-01-01",
+    "valid_until": null,
+    "evidence_ids": [
+      "ev_cus_001",
+      "ev_cus_001b"
+    ],
+    "summary": "Microsoft is widely reported as NVIDIA's largest data-center GPU customer (~19% of NVIDIA revenue per Bloomberg estimates; ~21% of data-center revenue per Epoch AI analysis of Omdia data)."
+  },
+  {
+    "id": "rel_cus_002",
+    "source_company_id": "nvidia",
+    "target_company_id": "meta",
+    "type": "customer",
+    "direction": "nvidia -> meta",
+    "status": "inferred",
+    "confidence_score": 58,
+    "valid_from": "2021-01-01",
+    "valid_until": null,
+    "evidence_ids": [
+      "ev_cus_002"
+    ],
+    "summary": "Meta is estimated as NVIDIA's #2 GPU customer (~9-11% of NVIDIA revenue per Omdia/Bloomberg estimates). NVIDIA does not disclose named customers, so this is a high-confidence inference from analyst data."
+  },
+  {
+    "id": "rel_cus_003",
+    "source_company_id": "nvidia",
+    "target_company_id": "amazon",
+    "type": "customer",
+    "direction": "nvidia -> amazon",
+    "status": "inferred",
+    "confidence_score": 67,
+    "valid_from": "2019-01-01",
+    "valid_until": null,
+    "evidence_ids": [
+      "ev_cus_003"
+    ],
+    "summary": "Amazon (AWS) is estimated as a top-4 NVIDIA customer (~7-8% of NVIDIA revenue per analyst estimates) while also deploying its own custom Trainium/Inferentia chips."
+  },
+  {
+    "id": "rel_cus_004",
+    "source_company_id": "nvidia",
+    "target_company_id": "alphabet",
+    "type": "customer",
+    "direction": "nvidia -> alphabet",
+    "status": "inferred",
+    "confidence_score": 67,
+    "valid_from": "2019-01-01",
+    "valid_until": null,
+    "evidence_ids": [
+      "ev_cus_004"
+    ],
+    "summary": "Google (Alphabet) is estimated as a top-4 NVIDIA customer (~7-8% of NVIDIA revenue per analyst estimates); Google also develops TPU accelerators and designs its own chips."
+  },
+  {
+    "id": "rel_cus_005",
+    "source_company_id": "nvidia",
+    "target_company_id": "dell",
+    "type": "customer",
+    "direction": "nvidia -> dell",
+    "status": "confirmed",
+    "confidence_score": 70,
+    "valid_from": "2023-01-01",
+    "valid_until": null,
+    "evidence_ids": [
+      "ev_cus_005"
+    ],
+    "summary": "Dell is a major OEM buying NVIDIA GPUs for its AI servers (AI Factory initiative); Dell's AI-server revenue surged to ~$12.9B in Q2 FY2025 on NVIDIA-powered systems. The 10-K also lists Dell's competitor HPE in networking context."
+  },
+  {
+    "id": "rel_par_001",
+    "source_company_id": "accenture",
+    "target_company_id": "nvidia",
+    "type": "partner",
+    "direction": "accenture <-> nvidia (bidirectional)",
+    "status": "confirmed",
+    "confidence_score": 75,
+    "valid_from": "2023-01-01",
+    "valid_until": null,
+    "evidence_ids": [
+      "ev_par_001"
+    ],
+    "summary": "Accenture launched an NVIDIA Business Group (Oct 2024) with 30,000 trained professionals; Accenture's AI Refinery is built on the full NVIDIA AI stack (AI Foundry, AI Enterprise, Omniverse)."
+  },
+  {
+    "id": "rel_par_002",
+    "source_company_id": "servicenow",
+    "target_company_id": "nvidia",
+    "type": "partner",
+    "direction": "servicenow <-> nvidia (bidirectional)",
+    "status": "confirmed",
+    "confidence_score": 78,
+    "valid_from": "2023-05-01",
+    "valid_until": null,
+    "evidence_ids": [
+      "ev_par_002"
+    ],
+    "summary": "ServiceNow expanded its strategic partnership with NVIDIA (Oct 2024) to co-develop agentic AI using NVIDIA NIM Agent Blueprints on the ServiceNow platform."
+  },
+  {
+    "id": "rel_par_003",
+    "source_company_id": "snowflake",
+    "target_company_id": "nvidia",
+    "type": "partner",
+    "direction": "snowflake <-> nvidia (bidirectional)",
+    "status": "confirmed",
+    "confidence_score": 77,
+    "valid_from": "2023-06-01",
+    "valid_until": null,
+    "evidence_ids": [
+      "ev_par_003",
+      "ev_par_003b"
+    ],
+    "summary": "Snowflake partners with NVIDIA to run NVIDIA NeMo and AI Enterprise software inside the Snowflake Data Cloud for enterprise generative AI (announced 2023 Summit, expanded 2024 GTC)."
+  },
+  {
+    "id": "rel_par_004",
+    "source_company_id": "cisco",
+    "target_company_id": "nvidia",
+    "type": "partner",
+    "direction": "cisco <-> nvidia (bidirectional)",
+    "status": "confirmed",
+    "confidence_score": 74,
+    "valid_from": "2025-02-01",
+    "valid_until": null,
+    "evidence_ids": [
+      "ev_par_004",
+      "ev_par_004b"
+    ],
+    "summary": "Cisco and NVIDIA partner on 'Cisco Secure AI Factory with NVIDIA' and co-develop NVIDIA Spectrum-X Ethernet switches (Cisco N9100 series), announced at GTC 2025."
+  },
+  {
+    "id": "rel_inv_001",
+    "source_company_id": "nvidia",
+    "target_company_id": "coreweave",
+    "type": "investor_or_investee",
+    "direction": "nvidia -> coreweave (investor -> investee)",
+    "status": "confirmed",
+    "confidence_score": 86,
+    "valid_from": "2023-04-01",
+    "valid_until": null,
+    "evidence_ids": [
+      "ev_inv_001",
+      "ev_inv_001b",
+      "ev_inv_001c"
+    ],
+    "summary": "NVIDIA invested $100M in CoreWeave (Apr 2023) and a further $2B (Jan 2026) at $87.20/share; CoreWeave also buys NVIDIA GPUs at scale and builds data centers for NVIDIA."
+  },
+  {
+    "id": "rel_inv_002",
+    "source_company_id": "nvidia",
+    "target_company_id": "recursion",
+    "type": "investor_or_investee",
+    "direction": "nvidia -> recursion (investor -> investee)",
+    "status": "confirmed",
+    "confidence_score": 75,
+    "valid_from": "2023-07-12",
+    "valid_until": null,
+    "evidence_ids": [
+      "ev_inv_002"
+    ],
+    "summary": "NVIDIA invested $50M in Recursion Pharmaceuticals (announced July 12, 2023) as part of a multi-year AI drug-discovery collaboration (DGX Cloud, BioNeMo, BioHive supercomputer)."
+  },
+  {
+    "id": "rel_inv_003",
+    "source_company_id": "nvidia",
+    "target_company_id": "soundhound",
+    "type": "investor_or_investee",
+    "direction": "nvidia -> soundhound (investor -> investee, now exited)",
+    "status": "confirmed",
+    "confidence_score": 72,
+    "valid_from": "2017-01-01",
+    "valid_until": "2025-02-14",
+    "evidence_ids": [
+      "ev_inv_003",
+      "ev_inv_003b"
+    ],
+    "summary": "NVIDIA participated in SoundHound's Jan 2017 $75M funding round (per VentureBeat), and a Feb 14 2025 regulatory filing (13F) reported by Reuters shows NVIDIA exited its SoundHound stake in Q4 2024 — the investment relationship is now ended (valid_until set accordingly). Evidence is secondary (Wikipedia + Reuters syndication of the filing), so the relationship is scored inferred."
+  },
+  {
+    "id": "rel_peer_001",
+    "source_company_id": "amd",
+    "target_company_id": "nvidia",
+    "type": "peer",
+    "direction": "amd <-> nvidia (competitors)",
+    "status": "confirmed",
+    "confidence_score": 74,
+    "valid_from": "2000-01-01",
+    "valid_until": null,
+    "evidence_ids": [
+      "ev_peer_001"
+    ],
+    "summary": "AMD is NVIDIA's primary direct competitor in data-center GPUs and AI accelerators (AMD MI-series). Explicitly named as a competitor in NVIDIA's 10-K."
+  },
+  {
+    "id": "rel_peer_002",
+    "source_company_id": "intel",
+    "target_company_id": "nvidia",
+    "type": "peer",
+    "direction": "intel <-> nvidia (competitors)",
+    "status": "confirmed",
+    "confidence_score": 77,
+    "valid_from": "2000-01-01",
+    "valid_until": null,
+    "evidence_ids": [
+      "ev_peer_002"
+    ],
+    "summary": "Intel competes with NVIDIA in CPUs, AI accelerators (Gaudi) and is entering foundry services. Named as a competitor in NVIDIA's 10-K."
+  },
+  {
+    "id": "rel_peer_003",
+    "source_company_id": "broadcom",
+    "target_company_id": "nvidia",
+    "type": "peer",
+    "direction": "broadcom <-> nvidia (competitors)",
+    "status": "confirmed",
+    "confidence_score": 71,
+    "valid_from": "2015-01-01",
+    "valid_until": null,
+    "evidence_ids": [
+      "ev_peer_003"
+    ],
+    "summary": "Broadcom competes with NVIDIA in data-center networking (DPUs, Ethernet switches) and custom AI ASICs for hyperscalers. Named in NVIDIA's 10-K."
+  },
+  {
+    "id": "rel_peer_004",
+    "source_company_id": "qualcomm",
+    "target_company_id": "nvidia",
+    "type": "peer",
+    "direction": "qualcomm <-> nvidia (competitors)",
+    "status": "confirmed",
+    "confidence_score": 74,
+    "valid_from": "2015-01-01",
+    "valid_until": null,
+    "evidence_ids": [
+      "ev_peer_004"
+    ],
+    "summary": "Qualcomm competes with NVIDIA in edge computing, automotive SoCs and embedded devices. Named in NVIDIA's 10-K as a competitor in those segments."
+  }
+]
