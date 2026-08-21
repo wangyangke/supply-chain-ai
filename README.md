@@ -286,12 +286,35 @@ staged candidate 未经核验**禁止**直接合入数据集（红线见 protoco
 
 ## 10. AI 使用披露（Research & Engineering Judgment Disclosure）
 
-本项目在数据采集、清洗、证据整理、评分引擎设计与代码实现过程中使用了 **AI 编码 Agent 辅助**（包括代码生成、测试编写与文档整理）。具体说明：
+本项目在**代码工程**与**证据研究**两条线上均使用了 AI 编码 Agent 与 AI 检索工具。按挑战要求，说明三要素：用途、人工验证方式、由本人负责的研究与工程判断。
 
-- **AI 的用途**：辅助编写采集/解析脚本、评分引擎、API/CLI 代码、测试用例与本文档；辅助从公开资料中初步整理关系候选与证据引文；
-- **人工验证方式**：所有关系结论、证据 quote、时效窗口、来源 URL 与评分结果均由本人（研究者）逐条核验；评分引擎规则由本人设计并复核；关键证据（10-K 竞争话语等）以原文 quote 存档于 `data/evidence.json`，评审者可直接打开原始文件核对；
-- **责任归属**：研究判断与工程决策（覆盖范围、关系方向、状态判定、评分规则、合规边界）均由本人负责，AI 不承担任何研究结论责任；
-- **数据安全**：未向任何 AI 工具输入密钥、个人数据、客户机密或未授权资料；数据仅来自合法公开来源。
+**① AI / 检索工具的用途**（实际发生的全部用途，无遗漏）：
+
+| 用途 | 具体产出 |
+|---|---|
+| 代码生成 | 采集/解析脚本（`fetch_edgar.py`、`extract_company_mentions.py`）、评分引擎、API/CLI、测试用例、Docker 配置、多目标架构（`TargetRegistry`、`onboard_target.py`、`merge_staged.py`） |
+| 文档撰写 | 本 README、`docs/` 方法文档、`data/README.md` |
+| 交互式仪表盘 | `dashboard.html`（内嵌数据、多目标切换） |
+| **AI 检索与证据研究** | 通过 WebSearch 检索公开来源（SEC/公司新闻稿/财经媒体），按 [docs/research_agent_protocol.md](docs/research_agent_protocol.md) 执行实体消歧、共现防误判、原文引用抽取与来源冲突仲裁，产出带 `agent_review_notes` 的 staging 文件（NVIDIA↔Oracle、宇树科技全目标，均为此路径接入） |
+| 机械执行 | staging → 合入 → 引擎重算 → 校验的脚本化步骤 |
+
+**② 人工验证方式**（机制保证 + 全程留痕，评审者可独立复核）：
+
+- **核验留痕**：agent 对每条证据的核验结论（含消歧依据、共现判定）写入 staging 文件的 `agent_approved` / `agent_review_notes` 字段；被拒候选（如 Oracle 案例中的股价共现陷阱）同样留档。所有 staging 文件提交于 `data/targets/*/staging/`，评审者可逐条对照原文 URL 复核——**核验过程是公开可审计的，而非一句"已人工核验"**；
+- **独立校验**：`scripts/validate_data.py`（schema + 引用完整性 + 引擎一致性）与 `scripts/sync_scores.py`（分数可复现性 dry-run）对两个目标全部通过，且由 CI 在每次 push 时强制执行；
+- **本人复核与裁决**：本人（研究者）对 agent 的核验结论行使最终复核与入库裁决权，对入库的每条关系、证据 quote、时效窗口与来源 URL 负责；
+- **分数非人工输入**：所有 `confidence_score` 与 `status` 由评分引擎从证据重新计算（`sync_scores.py --write`），人工无法直接改分。
+
+**③ 由本人负责的研究与工程判断**（AI 不拥有这些决策）：
+
+- 评分体系设计：五维权重（authority 25 / evidence_quality 25 / recency 20 / specificity 20 / quantifiability 10）、分数→状态带映射、两项研究判断细化（官方存续关系的时效规则、直接陈述加成）；
+- 来源分级（T0 SEC > T2 官方 > T3 媒体 … > T6 社交媒体）与冲突仲裁优先级；
+- 覆盖边界：不收录 unknown 带关系、私有实体不作端点、付费墙内容只引公开摘要；
+- 关系语义：五类关系的方向约定、三态状态语义、时效窗口定义；
+- 合规边界：不绕过任何访问控制、EDGAR 限速与质控 UA、证据留痕字段设计；
+- 技术选型：JSON fixture 快照 + 引擎可复现 + 多目标注册表架构。
+
+**④ 数据安全**：未向任何 AI 工具输入密钥、个人数据、客户机密或未授权资料；数据仅来自合法公开来源。
 
 ---
 
