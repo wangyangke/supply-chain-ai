@@ -1,0 +1,81 @@
+[
+  {
+    "id": "rel_par_001",
+    "source_company_id": "nvidia",
+    "target_company_id": "unitree",
+    "type": "partner",
+    "direction": "nvidia <-> unitree (bidirectional)",
+    "status": "inferred",
+    "confidence_score": 69,
+    "valid_from": "2026-05-31",
+    "valid_until": null,
+    "evidence_ids": [
+      "ev_par_001",
+      "ev_par_001b",
+      "ev_par_001c"
+    ],
+    "summary": "NVIDIA selected Unitree as the hardware foundation of its first open humanoid reference design (Isaac GR00T Reference Humanoid Robot, announced GTC Taipei 2026-05-31): Unitree H2 Plus chassis + Jetson AGX Thor compute, sold via Unitree in late 2026; the GR00T developer platform also supports the Unitree G1."
+  },
+  {
+    "id": "rel_inv_001",
+    "source_company_id": "meituan",
+    "target_company_id": "unitree",
+    "type": "investor_or_investee",
+    "direction": "meituan -> unitree",
+    "status": "inferred",
+    "confidence_score": 67,
+    "valid_from": "2024-09-01",
+    "valid_until": null,
+    "evidence_ids": [
+      "ev_inv_001",
+      "ev_inv_001b"
+    ],
+    "summary": "Meituan is Unitree's largest external institutional shareholder: three concert-party entities (Hanhai Information 7.61%, Galaxy Z, Chengdu Longzhu) hold 9.6488% combined pre-IPO (Hanhai is the third-largest shareholder overall), entered from the 2024-09 B+ round."
+  },
+  {
+    "id": "rel_inv_002",
+    "source_company_id": "tencent",
+    "target_company_id": "unitree",
+    "type": "investor_or_investee",
+    "direction": "tencent -> unitree",
+    "status": "inferred",
+    "confidence_score": 62,
+    "valid_from": "2025-06-01",
+    "valid_until": null,
+    "evidence_ids": [
+      "ev_inv_002"
+    ],
+    "summary": "Tencent (via Tencent Technology) invested in Unitree's 2025-06 C round with RMB 80.0008M, holding 2.17917M shares pre-IPO per the prospectus (~0.54% post-issue)."
+  },
+  {
+    "id": "rel_inv_003",
+    "source_company_id": "alibaba",
+    "target_company_id": "unitree",
+    "type": "investor_or_investee",
+    "direction": "alibaba -> unitree",
+    "status": "inferred",
+    "confidence_score": 62,
+    "valid_from": "2025-06-01",
+    "valid_until": null,
+    "evidence_ids": [
+      "ev_inv_003"
+    ],
+    "summary": "Alibaba invested in Unitree's 2025-06 C round: wholly-owned subsidiary Hangzhou Haoyue holds 1.634346M shares pre-IPO; affiliate Ant Group (via Shanghai Yunchang) holds 0.817236M shares (~0.61% combined post-issue)."
+  },
+  {
+    "id": "rel_peer_001",
+    "source_company_id": "ubtech",
+    "target_company_id": "unitree",
+    "type": "peer",
+    "direction": "ubtech <-> unitree (bidirectional)",
+    "status": "inferred",
+    "confidence_score": 62,
+    "valid_from": "2023-08-01",
+    "valid_until": null,
+    "evidence_ids": [
+      "ev_peer_001",
+      "ev_peer_001b"
+    ],
+    "summary": "UBTech and Unitree are direct competitors in China's humanoid robot market: industry comparisons place them in the top tier (Unitree ~18,000 cumulative bipedal humanoids vs UBTech ~3,000 by 2026-08) with diverging strategies — Unitree on cost/volume, UBTech on industrial deployments (Walker S in BYD/Geely lines)."
+  }
+]

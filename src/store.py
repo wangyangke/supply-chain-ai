@@ -4,11 +4,16 @@ The store is company-agnostic — it reads a `Dataset` document from disk
 and exposes filtering / pagination helpers. Data ships as committed JSON
 fixtures so reviewers never need to re-fetch restricted sources.
 
-Dataset layout (all under SCR_DATA_DIR, default ./data):
-  dataset.json        -> {"schema_version": "1.0", "as_of": "2026-08-21", "research_target": "nvidia"}
-  companies.json      -> JSON array of Company objects
-  relationships.json  -> JSON array of Relationship objects
-  evidence.json       -> JSON array of Evidence objects
+Multi-target layout (data root, default ./data):
+  targets.json                  -> registry: {"default_target": ..., "targets": [{id, name, path, ...}]}
+  targets/<target_id>/          -> one dataset per research target:
+    dataset.json        -> {"schema_version": "1.0", "as_of": "2026-08-21", "research_target": "nvidia"}
+    companies.json      -> JSON array of Company objects
+    relationships.json  -> JSON array of Relationship objects
+    evidence.json       -> JSON array of Evidence objects
+
+Store.load() also accepts a direct dataset directory (legacy single-target
+mode, e.g. SCR_DATA_DIR pointing at data/targets/nvidia).
 """
 
 from __future__ import annotations
@@ -125,6 +130,12 @@ class Store:
             raise DatasetError("dataset.json must declare 'research_target'")
         return cls(dataset)
 
+    @classmethod
+    def load_target(cls, data_root: str, target_id: str) -> "Store":
+        """Load one research target from a multi-target data root."""
+        root = TargetRegistry.load(data_root)
+        return cls.load(str(root.target_dir(target_id)))
+
     # ------------------------------------------------------------------
     # Integrity
     # ------------------------------------------------------------------
@@ -237,6 +248,66 @@ class Store:
             "evidence": len(self.evidence),
             "as_of": self.dataset.as_of.isoformat(),
         }
+
+
+# ---------------------------------------------------------------------------
+# Target registry (multi-target support)
+# ---------------------------------------------------------------------------
+
+class TargetRegistry:
+    """Registry over data/targets.json — lists and resolves research targets."""
+
+    def __init__(self, root: Path, default_target: str, targets: list[dict]):
+        self.root = root
+        self.default_target = default_target
+        self.targets = {t["id"]: t for t in targets}
+
+    @classmethod
+    def load(cls, data_root: Optional[str] = None) -> "TargetRegistry":
+        root = Path(data_root or os.environ.get("SCR_DATA_ROOT", "./data"))
+        registry_path = root / "targets.json"
+        if not registry_path.exists():
+            # Legacy single-target layout: <root>/dataset.json directly.
+            if (root / "dataset.json").exists():
+                ds = _read_object(root / "dataset.json")
+                tid = ds.get("research_target") or "default"
+                return cls(root, tid, [{"id": tid, "name": tid, "path": "."}])
+            raise DatasetError(
+                f"No targets.json registry in {root} and no legacy dataset.json. "
+                "Point SCR_DATA_ROOT at a multi-target data root, or SCR_DATA_DIR "
+                "directly at a single dataset directory."
+            )
+        meta = _read_object(registry_path)
+        targets = meta.get("targets", [])
+        if not targets:
+            raise DatasetError(f"{registry_path} declares no targets")
+        default = meta.get("default_target") or targets[0]["id"]
+        if default not in {t["id"] for t in targets}:
+            raise DatasetError(f"default_target '{default}' is not in targets.json")
+        return cls(root, default, targets)
+
+    def target_dir(self, target_id: Optional[str] = None) -> Path:
+        tid = target_id or self.default_target
+        entry = self.targets.get(tid)
+        if entry is None:
+            raise DatasetError(
+                f"Unknown research target '{tid}'. Available: {', '.join(sorted(self.targets))}"
+            )
+        return self.root / entry.get("path", f"targets/{tid}")
+
+    def summary(self) -> list[dict]:
+        """Registry entries for API/CLI listing."""
+        out = []
+        for tid, t in sorted(self.targets.items()):
+            out.append({
+                "id": tid,
+                "name": t.get("name", tid),
+                "stock_code": t.get("stock_code"),
+                "exchange": t.get("exchange"),
+                "is_default": tid == self.default_target,
+                "description": t.get("description", ""),
+            })
+        return out
 
 
 # ---------------------------------------------------------------------------

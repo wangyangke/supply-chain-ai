@@ -1,0 +1,79 @@
+{
+  "staging_version": "1.0",
+  "research_target": "unitree",
+  "generated_at": "2026-08-21",
+  "protocol": "docs/research_agent_protocol.md",
+  "counterparty": {
+    "id": "nvidia",
+    "name": "NVIDIA Corporation",
+    "stock_code": "NVDA",
+    "exchange": "NASDAQ",
+    "isin": "US67066G1040",
+    "country": "US",
+    "entity_type": "related",
+    "sector": "Semiconductors (GPU / accelerated computing)",
+    "description": "AI compute leader. Chose Unitree as hardware partner for the Isaac GR00T Reference Humanoid Robot (GTC Taipei 2026-05-31): Unitree H2 Plus body + Jetson AGX Thor; GR00T platform also supports Unitree G1."
+  },
+  "relationship": {
+    "type": "partner",
+    "direction": "nvidia <-> unitree (bidirectional)",
+    "valid_from": "2026-05-31",
+    "valid_until": null,
+    "summary": "NVIDIA selected Unitree as the hardware foundation of its first open humanoid reference design (Isaac GR00T Reference Humanoid Robot, announced GTC Taipei 2026-05-31): Unitree H2 Plus chassis + Jetson AGX Thor compute, sold via Unitree in late 2026; the GR00T developer platform also supports the Unitree G1."
+  },
+  "candidates": [
+    {
+      "title": "NVIDIA Announces NVIDIA Isaac GR00T Reference Humanoid Robot for Academic Research",
+      "source_url": "https://ca.advfn.com/stock-market/NASDAQ/NVDA/stock-news/98642012/nvidia-announces-nvidia-isaac-gr00t-reference-huma",
+      "publisher": "NVIDIA Corporation official press release (syndicated via ADVFN)",
+      "source_type": "company_press_release",
+      "published_at": "2026-05-31",
+      "accessed_at": "2026-08-21",
+      "access_restriction": "public",
+      "evidence_locator": "NVIDIA press release (GTC Taipei), 'Availability' section",
+      "quote": "The NVIDIA Isaac GR00T Reference Humanoid Robot will be available from Unitree in late 2026. The NVIDIA Isaac GR00T reference workflow for Unitree G1 is expected to be available soon on GitHub and Hugging Face for robot developers.",
+      "license_note": "Public web publication; quoted for research with attribution.",
+      "agent_approved": true,
+      "needs_review": [],
+      "agent_review_notes": "official NVIDIA PR text (full text incl. safe-harbor footer verifies authenticity); verb 'available from Unitree' = direct partner statement; entity confirmed NASDAQ:NVDA"
+    },
+    {
+      "title": "NVIDIA Announces NVIDIA Isaac GR00T Reference Humanoid Robot for Academic Research (G1 support)",
+      "source_url": "https://news.google.com/rss/articles/CBMihAFBVV95cUxQa1B3b3A1eXcwc3AzeG1BNDRwU1hJbWliLWN6WW5FWlJCaUNrNW1sM24tV3p6NEF4YkVfTnZqWWtfbmttdUxXLVV6bnN4RzQxM0hlVUhLQXVGYzlzRlotVnEzcW1jYy1hallQQVBQWUNESDhXcXJKSElkbGdHM0FVSkVkSTc",
+      "publisher": "NVIDIA Corporation official press release (via Google News)",
+      "source_type": "company_press_release",
+      "published_at": "2026-05-31",
+      "accessed_at": "2026-08-21",
+      "access_restriction": "public",
+      "evidence_locator": "NVIDIA press release, platform description paragraph",
+      "quote": "The NVIDIA Isaac GR00T developer platform will also support the Unitree G1 humanoid robot, extending the same development approach to a robot widely used by researchers and humanoid developers across leading institutions.",
+      "license_note": "Public web publication; quoted for research with attribution.",
+      "agent_approved": true,
+      "needs_review": [],
+      "agent_review_notes": "second distinct quote from same PR: G1 platform support; direct partner statement; independent of the availability quote"
+    },
+    {
+      "title": "Nvidia Taps Chinese Company Unitree for First Humanoid Robot System Sold to Researchers",
+      "source_url": "https://www.ibtimes.com/nvidia-taps-chinese-company-unitree-first-humanoid-robot-system-sold-researchers-3803572",
+      "publisher": "International Business Times",
+      "source_type": "business_media",
+      "published_at": null,
+      "accessed_at": "2026-08-21",
+      "access_restriction": "public",
+      "evidence_locator": "IBTimes news article, lead paragraphs",
+      "quote": "The company announced Monday that its Isaac GR00T humanoid robot developer platform will support Unitree's G1 humanoid robot and a new reference design using Unitree hardware, Nvidia computing, and mechanical hands from Singapore-based Sharpa.",
+      "license_note": "Public web publication; quoted for research with attribution.",
+      "agent_approved": true,
+      "needs_review": [],
+      "agent_review_notes": "independent media confirmation (third-party reportage, not PR reprint); publish date not visible on page snapshot -> null per protocol; relational verb 'support ... using Unitree hardware' passes co-occurrence guard"
+    }
+  ],
+  "merged": true,
+  "merged_into": "rel_par_001",
+  "merged_evidence_ids": [
+    "ev_par_001",
+    "ev_par_001b",
+    "ev_par_001c"
+  ],
+  "merged_at": "2026-08-21"
+}

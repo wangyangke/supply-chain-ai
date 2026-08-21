@@ -8,16 +8,16 @@
 
 ## 1. 为什么需要 agent 而不只是 parser
 
-| 任务 | parser（正则/规则） | agent（搜索 + 判断） |
-|---|---|---|
-| 抓 10-K 原文 | ✅ | ✅ |
-| 从 10-K 抽公司名 | ✅ | ✅ |
-| 判断"同段共现 ≠ 有关系" | ❌ | ✅ |
-| 同名实体消歧（如 "苹果" 公司 vs 水果、同名私企） | ❌ | ✅ |
-| 两个来源说法冲突时仲裁 | ❌ | ✅（按来源分级 + 备注分歧） |
-| 判断关系是否已终止、设 `valid_until` | ❌ | ✅ |
-| 识别 paywall / 登录墙 / 许可限制 | 部分 | ✅ |
-| 把非 10-K 来源（官网、新闻稿、媒体）纳入证据链 | ❌ | ✅ |
+| 任务                           | parser（正则/规则） | agent（搜索 + 判断）  |
+| ---------------------------- | ------------- | --------------- |
+| 抓 10-K 原文                    | ✅             | ✅               |
+| 从 10-K 抽公司名                  | ✅             | ✅               |
+| 判断"同段共现 ≠ 有关系"               | ❌             | ✅               |
+| 同名实体消歧（如 "苹果" 公司 vs 水果、同名私企） | ❌             | ✅               |
+| 两个来源说法冲突时仲裁                  | ❌             | ✅（按来源分级 + 备注分歧） |
+| 判断关系是否已终止、设 `valid_until`    | ❌             | ✅               |
+| 识别 paywall / 登录墙 / 许可限制      | 部分            | ✅               |
+| 把非 10-K 来源（官网、新闻稿、媒体）纳入证据链   | ❌             | ✅               |
 
 10-K 是**单视角**的：只覆盖目标公司选择披露的内容。对方官宣、终止公告、媒体调查都需要搜索引擎式的外部采集。
 
@@ -44,15 +44,15 @@ agent（本协议）                scripts/research_harvest.py（机械）
 
 ## 3. 来源分级（与 SourceType / authority 评分对齐）
 
-| 级别 | source_type | authority | 典型来源 | 使用规则 |
-|---|---|---|---|---|
-| T0 | `sec_filing` / `exchange_filing` | 25 / 23 | SEC EDGAR、港交所披露易 | 最高优先；quote 必须来自原文 |
-| T1 | `government` | 22 | 监管公告、政府采购 | 直接可用 |
-| T2 | `company_ir` / `company_press_release` | 20 / 19 | 官网 IR 页、官方新闻稿、官方博客 | 直接可用；注意区分"宣传话术"与"事实陈述" |
-| T3 | `business_media` | 16 | Reuters、Bloomberg、FT、CNBC | 需 2 家以上独立媒体交叉，或用于佐证官方来源 |
-| T4 | `analyst_research` / `industry_database` | 14 / 12 | Omdia、Gartner（公开摘要） | 只用于估算类结论（如客户排名），summary 注明"估算" |
-| T5 | `reference` | 10 | Wikipedia、百科 | 仅交叉验证，不作为唯一证据 |
-| T6 | `informal` | 5 | 博客、论坛、社媒 | 原则上不采；除非是一手亲历且可被 T0–T2 佐证 |
+| 级别 | source_type                              | authority | 典型来源                      | 使用规则                           |
+| -- | ---------------------------------------- | --------- | ------------------------- | ------------------------------ |
+| T0 | `sec_filing` / `exchange_filing`         | 25 / 23   | SEC EDGAR、港交所披露易          | 最高优先；quote 必须来自原文              |
+| T1 | `government`                             | 22        | 监管公告、政府采购                 | 直接可用                           |
+| T2 | `company_ir` / `company_press_release`   | 20 / 19   | 官网 IR 页、官方新闻稿、官方博客        | 直接可用；注意区分"宣传话术"与"事实陈述"         |
+| T3 | `business_media`                         | 16        | Reuters、Bloomberg、FT、CNBC | 需 2 家以上独立媒体交叉，或用于佐证官方来源        |
+| T4 | `analyst_research` / `industry_database` | 14 / 12   | Omdia、Gartner（公开摘要）       | 只用于估算类结论（如客户排名），summary 注明"估算" |
+| T5 | `reference`                              | 10        | Wikipedia、百科              | 仅交叉验证，不作为唯一证据                  |
+| T6 | `informal`                               | 5         | 博客、论坛、社媒                  | 原则上不采；除非是一手亲历且可被 T0–T2 佐证      |
 
 **冲突仲裁规则**：不同级别来源冲突时，高级别胜出；同级别冲突时，两条都保留，`summary` 中显式写明分歧（"A 称 X，B 称 Y，以 A 为准因…"），该关系 `confidence_score` 上限压到 69（inferred 带）。
 
@@ -60,14 +60,14 @@ agent（本协议）                scripts/research_harvest.py（机械）
 
 对每条候选关系 `{candidate}` × `{target}`，按类型生成查询：
 
-| 类型 | 查询模式（示例） |
-|---|---|
-| supplier | `"{candidate}" supplier NVIDIA`、`"{candidate}" NVIDIA 10-K supplier`、`site:sec.gov NVIDIA "{candidate}"` |
-| customer | `"{candidate}" NVIDIA GPUs customer`、`"{candidate}" deploys NVIDIA`、`"{candidate}" AI infrastructure NVIDIA press release` |
-| partner | `"{candidate}" NVIDIA partnership`、`"{candidate}" NVIDIA "press release" collaborate` |
-| investor_or_investee | `NVIDIA invested "{candidate}"`、`"{candidate}" funding round NVIDIA`、`site:sec.gov "{candidate}" NVIDIA stake` |
-| peer | `NVIDIA 10-K competitors "{candidate}"`、`"{candidate}" vs NVIDIA datacenter GPU` |
-| 终止/变更 | `NVIDIA sold stake "{candidate}"`、`"{candidate}" NVIDIA partnership ended` |
+| 类型                   | 查询模式（示例）                                                                                                                   |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| supplier             | `"{candidate}" supplier NVIDIA`、`"{candidate}" NVIDIA 10-K supplier`、`site:sec.gov NVIDIA "{candidate}"`                   |
+| customer             | `"{candidate}" NVIDIA GPUs customer`、`"{candidate}" deploys NVIDIA`、`"{candidate}" AI infrastructure NVIDIA press release` |
+| partner              | `"{candidate}" NVIDIA partnership`、`"{candidate}" NVIDIA "press release" collaborate`                                      |
+| investor_or_investee | `NVIDIA invested "{candidate}"`、`"{candidate}" funding round NVIDIA`、`site:sec.gov "{candidate}" NVIDIA stake`             |
+| peer                 | `NVIDIA 10-K competitors "{candidate}"`、`"{candidate}" vs NVIDIA datacenter GPU`                                           |
+| 终止/变更                | `NVIDIA sold stake "{candidate}"`、`"{candidate}" NVIDIA partnership ended`                                                 |
 
 **site 限定符优先打 T0–T2**：`site:sec.gov`、`site:<company>.com`、`site:ir.<company>.com`。
 
@@ -75,19 +75,19 @@ agent（本协议）                scripts/research_harvest.py（机械）
 
 每条 `Evidence` 入库前必须填全：
 
-| 字段 | 要求 |
-|---|---|
-| `id` | `ev_<type>_<seq>`，全局唯一 |
-| `relationship_id` | 指向已存在的 relationship |
-| `source_url` | 权威 canonical URL（去掉 tracking 参数；媒体用原始报道而非转载） |
-| `publisher` | 发布主体全称（含文档名，如 "U.S. SEC (NVIDIA FY2026 Form 10-K)"） |
-| `source_type` | 按第 3 节分级 |
-| `published_at` | 来源发布时间；实在查不到则留 `null` 并在 locator 说明 |
-| `accessed_at` | 采集当天（ISO 日期），**必填** |
-| `evidence_locator` | 精确定位：文档名 + 章节/段落（如 "10-K FY2026, Item 1 — Competition section, competitors list"） |
-| `access_restriction` | `public` / `paywall` / `login` / `registration`；paywall 内容只用其公开摘要并标注 |
-| `license_note` | 许可说明（SEC=public domain、新闻稿=public content、Wikipedia=CC BY-SA 等） |
-| `quote` | **原文直引**，不是转述；英文来源保留英文原文 |
+| 字段                   | 要求                                                                                |
+| -------------------- | --------------------------------------------------------------------------------- |
+| `id`                 | `ev_<type>_<seq>`，全局唯一                                                            |
+| `relationship_id`    | 指向已存在的 relationship                                                               |
+| `source_url`         | 权威 canonical URL（去掉 tracking 参数；媒体用原始报道而非转载）                                      |
+| `publisher`          | 发布主体全称（含文档名，如 "U.S. SEC (NVIDIA FY2026 Form 10-K)"）                               |
+| `source_type`        | 按第 3 节分级                                                                          |
+| `published_at`       | 来源发布时间；实在查不到则留 `null` 并在 locator 说明                                               |
+| `accessed_at`        | 采集当天（ISO 日期），**必填**                                                               |
+| `evidence_locator`   | 精确定位：文档名 + 章节/段落（如 "10-K FY2026, Item 1 — Competition section, competitors list"） |
+| `access_restriction` | `public` / `paywall` / `login` / `registration`；paywall 内容只用其公开摘要并标注              |
+| `license_note`       | 许可说明（SEC=public domain、新闻稿=public content、Wikipedia=CC BY-SA 等）                   |
+| `quote`              | **原文直引**，不是转述；英文来源保留英文原文                                                          |
 
 ## 6. 实体消歧规则
 
@@ -102,12 +102,12 @@ agent（本协议）                scripts/research_harvest.py（机械）
 
 **同一段落同时提到两家公司 ≠ 存在关系。** quote 必须包含**直接关系陈述**才算数：
 
-| ✅ 有效（直接陈述） | ❌ 无效（仅共现） |
-|---|---|
-| "We purchase memory from SK Hynix" | "SK Hynix and NVIDIA both saw shares rise"（行情并列） |
-| "Oracle deploys NVIDIA GPUs in OCI" | "NVIDIA, Oracle, and Microsoft attended the summit"（名单罗列） |
+| ✅ 有效（直接陈述）                          | ❌ 无效（仅共现）                                                    |
+| ----------------------------------- | ------------------------------------------------------------ |
+| "We purchase memory from SK Hynix"  | "SK Hynix and NVIDIA both saw shares rise"（行情并列）             |
+| "Oracle deploys NVIDIA GPUs in OCI" | "NVIDIA, Oracle, and Microsoft attended the summit"（名单罗列）    |
 | "NVIDIA invested $50M in Recursion" | "Analysts compared Recursion with NVIDIA-backed firms"（转述类比） |
-| 10-K 点名 "competitors such as AMD" | "AMD and NVIDIA are both semiconductor companies"（行业常识） |
+| 10-K 点名 "competitors such as AMD"   | "AMD and NVIDIA are both semiconductor companies"（行业常识）      |
 
 判断口诀：**动词归属**——句子里必须有一个明确的动词把两个实体连成关系（buy from / supply to / invest in / partner with / compete with），且主语宾语是这两个实体本身。
 

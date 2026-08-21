@@ -2,15 +2,19 @@
 
 本目录是研究服务的**唯一数据源**，以 JSON fixture 提交在仓库内——评审者**无需重新抓取任何受限来源**即可完整复核。
 
+**多目标布局**：`targets.json` 是研究目标注册表，`targets/<target_id>/` 下每个目标一套完整数据集。当前注册 `nvidia`（默认）与 `unitree`。
+
 ## 文件清单
 
 | 文件 | 内容 |
 |---|---|
-| `dataset.json` | 快照元数据：`schema_version`、`as_of`（研究截点）、`research_target`（研究对象 id） |
-| `companies.json` | 公司实体列表（21 家，含 1 个 target + 20 个 related） |
-| `relationships.json` | 关系列表（20 条，五类关系；含方向、状态、置信度、时效窗口、证据引用） |
-| `evidence.json` | 证据列表（26 条；URL、publisher、时间、locator、访问/许可说明、原文 quote） |
-| `raw_edgar/` | 采集管线副产品：NVIDIA 10-K 原文（`10k_*.htm` / `10k_text.txt`）、关键词上下文（`edgar_supply_chain.json`）、公司提及（`company_mentions.json`） |
+| `targets.json` | 目标注册表：`default_target` + `targets[]`（id / name / stock_code / exchange / path / description） |
+| `targets/<id>/dataset.json` | 快照元数据：`schema_version`、`as_of`（研究截点）、`research_target`（研究对象 id） |
+| `targets/<id>/companies.json` | 公司实体列表（nvidia: 22 家，含 1 个 target + 21 个 related；unitree: 6 家） |
+| `targets/<id>/relationships.json` | 关系列表（nvidia: 21 条 / unitree: 5 条，五类关系；含方向、状态、置信度、时效窗口、证据引用） |
+| `targets/<id>/evidence.json` | 证据列表（nvidia: 29 条 / unitree: 9 条；URL、publisher、时间、locator、访问/许可说明、原文 quote） |
+| `targets/nvidia/raw_edgar/` | 采集管线副产品：NVIDIA 10-K 原文（`10k_*.htm` / `10k_text.txt`）、关键词上下文（`edgar_supply_chain.json`）、公司提及（`company_mentions.json`） |
+| `targets/<id>/staging/` | agent 研究通道 staging 区：候选证据（含 agent 核验结论与 merged 审计标记），未经核验禁止合入 |
 
 ## Schema（字段速查）
 

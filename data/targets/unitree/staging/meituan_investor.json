@@ -1,0 +1,63 @@
+{
+  "staging_version": "1.0",
+  "research_target": "unitree",
+  "generated_at": "2026-08-21",
+  "protocol": "docs/research_agent_protocol.md",
+  "counterparty": {
+    "id": "meituan",
+    "name": "Meituan (美团)",
+    "stock_code": "3690.HK",
+    "exchange": "HKEX",
+    "isin": "KYG596691041",
+    "country": "CN",
+    "entity_type": "related",
+    "sector": "Internet / local commerce platform",
+    "description": "Chinese local-commerce platform. Largest external institutional shareholder of Unitree pre-IPO via three concert parties (Hanhai Information, Galaxy Z, Chengdu Longzhu) holding 9.6488% combined; strategic interest in humanoid robots for local-life scenarios."
+  },
+  "relationship": {
+    "type": "investor_or_investee",
+    "direction": "meituan -> unitree",
+    "valid_from": "2024-09-01",
+    "valid_until": null,
+    "summary": "Meituan is Unitree's largest external institutional shareholder: three concert-party entities (Hanhai Information 7.61%, Galaxy Z, Chengdu Longzhu) hold 9.6488% combined pre-IPO (Hanhai is the third-largest shareholder overall), entered from the 2024-09 B+ round."
+  },
+  "candidates": [
+    {
+      "title": "多层次资本共助硬科技成长 (中国金融新闻网)",
+      "source_url": "https://www.financialnews.com.cn/2026-08/17/content_455070.html",
+      "publisher": "中国金融新闻网 (China Financial News)",
+      "source_type": "business_media",
+      "published_at": "2026-08-17",
+      "accessed_at": "2026-08-21",
+      "access_restriction": "public",
+      "evidence_locator": "Article '多层次资本共助硬科技成长', section 产业资本'组团'入局, citing Unitree 招股意向书",
+      "quote": "美团系通过汉海信息、Galaxy Z、成都龙珠3家主体合计持有宇树科技9.6488%的股份，是所有外部机构股东中持股比例最高的。其中，汉海信息持有宇树科技7.61%的股份，为宇树科技第三大股东。",
+      "license_note": "Public web publication; quoted for research with attribution.",
+      "agent_approved": true,
+      "needs_review": [],
+      "agent_review_notes": "state financial newspaper citing the IPO prospectus (招股意向书) directly; entity disambiguated: 汉海信息 = Meituan-affiliated (一致行动协议 stated); quantitative shareholding = high specificity"
+    },
+    {
+      "title": "宇树科技投资方全名单: 从早期到IPO, 46家股东投资逻辑与多轮融资全复盘 (凤凰网财经)",
+      "source_url": "https://finance.ifeng.com/c/8vlZFqOelvk",
+      "publisher": "凤凰网财经 (ifeng Finance)",
+      "source_type": "business_media",
+      "published_at": null,
+      "accessed_at": "2026-08-21",
+      "access_restriction": "public",
+      "evidence_locator": "Article section '成长期产业赋能型投资方(2021-2024)', B+ round paragraph",
+      "quote": "2024 年 9 月 B+ 轮融资落地……其中美团系通过汉海信息、Galaxy Z、成都龙珠三家主体联合投资，成为第一大外部机构股东，核心探索人形机器人在外卖配送等本地生活场景的落地应用。",
+      "license_note": "Public web publication; quoted for research with attribution.",
+      "agent_approved": true,
+      "needs_review": [],
+      "agent_review_notes": "independent media corroboration of entry round (2024-09 B+) and concert-party structure; publish date not on snapshot -> null"
+    }
+  ],
+  "merged": true,
+  "merged_into": "rel_inv_001",
+  "merged_evidence_ids": [
+    "ev_inv_001",
+    "ev_inv_001b"
+  ],
+  "merged_at": "2026-08-21"
+}

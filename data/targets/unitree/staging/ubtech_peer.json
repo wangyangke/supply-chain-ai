@@ -1,0 +1,63 @@
+{
+  "staging_version": "1.0",
+  "research_target": "unitree",
+  "generated_at": "2026-08-21",
+  "protocol": "docs/research_agent_protocol.md",
+  "counterparty": {
+    "id": "ubtech",
+    "name": "UBTech Robotics (优必选)",
+    "stock_code": "9880.HK",
+    "exchange": "HKEX",
+    "isin": "KYG9318Q1085",
+    "country": "CN",
+    "entity_type": "related",
+    "sector": "Humanoid robots (industrial)",
+    "description": "Shenzhen humanoid robot maker (Walker S series), listed on HKEX (9880.HK). Direct competitor of Unitree in China's humanoid market — UBTech leads industrial deployments (BYD, Geely factories) while Unitree leads volume and research-market share."
+  },
+  "relationship": {
+    "type": "peer",
+    "direction": "ubtech <-> unitree (bidirectional)",
+    "valid_from": "2023-08-01",
+    "valid_until": null,
+    "summary": "UBTech and Unitree are direct competitors in China's humanoid robot market: industry comparisons place them in the top tier (Unitree ~18,000 cumulative bipedal humanoids vs UBTech ~3,000 by 2026-08) with diverging strategies — Unitree on cost/volume, UBTech on industrial deployments (Walker S in BYD/Geely lines)."
+  },
+  "candidates": [
+    {
+      "title": "宇树拿下'人形机器人'第一 18000台量产领先 (中华网)",
+      "source_url": "https://3g.china.com/act/redian/13004758/20260817/49681063.html",
+      "publisher": "中华网 (china.com)",
+      "source_type": "business_media",
+      "published_at": "2026-08-17",
+      "accessed_at": "2026-08-21",
+      "access_restriction": "public",
+      "evidence_locator": "Article production-volume comparison paragraph",
+      "quote": "横向对比国内四家主流人形机器人企业，数据全部采用官方公开口径：宇树科技纯双足人形18000台；智元机器人纯双足人形7000台；优必选全系列人形机器人累计下线约3000台。",
+      "license_note": "Public web publication; quoted for research with attribution.",
+      "agent_approved": true,
+      "needs_review": [],
+      "agent_review_notes": "direct head-to-head competitive comparison (same market, official-figures basis) = named-competitor context, passes co-occurrence guard; quantitative"
+    },
+    {
+      "title": "情感陪护机器人,不能阻止优必选股价触底 (虎嗅)",
+      "source_url": "https://www.huxiu.com/article/4878992.html",
+      "publisher": "虎嗅网 (Huxiu)",
+      "source_type": "business_media",
+      "published_at": null,
+      "accessed_at": "2026-08-21",
+      "access_restriction": "public",
+      "evidence_locator": "Article section '三强对决: 宇树、优必选、智元的路线之争'",
+      "quote": "2026年的中国人形机器人赛道，已经形成了三足鼎立的格局。但三家公司，走的是三条截然不同的路。……优必选：全栈全场景的理想主义。",
+      "license_note": "Public web publication; quoted for research with attribution.",
+      "agent_approved": true,
+      "needs_review": [],
+      "agent_review_notes": "established tech media framing the three-way competitive landscape (三强对决); names both parties as direct rivals; publish date not on snapshot -> null"
+    }
+  ],
+  "merged": true,
+  "merged_into": "rel_peer_001",
+  "merged_evidence_ids": [
+    "ev_peer_001",
+    "ev_peer_001b"
+  ],
+  "merged_at": "2026-08-21"
+}

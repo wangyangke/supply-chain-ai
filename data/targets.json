@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "default_target": "nvidia",
+  "targets": [
+    {
+      "id": "nvidia",
+      "name": "NVIDIA Corporation",
+      "stock_code": "NVDA",
+      "exchange": "NASDAQ",
+      "path": "targets/nvidia",
+      "description": "GPU / accelerated computing leader (research target of the original challenge dataset)."
+    },
+    {
+      "id": "unitree",
+      "name": "Unitree Robotics (宇树科技)",
+      "stock_code": "688836.SH",
+      "exchange": "SSE STAR Market",
+      "path": "targets/unitree",
+      "description": "Research target. Hangzhou-based robotics company; world's largest quadruped robot maker and a leading humanoid robot vendor (H1/H2, G1/R1). Listed on the SSE ST"
+    }
+  ]
+}

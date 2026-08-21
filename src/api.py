@@ -30,28 +30,64 @@ from pathlib import Path as _Path
 
 from .models import HealthResponse
 from .scoring import score_relationship
-from .store import DatasetError, Store
+from .store import DatasetError, Store, TargetRegistry
 
 app = FastAPI(
     title="Supply Chain & Partnership Research Service",
-    version="1.0.0",
+    version="1.1.0",
     description=(
-        "Reproducible supply chain & partnership research over a committed "
-        "JSON dataset. Company-agnostic: point SCR_DATA_DIR at any dataset "
-        "that follows the schema (dataset.json / companies.json / "
-        "relationships.json / evidence.json)."
+        "Reproducible supply chain & partnership research over committed "
+        "JSON datasets. Multi-target: data/targets.json registers research "
+        "targets (default: nvidia); switch via the ?target= query param or "
+        "GET /api/v1/targets. New targets are onboarded with "
+        "scripts/onboard_target.py + the agent research protocol."
     ),
 )
 
-_store: Optional[Store] = None
+_stores: dict[str, Store] = {}
+_registry: Optional[TargetRegistry] = None
 
 
-def get_store() -> Store:
-    """Lazily load the dataset store (once per process)."""
-    global _store
-    if _store is None:
-        _store = Store.load(os.environ.get("SCR_DATA_DIR", "./data"))
-    return _store
+def get_registry() -> TargetRegistry:
+    """Lazily load the target registry (once per process).
+
+    Root resolution: SCR_DATA_ROOT > SCR_DATA_DIR > ./data. SCR_DATA_DIR
+    may point either at a multi-target root (with targets.json) or, for
+    backward compatibility, directly at a single dataset directory.
+    """
+    global _registry
+    if _registry is None:
+        root = (
+            os.environ.get("SCR_DATA_ROOT")
+            or os.environ.get("SCR_DATA_DIR")
+            or "./data"
+        )
+        _registry = TargetRegistry.load(root)
+    return _registry
+
+
+def get_store(target: Optional[str] = None) -> Store:
+    """Load (and cache) the store for one research target.
+
+    Resolution order: explicit ?target= param -> SCR_TARGET env ->
+    registry default_target. Legacy mode: if SCR_DATA_DIR points directly
+    at a dataset directory, the registry falls back to that single target.
+    """
+    registry = get_registry()
+    tid = target or os.environ.get("SCR_TARGET") or registry.default_target
+    if tid not in _stores:
+        _stores[tid] = Store.load(str(registry.target_dir(tid)))
+    return _stores[tid]
+
+
+def _resolve_store(target: Optional[str]) -> Store:
+    try:
+        return get_store(target)
+    except DatasetError as exc:
+        raise HTTPException(
+            status_code=404,
+            detail={"error": "target_not_found", "message": str(exc)},
+        ) from exc
 
 
 def _company_names(store: Store) -> dict[str, str]:
@@ -107,8 +143,8 @@ def dashboard_redirect() -> HTMLResponse:
 
 
 @app.get("/health", response_model=HealthResponse, tags=["meta"])
-def health() -> HealthResponse:
-    store = get_store()
+def health(target: Optional[str] = Query(None, description="Research target id")) -> HealthResponse:
+    store = _resolve_store(target)
     stats = store.stats()
     return HealthResponse(
         status="ok",
@@ -121,9 +157,19 @@ def health() -> HealthResponse:
     )
 
 
+@app.get("/api/v1/targets", tags=["meta"])
+def list_targets():
+    """List all registered research targets (data/targets.json)."""
+    registry = get_registry()
+    return {
+        "default_target": registry.default_target,
+        "targets": registry.summary(),
+    }
+
+
 @app.get("/api/v1/stats", tags=["meta"])
-def stats():
-    store = get_store()
+def stats(target: Optional[str] = Query(None, description="Research target id")):
+    store = _resolve_store(target)
     by_type: dict[str, int] = {}
     by_status: dict[str, int] = {}
     for rel in store.relationships:
@@ -145,16 +191,20 @@ def list_companies(
     ),
     page: int = Query(1, ge=1, description="1-based page number"),
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
+    target: Optional[str] = Query(None, description="Research target id"),
 ):
-    store = get_store()
+    store = _resolve_store(target)
     return store.list_companies(
         name=name, entity_type=entity_type, page=page, page_size=page_size
     ).to_dict()
 
 
 @app.get("/api/v1/companies/{company_id}", tags=["companies"])
-def get_company(company_id: str):
-    store = get_store()
+def get_company(
+    company_id: str,
+    target: Optional[str] = Query(None, description="Research target id"),
+):
+    store = _resolve_store(target)
     company = store.get_company(company_id)
     if company is None:
         raise HTTPException(
@@ -182,6 +232,7 @@ def list_relationships(
     ),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
+    target: Optional[str] = Query(None, description="Research target id"),
 ):
     if (
         min_confidence is not None
@@ -195,7 +246,7 @@ def list_relationships(
                 "message": "min_confidence must be <= max_confidence",
             },
         )
-    store = get_store()
+    store = _resolve_store(target)
     return store.list_relationships(
         company_id=company_id,
         relationship_type=relationship_type,
@@ -209,8 +260,11 @@ def list_relationships(
 
 
 @app.get("/api/v1/relationships/{relationship_id}", tags=["relationships"])
-def get_relationship(relationship_id: str):
-    store = get_store()
+def get_relationship(
+    relationship_id: str,
+    target: Optional[str] = Query(None, description="Research target id"),
+):
+    store = _resolve_store(target)
     rel = store.get_relationship(relationship_id)
     if rel is None:
         raise HTTPException(
@@ -224,8 +278,11 @@ def get_relationship(relationship_id: str):
 
 
 @app.get("/api/v1/relationships/{relationship_id}/evidence", tags=["relationships"])
-def relationship_evidence(relationship_id: str):
-    store = get_store()
+def relationship_evidence(
+    relationship_id: str,
+    target: Optional[str] = Query(None, description="Research target id"),
+):
+    store = _resolve_store(target)
     rel = store.get_relationship(relationship_id)
     if rel is None:
         raise HTTPException(
@@ -241,8 +298,11 @@ def relationship_evidence(relationship_id: str):
 
 
 @app.get("/api/v1/evidence/{evidence_id}", tags=["evidence"])
-def get_evidence(evidence_id: str):
-    store = get_store()
+def get_evidence(
+    evidence_id: str,
+    target: Optional[str] = Query(None, description="Research target id"),
+):
+    store = _resolve_store(target)
     evidence = store.get_evidence(evidence_id)
     if evidence is None:
         raise HTTPException(
@@ -253,9 +313,9 @@ def get_evidence(evidence_id: str):
 
 
 @app.get("/api/v1/graph", tags=["graph"])
-def graph():
+def graph(target: Optional[str] = Query(None, description="Research target id")):
     """Relationship graph: nodes are companies, edges are relationships."""
-    store = get_store()
+    store = _resolve_store(target)
     nodes = [
         {
             "id": c.id,

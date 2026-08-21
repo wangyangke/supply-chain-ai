@@ -191,3 +191,57 @@ class TestStats:
         assert stats["relationships"] == 21
         assert stats["evidence"] == 29
         assert stats["as_of"] == "2026-08-21"
+
+
+# ---------------------------------------------------------------------------
+# Multi-target registry
+# ---------------------------------------------------------------------------
+
+class TestTargetRegistry:
+    def test_load_registry(self, data_root):
+        from src.store import TargetRegistry
+
+        registry = TargetRegistry.load(str(data_root))
+        assert registry.default_target == "nvidia"
+        assert set(registry.targets) >= {"nvidia", "unitree"}
+
+    def test_target_dir_resolution(self, data_root):
+        from src.store import TargetRegistry
+
+        registry = TargetRegistry.load(str(data_root))
+        assert registry.target_dir("nvidia").name == "nvidia"
+        assert registry.target_dir("unitree").name == "unitree"
+        assert registry.target_dir().name == "nvidia"  # default
+
+    def test_unknown_target_raises(self, data_root):
+        from src.store import TargetRegistry
+
+        registry = TargetRegistry.load(str(data_root))
+        with pytest.raises(DatasetError, match="Unknown research target"):
+            registry.target_dir("nope")
+
+    def test_load_target_store(self, data_root):
+        from src.store import Store
+
+        store = Store.load_target(str(data_root), "unitree")
+        assert store.dataset.research_target == "unitree"
+        assert len(store.companies) == 6
+        assert len(store.relationships) == 5
+        assert store.get_company("unitree").entity_type.value == "target"
+
+    def test_legacy_single_target_dir(self, data_dir):
+        from src.store import TargetRegistry
+
+        # A plain dataset directory (no targets.json) falls back to legacy mode.
+        registry = TargetRegistry.load(str(data_dir))
+        assert registry.default_target == "nvidia"
+        assert registry.target_dir("nvidia") == data_dir
+
+    def test_registry_summary(self, data_root):
+        from src.store import TargetRegistry
+
+        summary = TargetRegistry.load(str(data_root)).summary()
+        by_id = {s["id"]: s for s in summary}
+        assert by_id["nvidia"]["is_default"] is True
+        assert by_id["unitree"]["is_default"] is False
+        assert by_id["unitree"]["stock_code"] == "688836.SH"

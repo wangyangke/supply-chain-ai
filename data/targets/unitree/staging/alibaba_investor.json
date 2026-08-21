@@ -1,0 +1,47 @@
+{
+  "staging_version": "1.0",
+  "research_target": "unitree",
+  "generated_at": "2026-08-21",
+  "protocol": "docs/research_agent_protocol.md",
+  "counterparty": {
+    "id": "alibaba",
+    "name": "Alibaba Group (阿里巴巴集团)",
+    "stock_code": "9988.HK / BABA",
+    "exchange": "HKEX / NYSE",
+    "isin": "US01609W1027",
+    "country": "CN",
+    "entity_type": "related",
+    "sector": "Internet / e-commerce & cloud",
+    "description": "Chinese e-commerce and cloud conglomerate. C-round (2025-06) investor in Unitree via wholly-owned Hangzhou Haoyue (1.6343M shares); affiliate Ant Group via Shanghai Yunchang (0.8172M shares)."
+  },
+  "relationship": {
+    "type": "investor_or_investee",
+    "direction": "alibaba -> unitree",
+    "valid_from": "2025-06-01",
+    "valid_until": null,
+    "summary": "Alibaba invested in Unitree's 2025-06 C round: wholly-owned subsidiary Hangzhou Haoyue holds 1.634346M shares pre-IPO; affiliate Ant Group (via Shanghai Yunchang) holds 0.817236M shares (~0.61% combined post-issue)."
+  },
+  "candidates": [
+    {
+      "title": "多层次资本共助硬科技成长 (中国金融新闻网)",
+      "source_url": "https://www.financialnews.com.cn/2026-08/17/content_455070.html",
+      "publisher": "中国金融新闻网 (China Financial News)",
+      "source_type": "business_media",
+      "published_at": "2026-08-17",
+      "accessed_at": "2026-08-21",
+      "access_restriction": "public",
+      "evidence_locator": "Article '多层次资本共助硬科技成长', C-round paragraph, citing Unitree 招股意向书",
+      "quote": "阿里巴巴集团间接全资子公司杭州灏月持有宇树科技163.4346万股。蚂蚁集团全资子公司上海云玚持有宇树科技81.7236万股。",
+      "license_note": "Public web publication; quoted for research with attribution.",
+      "agent_approved": true,
+      "needs_review": [],
+      "agent_review_notes": "prospectus-cited shareholding; 杭州灏月 verified as Alibaba indirect wholly-owned subsidiary (same entity holds Alibaba's stakes in other IPOs); Ant Group affiliation stated in source"
+    }
+  ],
+  "merged": true,
+  "merged_into": "rel_inv_003",
+  "merged_evidence_ids": [
+    "ev_inv_003"
+  ],
+  "merged_at": "2026-08-21"
+}

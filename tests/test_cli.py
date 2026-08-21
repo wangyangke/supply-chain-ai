@@ -171,3 +171,24 @@ class TestHumanReadableOutput:
         )
         assert result.exit_code == 1
         assert "Failed to load dataset" in combined(result)
+
+
+class TestMultiTarget:
+    def test_targets_command(self, runner):
+        result = runner.invoke(app, ["targets", "--json"])
+        assert result.exit_code == 0
+        payload = json.loads(result.stdout)
+        assert payload["default_target"] == "nvidia"
+        assert {t["id"] for t in payload["targets"]} >= {"nvidia", "unitree"}
+
+    def test_target_option_switch(self, runner):
+        result = runner.invoke(app, ["--target", "unitree", "health"])
+        assert result.exit_code == 0
+        payload = json.loads(result.stdout)
+        assert payload["dataset"] == "unitree"
+        assert payload["companies"] == 6
+
+    def test_unknown_target_exits_1(self, runner):
+        result = runner.invoke(app, ["--target", "nope", "health"])
+        assert result.exit_code == 1
+        assert "Failed to load dataset" in combined(result)

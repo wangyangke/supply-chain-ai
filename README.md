@@ -1,6 +1,6 @@
 # Supply Chain & Partnership Research Service
 
-可复现的供应链与合作伙伴关系研究服务。本仓库交付一个**公司无关（company-agnostic）**的研究服务：代码通过既定 JSON schema 加载任意研究目标的数据快照，切换目标公司只需更换 `data/` 下的数据文件，零代码改动。当前快照研究对象为 **NVIDIA Corporation**。
+可复现的供应链与合作伙伴关系研究服务。**多目标（multi-target）架构**：`data/targets.json` 注册任意数量的研究目标，API/CLI/仪表盘可在目标间一键切换，接入新公司零代码改动。当前内置两个研究目标：**NVIDIA Corporation**（默认，22 家公司 / 21 条关系 / 29 条证据）与 **宇树科技 Unitree Robotics**（6 家公司 / 5 条关系 / 9 条证据，由 agent 研究通道全程采集验证）。
 
 > ⚠️ **不构成投资建议。** 本仓库是面试研究挑战交付物，所有结论仅基于公开资料，供评审与教学使用，不构成任何投资、交易或法律建议。
 
@@ -8,19 +8,28 @@
 
 ## 1. 研究对象与边界
 
+**默认目标：NVIDIA**
+
 | 项目 | 内容 |
 |---|---|
 | 研究对象 | NVIDIA Corporation（英伟达，NASDAQ: **NVDA**） |
 | 公司实体 | NVIDIA Corporation（美国特拉华州注册，总部 Santa Clara, CA） |
 | 证券标识 | 股票代码 **NVDA**，交易所 **NASDAQ** |
-| 研究时间截点（as-of） | **2026-08-21**（`data/dataset.json` 中的 `as_of`） |
+| 研究时间截点（as-of） | **2026-08-21**（`data/targets/nvidia/dataset.json` 中的 `as_of`） |
 | 覆盖范围 | 21 家关联上市公司、5 类关系（21 条）、29 条证据 |
 | 覆盖实体 | TSMC、SK Hynix、Micron、ASML、Microsoft、Meta、Amazon、Alphabet、Dell、Accenture、ServiceNow、Snowflake、Cisco、Oracle、CoreWeave、Recursion、SoundHound、AMD、Intel、Broadcom、Qualcomm |
 
+**第二目标：宇树科技（Unitree Robotics）** —— 完整走 agent 研究通道接入（搜索 → 核验 → staging → 合入 → 重算）：
+
+| 项目 | 内容 |
+|---|---|
+| 研究对象 | 宇树科技 Unitree Robotics（**688836.SH**，上交所科创板，2026-08-19 上市） |
+| 覆盖范围 | 5 家关联上市公司、3 类关系（5 条）、9 条证据 |
+| 覆盖实体 | NVIDIA（合作伙伴）、美团/腾讯/阿里巴巴（投资方）、优必选（竞争对手） |
+
 **不覆盖边界（explicitly out of scope）：**
 
-- 非上市公司（除台积电等同时有上市标识的实体外）与纯私有公司不作为关系端点；
-- 宇树科技及 NVIDIA 之外的其他研究目标不在本快照内（架构支持，换 `data/` 即可）；
+- 非上市公司（除台积电等同时有上市标识的实体外）与纯私有公司不作为关系端点（宇树的私有投资方如红杉中国、智元机器人等因此未收录）；
 - 置信度不足以支撑结论（评分 < 40，即 unknown 带）的关系**不入库**——本项目只收录 confirmed/inferred 关系，未知信息在 `docs/scoring_methodology.md` 的局限性章节说明，避免用"可能存在"污染结论；
 - 不包含 2026-08-21 之后发生的关系事件（快照式数据截点，详见第 8 节数据更新）；
 - 不包含需要付费墙/登录/验证码才能获取的内容细节（合规要求，见第 3 节）。
@@ -29,17 +38,17 @@
 
 五类关系均带**方向**（`source -> target`）、**实体身份**、**事实/推断/未知状态**、**时效窗口**（`valid_from` / `valid_until`）与**可解释置信度**（0–100）：
 
-| 关系类型 | 本快照条数 | 方向语义 |
+| 关系类型 | NVIDIA 快照条数 | 方向语义 |
 |---|---|---|
 | `supplier` | 4 | 供应商 → NVIDIA（如 TSMC 晶圆代工、SK Hynix/Micron HBM 存储） |
 | `customer` | 5 | NVIDIA → 客户（如 Microsoft、Meta、Amazon、Alphabet、Dell） |
-| `partner` | 4 | 合作伙伴（如 Accenture、ServiceNow、Snowflake、Cisco） |
+| `partner` | 5 | 合作伙伴（如 Accenture、ServiceNow、Snowflake、Cisco、Oracle） |
 | `investor_or_investee` | 3 | 投资或被投（如 NVIDIA → CoreWeave、Recursion；NVIDIA → SoundHound 已于 2025-02 退出，`valid_until` 标记） |
 | `peer` | 4 | 可比/竞争对手（AMD、Intel、Broadcom、Qualcomm） |
 
 **状态三态**（`RelationshipStatus`）：
 
-- `confirmed`（已确认，16 条）：由权威/官方来源直接佐证，评分 ≥ 70；
+- `confirmed`（已确认，17 条）：由权威/官方来源直接佐证，评分 ≥ 70；
 - `inferred`（合理推断，4 条）：由二手来源或间接证据合理推断，评分 40–69；
 - `unknown`（未知）：本项目不收录该档关系，仅记录盲区。
 
@@ -57,18 +66,30 @@
 
 ## 4. 数据存储（评审者无需重新抓取）
 
-所有数据以 **JSON fixture 快照** 提交在仓库内，评审者可离线复核，不依赖任何受限来源或网络：
+所有数据以 **JSON fixture 快照** 提交在仓库内，评审者可离线复核，不依赖任何受限来源或网络。**多目标布局**——`data/targets.json` 是目标注册表，每个研究目标一个独立数据集目录：
 
 ```
 data/
-  dataset.json         # schema_version / as_of / research_target
-  companies.json       # 22 家公司
-  relationships.json   # 21 条关系（含 confidence_score、status、时效、证据引用）
-  evidence.json        # 29 条证据（URL、publisher、时间、locator、许可）
-  raw_edgar/           # NVIDIA 10-K 原文与公司提及抽取结果（采集管线副产品）
+  targets.json            # 目标注册表（default_target + targets 列表）
+  targets/
+    nvidia/               # 默认目标：NVIDIA
+      dataset.json        # schema_version / as_of / research_target
+      companies.json      # 22 家公司
+      relationships.json  # 21 条关系（含 confidence_score、status、时效、证据引用）
+      evidence.json       # 29 条证据（URL、publisher、时间、locator、许可）
+      raw_edgar/          # NVIDIA 10-K 原文与公司提及抽取结果（采集管线副产品）
+      staging/            # agent 研究通道的 staging 区（含审计标记）
+    unitree/              # 第二目标：宇树科技
+      dataset.json        # as_of 2026-08-21
+      companies.json      # 6 家公司
+      relationships.json  # 5 条关系
+      evidence.json       # 9 条证据
+      staging/            # 5 份 staging 文件（含 merged 审计标记）
 ```
 
 关系数据中的 `confidence_score` 与 `status` 由评分引擎统一生成并写回（`scripts/sync_scores.py --write`），保证"提交的数据 = 引擎 + 证据"的**完全可复现**（见第 8 节）。
+
+**目标切换**：API 用 `?target=` 查询参数（如 `/api/v1/stats?target=unitree`）或 `GET /api/v1/targets` 查看注册目标；CLI 用全局 `--target` 选项（如 `scrs --target unitree stats`）或 `SCR_TARGET` 环境变量；仪表盘右上角下拉框直接切换。
 
 ## 5. 可解释置信度评分（0–100）
 
@@ -96,6 +117,7 @@ uvicorn src.api:app --host 127.0.0.1 --port 8000
 | 端点 | 说明 |
 |---|---|
 | `GET /health` | 服务与数据集健康检查 |
+| `GET /api/v1/targets` | **研究目标注册表**（默认目标 + 全部目标列表） |
 | `GET /api/v1/stats` | 数据集统计（按类型/状态分桶） |
 | `GET /api/v1/companies` | 公司列表（`name`、`entity_type` 过滤 + 分页） |
 | `GET /api/v1/companies/{id}` | 单个公司 |
@@ -105,6 +127,8 @@ uvicorn src.api:app --host 127.0.0.1 --port 8000
 | `GET /api/v1/evidence/{id}` | 单条证据 |
 | `GET /api/v1/graph` | 关系图（nodes + edges） |
 
+**多目标**：所有数据端点支持 `?target=<id>` 查询参数（默认 nvidia）；未知目标返回 404 `target_not_found`。
+
 **输入校验**：`relationship_type` 限定五类枚举、`status` 限定三态（非法值 422）；`min_confidence > max_confidence` 返回 422 `invalid_range`；`page`/`page_size` 有界；未知资源返回结构化 404（`{"detail": {"error": "...", "message": "..."}}`）。
 
 **分页**：响应含 `page` / `page_size` / `total` / `total_pages` / `has_next` / `has_previous`。
@@ -112,8 +136,10 @@ uvicorn src.api:app --host 127.0.0.1 --port 8000
 示例：
 
 ```bash
+curl "http://127.0.0.1:8000/api/v1/targets"                                    # 目标注册表
 curl "http://127.0.0.1:8000/api/v1/relationships?relationship_type=supplier&min_confidence=70&page_size=2"
-curl "http://127.0.0.1:8000/api/v1/relationships/rel_inv_001"   # 含 score_breakdown
+curl "http://127.0.0.1:8000/api/v1/relationships/rel_inv_001"                  # 含 score_breakdown
+curl "http://127.0.0.1:8000/api/v1/stats?target=unitree"                       # 切换到宇树科技
 curl "http://127.0.0.1:8000/api/v1/graph"
 ```
 
@@ -135,9 +161,10 @@ docker compose up
 
 | 地址 | 说明 |
 |---|---|
-| `http://localhost:8000/` | **交互式仪表盘**（22 家公司 / 21 条关系 / 29 条证据，可筛选/搜索/排序/关系图谱） |
+| `http://localhost:8000/` | **交互式仪表盘**（右上角下拉切换研究目标：NVIDIA 22 家/21 条/29 证据 · 宇树科技 6 家/5 条/9 证据，可筛选/搜索/排序/关系图谱） |
 | `http://localhost:8000/docs` | OpenAPI / Swagger UI（交互式 API 文档） |
-| `http://localhost:8000/api/v1/stats` | 数据集统计 JSON |
+| `http://localhost:8000/api/v1/targets` | 研究目标注册表 JSON |
+| `http://localhost:8000/api/v1/stats` | 数据集统计 JSON（默认 nvidia；`?target=unitree` 切换） |
 | `http://localhost:8000/api/v1/graph` | 关系图 JSON |
 
 镜像基于 `python:3.12-slim` 多阶段构建，非 root 用户运行，内置 healthcheck，镜像约 120 MB。
@@ -149,7 +176,9 @@ docker compose up
 与 API 共享同一 store，可脚本化（所有输出支持 `--json`）：
 
 ```bash
+scrs targets                                  # 列出注册的研究目标
 scrs health
+scrs --target unitree health                  # 切换到宇树科技
 scrs stats
 scrs companies [--name nvidia] [--entity-type related] [--json]
 scrs company <company-id>
@@ -161,7 +190,7 @@ scrs score <relationship-id>                    # 重算并解释单条关系评
 scrs graph [--json]
 ```
 
-安装后可直接使用 `scrs`；未安装时 `python -m src.cli` 等价。未知 id 退出码 1，非法日期报错并退出 1。
+安装后可直接使用 `scrs`；未安装时 `python -m src.cli` 等价。未知 id 退出码 1，非法日期报错并退出 1。全局 `--target`（或 `SCR_TARGET` 环境变量）选择研究目标，默认 nvidia。
 
 ## 8. 环境变量、启动与复现
 
@@ -171,7 +200,9 @@ scrs graph [--json]
 
 | 变量 | 默认 | 说明 |
 |---|---|---|
-| `SCR_DATA_DIR` | `./data` | 数据集目录 |
+| `SCR_DATA_ROOT` | `./data` | 多目标数据根目录（含 targets.json） |
+| `SCR_DATA_DIR` | — | 向后兼容：可直接指向单个数据集目录或数据根 |
+| `SCR_TARGET` | `nvidia` | 默认研究目标（CLI 全局 `--target` 等价） |
 | `SCR_HOST` / `SCR_PORT` | `127.0.0.1` / `8000` | API 监听地址 |
 | `SCR_EDGAR_USER_AGENT` | 模板值 | 仅供采集脚本使用，EDGAR 要求带联系信息的 UA |
 
@@ -181,23 +212,39 @@ scrs graph [--json]
 pip install -e ".[dev]"
 uvicorn src.api:app --port 8000            # HTTP API
 scrs stats                                  # CLI
-pytest --cov=src                            # 100 个测试，src 覆盖率 97%（下限 90%）
-python scripts/validate_data.py             # 独立数据校验（schema + 完整性 + 引擎一致性）
+pytest --cov=src                            # 115 个测试，src 覆盖率 ≥90%（下限 90%）
+python scripts/validate_data.py --data data/targets/nvidia    # 独立数据校验（schema + 完整性 + 引擎一致性）
 ```
 
-**数据更新流程**（NVIDIA 或切换到任意新目标）：
+**数据更新流程**（以 NVIDIA 为例）：
 
 ```bash
 # 1) 采集（合规：SEC EDGAR 公开 API + 限速 + 质控 UA）
-python scripts/fetch_edgar.py --ticker NVDA --out data/raw_edgar
+python scripts/fetch_edgar.py --ticker NVDA --out data/targets/nvidia/raw_edgar
 # 2) 从 10-K 抽取公司提及，辅助发现关系候选
-python scripts/extract_company_mentions.py --data data/raw_edgar --out data/raw_edgar/company_mentions.json
+python scripts/extract_company_mentions.py --data data/targets/nvidia/raw_edgar --out data/targets/nvidia/raw_edgar/company_mentions.json
 # 3) 人工核验：补充证据，编写 relationships.json / evidence.json（含方向、时效、来源字段）
 # 4) 独立校验 + 引擎重算并写回分数与状态（保证可复现）
-python scripts/validate_data.py
-python scripts/sync_scores.py --data data --write
+python scripts/validate_data.py --data data/targets/nvidia
+python scripts/sync_scores.py --data data/targets/nvidia --write
 # 5) 更新 dataset.json 的 as_of，运行测试并提交
 pytest --cov=src
+```
+
+**接入全新研究目标**（任意公司，宇树科技即按此流程接入）：
+
+```bash
+# 1) 脚手架：注册目标 + 创建空数据集
+python scripts/onboard_target.py --id unitree --name "Unitree Robotics (宇树科技)" \
+    --stock-code "688836.SH" --exchange "SSE STAR Market" --country CN \
+    --sector "Humanoid & quadruped robots" --description "..."
+# 2) agent 搜索并核验证据（docs/research_agent_protocol.md），产出 staging 文件
+#    （可用 scripts/research_harvest.py 做机械采集，或 agent 直接按 staging 格式写核验结论）
+# 3) 合入（红线：只合入 agent_approved 的候选）
+python scripts/merge_staged.py --staging data/targets/unitree/staging/<rel>.json --data data/targets/unitree
+# 4) 引擎重算 + 独立校验
+python scripts/sync_scores.py --data data/targets/unitree --write
+python scripts/validate_data.py --data data/targets/unitree
 ```
 
 **Agent 研究通道**（10-K 之外的第二条采集线）：来源分级、实体消歧、来源冲突仲裁、时效判定与共现防误判需要搜索 + 判断能力，由 agent 按 **[docs/research_agent_protocol.md](docs/research_agent_protocol.md)** 作业，机械部分（搜索执行 / 去重 / 字段归一化 / review 标记）由 `scripts/research_harvest.py` 自动化：
@@ -205,14 +252,17 @@ pytest --cov=src
 ```bash
 # agent 搜索产出原始命中（或直接调 tavily/brave 后端，需 API key）
 python scripts/research_harvest.py --backend manual --input hits.jsonl \
-    --target nvidia --out data/staging/candidates.json
+    --target nvidia --out data/targets/nvidia/staging/candidates.json
 # agent 按 protocol §5-§8 逐条核验（消歧 / 共现防误判 / 原文引用 / 仲裁）后合入
-python scripts/research_harvest.py --check data/staging/candidates.json
+python scripts/research_harvest.py --check data/targets/nvidia/staging/candidates.json
 ```
 
-staged candidate 未经核验**禁止**直接合入 `data/evidence.json`（红线见 protocol §2）。
+staged candidate 未经核验**禁止**直接合入数据集（红线见 protocol §2）。
 
-**首个完整闭环案例（NVIDIA ↔ Oracle，`rel_par_005`）**：agent 真实搜索 → 4 条候选 → 3 条核验通过（Oracle 官方 PR ×2 + NVIDIA 官方博客，含 quote / locator / 消歧备注）+ 1 条被共现防误判拒绝（仅行情并列、无关系动词）→ 合入主数据集 → 引擎重算得分 80（confirmed）。全流程产物存档于 `data/staging/oracle_candidates.json`（含 `merged_into` 审计标记）。
+**已完成的 agent 通道案例**：
+
+- **NVIDIA ↔ Oracle（`rel_par_005`）**：agent 真实搜索 → 4 条候选 → 3 条核验通过（Oracle 官方 PR ×2 + NVIDIA 官方博客）+ 1 条被共现防误判拒绝 → 引擎重算 80（confirmed）。存档：`data/targets/nvidia/staging/oracle_candidates.json`。
+- **宇树科技全目标接入（5 条关系）**：onboard_target 脚手架 → agent 搜索核验 9 条证据（NVIDIA 官方新闻稿、中国金融新闻网引招股意向书、中华网/虎嗅竞品对比）→ merge_staged 逐条合入 → 引擎重算 62–69（inferred，无 SEC 级来源所以低于 NVIDIA 数据集，符合预期）。存档：`data/targets/unitree/staging/`。
 
 评分/状态是**派生物**而非人工输入：`sync_scores.py --write` 用引擎 + 证据重算 `confidence_score` 并按带映射推导 `status` 写回，dry-run 会报告任何与引擎不一致的人工状态；`validate_data.py` 独立检查 schema、引用完整性、时间窗合法性与引擎一致性。
 
@@ -220,15 +270,16 @@ staged candidate 未经核验**禁止**直接合入 `data/evidence.json`（红�
 
 ## 9. 测试与限制
 
-**测试**（`tests/`，100 个用例，src 覆盖率 97%）：store 层加载/完整性/过滤/分页、评分引擎各维度与两项细化、API 全部端点与 404/422 错误路径、CLI 命令/退出码/人类可读输出；以及一条**全数据集可复现性断言**——每条关系的存储分数与状态必须与引擎重算结果完全一致（`test_scoring.py::TestReproducibility`）。独立校验脚本 `scripts/validate_data.py` 提供同等的评审入口。
+**测试**（`tests/`，115 个用例，src 覆盖率 ≥90%）：store 层加载/完整性/过滤/分页、评分引擎各维度与两项细化、API 全部端点与 404/422 错误路径、CLI 命令/退出码/人类可读输出、多目标注册表与 `?target=` 切换；以及一条**全数据集可复现性断言**——每条关系的存储分数与状态必须与引擎重算结果完全一致（`test_scoring.py::TestReproducibility`）。独立校验脚本 `scripts/validate_data.py` 提供同等的评审入口（CI 对全部目标执行）。
 
 **已知限制与盲区**：
 
 - **单时点快照**：数据截止 2026-08-21，之后的公司行为不会反映；需按第 8 节流程刷新；
-- **来源以英文为主**：SEC 文件、官方新闻稿为权威来源；中文/其他语言来源未覆盖；
+- **来源权威性决定分数上限**：NVIDIA 数据集以 SEC 10-K（T0）为锚，分数普遍 confirmed；宇树数据集无 SEC 级来源（招股书引用经媒体转述），分数落在 inferred 带——这是评分体系的预期行为而非缺陷；
+- **来源以英文为主**：SEC 文件、官方新闻稿为权威来源；中文来源已通过宇树数据集部分覆盖（中国金融新闻网、中华网、虎嗅等），英文/中文之外的语种未覆盖；
 - **二手来源**：Wikipedia 作为二手参考仅用于交叉验证，权威性评分低（10 分）；
 - **共现误判防护**：同段出现不代表关系，direct-statement 加成仅限官方来源明确点名对手的语境；
-- **私有公司不收录**：大量 NVIDIA 生态私有伙伴（如部分云厂商/初创）不在端点范围内；
+- **私有公司不收录**：大量 NVIDIA 生态私有伙伴（如部分云厂商/初创）与宇树的私有股东（红杉中国、顺为等未持上市主体的基金实体）不在端点范围内；
 - **`unknown` 不收录**：无法验证的关系不入库，避免噪音，代价是可能漏掉真实但证据不足的关系。
 
 **未来数据质量改进方向**：接入更多交易所文件（HKEX/韩交所/台交所）覆盖亚太供应商；引入官方结构化数据（如 SEC XBRL、客户集中度披露）；对证据做时间线交叉核验；增加对中文信源（公司财报/官方公众号）的采集。

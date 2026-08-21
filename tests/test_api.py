@@ -197,3 +197,56 @@ class TestDashboard:
         resp = client.get("/dashboard")
         assert resp.status_code == 200
         assert "text/html" in resp.headers.get("content-type", "")
+
+
+class TestMultiTarget:
+    """Multi-target registry: /api/v1/targets + ?target= switching."""
+
+    def test_list_targets(self, client):
+        resp = client.get("/api/v1/targets")
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["default_target"] == "nvidia"
+        ids = {t["id"] for t in body["targets"]}
+        assert {"nvidia", "unitree"} <= ids
+        nv = next(t for t in body["targets"] if t["id"] == "nvidia")
+        assert nv["is_default"] is True
+        assert nv["stock_code"] == "NVDA"
+
+    def test_switch_to_unitree(self, client):
+        resp = client.get("/api/v1/stats", params={"target": "unitree"})
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["research_target"] == "unitree"
+        assert body["companies"] == 6
+        assert body["relationships"] == 5
+        assert body["evidence"] == 9
+
+    def test_unitree_relationship_detail(self, client):
+        resp = client.get("/api/v1/relationships/rel_par_001", params={"target": "unitree"})
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["source_company_id"] == "nvidia"
+        assert body["target_company_id"] == "unitree"
+        assert body["type"] == "partner"
+        assert len(body["evidence"]) == 3
+        assert body["score_breakdown"]["band"] == body["status"]
+
+    def test_default_target_unaffected(self, client):
+        resp = client.get("/api/v1/stats")
+        assert resp.json()["research_target"] == "nvidia"
+
+    def test_unknown_target_404(self, client):
+        resp = client.get("/api/v1/stats", params={"target": "nope"})
+        assert resp.status_code == 404
+        assert resp.json()["detail"]["error"] == "target_not_found"
+
+    def test_unitree_graph(self, client):
+        resp = client.get("/api/v1/graph", params={"target": "unitree"})
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["research_target"] == "unitree"
+        assert len(body["nodes"]) == 6
+        assert len(body["edges"]) == 5
+        node_ids = {n["id"] for n in body["nodes"]}
+        assert node_ids == {"unitree", "nvidia", "meituan", "tencent", "alibaba", "ubtech"}

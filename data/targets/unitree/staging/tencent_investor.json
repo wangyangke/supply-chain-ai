@@ -1,0 +1,47 @@
+{
+  "staging_version": "1.0",
+  "research_target": "unitree",
+  "generated_at": "2026-08-21",
+  "protocol": "docs/research_agent_protocol.md",
+  "counterparty": {
+    "id": "tencent",
+    "name": "Tencent Holdings (腾讯控股)",
+    "stock_code": "0700.HK",
+    "exchange": "HKEX",
+    "isin": "KYG875721634",
+    "country": "CN",
+    "entity_type": "related",
+    "sector": "Internet / technology conglomerate",
+    "description": "Chinese internet conglomerate. Direct C-round (2025-06) investor in Unitree via Tencent Technology, holding 2.17917M shares pre-IPO (~0.54% post-issue), focusing on AI model + robot integration."
+  },
+  "relationship": {
+    "type": "investor_or_investee",
+    "direction": "tencent -> unitree",
+    "valid_from": "2025-06-01",
+    "valid_until": null,
+    "summary": "Tencent (via Tencent Technology) invested in Unitree's 2025-06 C round with RMB 80.0008M, holding 2.17917M shares pre-IPO per the prospectus (~0.54% post-issue)."
+  },
+  "candidates": [
+    {
+      "title": "多层次资本共助硬科技成长 (中国金融新闻网)",
+      "source_url": "https://www.financialnews.com.cn/2026-08/17/content_455070.html",
+      "publisher": "中国金融新闻网 (China Financial News)",
+      "source_type": "business_media",
+      "published_at": "2026-08-17",
+      "accessed_at": "2026-08-21",
+      "access_restriction": "public",
+      "evidence_locator": "Article '多层次资本共助硬科技成长', C-round funding paragraph, citing Unitree 招股意向书",
+      "quote": "招股意向书显示，截至招股意向书签署日，腾讯科技直接持有宇树科技217.917万股。……2025年6月宇树科技C轮融资中，从增资款来看，腾讯科技、中移和创、无锡锦秋各出资8000.08万元。",
+      "license_note": "Public web publication; quoted for research with attribution.",
+      "agent_approved": true,
+      "needs_review": [],
+      "agent_review_notes": "prospectus-cited direct shareholding + exact C-round amount; 腾讯科技 = Tencent Technology (Shenzhen) entity of Tencent Holdings (0700.HK); quantified evidence"
+    }
+  ],
+  "merged": true,
+  "merged_into": "rel_inv_002",
+  "merged_evidence_ids": [
+    "ev_inv_002"
+  ],
+  "merged_at": "2026-08-21"
+}

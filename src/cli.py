@@ -2,8 +2,9 @@
 
 Usage (installed as `scrs`, or `python -m src.cli`):
 
-  scrs health
-  scrs stats
+  scrs targets                          # list registered research targets
+  scrs [--target unitree] health
+  scrs [--target nvidia] stats
   scrs companies [--name nvidia] [--entity-type related] [--json]
   scrs company <company-id>
   scrs relationships [--company nvidia] [--type supplier] [--status confirmed]
@@ -13,7 +14,10 @@ Usage (installed as `scrs`, or `python -m src.cli`):
   scrs score <relationship-id>        # recompute + explain a confidence score
   scrs graph [--json]
 
-All commands read the committed dataset from SCR_DATA_DIR (default ./data).
+Multi-target: the global --target option (or SCR_TARGET env) selects the
+research target from data/targets.json (default: nvidia). Data root
+resolution: SCR_DATA_ROOT > SCR_DATA_DIR > ./data; SCR_DATA_DIR may also
+point directly at a single legacy dataset directory.
 """
 
 from __future__ import annotations
@@ -30,7 +34,7 @@ from rich.console import Console
 from rich.table import Table
 
 from .scoring import score_relationship
-from .store import Store
+from .store import Store, TargetRegistry
 
 app = typer.Typer(
     name="scrs",
@@ -41,12 +45,30 @@ console = Console()
 err_console = Console(stderr=True)
 
 
+@app.callback()
+def _global_options(
+    target: Optional[str] = typer.Option(
+        None, "--target", "-t",
+        help="Research target id from data/targets.json (default: registry default, e.g. nvidia)",
+    ),
+) -> None:
+    """Select the research target for all commands."""
+    if target:
+        os.environ["SCR_TARGET"] = target
+
+
 def _load_store() -> Store:
-    data_dir = os.environ.get("SCR_DATA_DIR", "./data")
+    root = (
+        os.environ.get("SCR_DATA_ROOT")
+        or os.environ.get("SCR_DATA_DIR")
+        or "./data"
+    )
     try:
-        return Store.load(data_dir)
+        registry = TargetRegistry.load(root)
+        tid = os.environ.get("SCR_TARGET") or registry.default_target
+        return Store.load(str(registry.target_dir(tid)))
     except Exception as exc:  # DatasetError / FileNotFoundError
-        err_console.print(f"[bold red]Failed to load dataset from {data_dir}:[/] {exc}")
+        err_console.print(f"[bold red]Failed to load dataset from {root}:[/] {exc}")
         raise typer.Exit(code=1)
 
 
@@ -96,6 +118,34 @@ def stats() -> None:
     table.add_row("research_target", store.dataset.research_target)
     table.add_row("relationships_by_type", json.dumps(by_type, ensure_ascii=False))
     table.add_row("relationships_by_status", json.dumps(by_status, ensure_ascii=False))
+    console.print(table)
+
+
+@app.command()
+def targets(as_json: bool = typer.Option(False, "--json", help="Emit raw JSON")) -> None:
+    """List registered research targets (data/targets.json)."""
+    root = (
+        os.environ.get("SCR_DATA_ROOT")
+        or os.environ.get("SCR_DATA_DIR")
+        or "./data"
+    )
+    try:
+        registry = TargetRegistry.load(root)
+    except Exception as exc:
+        err_console.print(f"[bold red]Failed to load target registry from {root}:[/] {exc}")
+        raise typer.Exit(code=1)
+    entries = registry.summary()
+    if as_json:
+        _print_json({"default_target": registry.default_target, "targets": entries})
+        return
+    table = Table(title=f"Research targets (default: {registry.default_target})")
+    for col in ("id", "name", "ticker", "exchange", "default"):
+        table.add_column(col, style="cyan" if col == "id" else None)
+    for e in entries:
+        table.add_row(
+            e["id"], e["name"], e.get("stock_code") or "-",
+            e.get("exchange") or "-", "*" if e["is_default"] else "",
+        )
     console.print(table)
 
 

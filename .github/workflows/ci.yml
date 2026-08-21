@@ -27,8 +27,12 @@ jobs:
       - name: Run tests
         run: pytest
 
-      - name: Validate committed dataset snapshot
-        run: python scripts/validate_data.py
+      - name: Validate committed dataset snapshots (all targets)
+        run: |
+          python scripts/validate_data.py --data data/targets/nvidia
+          python scripts/validate_data.py --data data/targets/unitree
 
-      - name: Verify scores are engine-reproducible (dry-run)
-        run: python scripts/sync_scores.py --data data
+      - name: Verify scores are engine-reproducible (dry-run, all targets)
+        run: |
+          python scripts/sync_scores.py --data data/targets/nvidia
+          python scripts/sync_scores.py --data data/targets/unitree

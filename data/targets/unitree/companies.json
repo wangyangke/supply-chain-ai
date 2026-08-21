@@ -1,0 +1,68 @@
+[
+  {
+    "id": "unitree",
+    "name": "Unitree Robotics (宇树科技)",
+    "stock_code": "688836.SH",
+    "exchange": "SSE STAR Market",
+    "isin": "",
+    "country": "CN",
+    "entity_type": "target",
+    "sector": "Humanoid & quadruped robots",
+    "description": "Research target. Hangzhou-based robotics company; world's largest quadruped robot maker and a leading humanoid robot vendor (H1/H2, G1/R1). Listed on the SSE STAR Market (688836.SH) on 2026-08-19 — the first pure humanoid-robot stock on the A-share market."
+  },
+  {
+    "id": "nvidia",
+    "name": "NVIDIA Corporation",
+    "stock_code": "NVDA",
+    "exchange": "NASDAQ",
+    "isin": "US67066G1040",
+    "country": "US",
+    "entity_type": "related",
+    "sector": "Semiconductors (GPU / accelerated computing)",
+    "description": "AI compute leader. Chose Unitree as hardware partner for the Isaac GR00T Reference Humanoid Robot (GTC Taipei 2026-05-31): Unitree H2 Plus body + Jetson AGX Thor; GR00T platform also supports Unitree G1."
+  },
+  {
+    "id": "meituan",
+    "name": "Meituan (美团)",
+    "stock_code": "3690.HK",
+    "exchange": "HKEX",
+    "isin": "KYG596691041",
+    "country": "CN",
+    "entity_type": "related",
+    "sector": "Internet / local commerce platform",
+    "description": "Chinese local-commerce platform. Largest external institutional shareholder of Unitree pre-IPO via three concert parties (Hanhai Information, Galaxy Z, Chengdu Longzhu) holding 9.6488% combined; strategic interest in humanoid robots for local-life scenarios."
+  },
+  {
+    "id": "tencent",
+    "name": "Tencent Holdings (腾讯控股)",
+    "stock_code": "0700.HK",
+    "exchange": "HKEX",
+    "isin": "KYG875721634",
+    "country": "CN",
+    "entity_type": "related",
+    "sector": "Internet / technology conglomerate",
+    "description": "Chinese internet conglomerate. Direct C-round (2025-06) investor in Unitree via Tencent Technology, holding 2.17917M shares pre-IPO (~0.54% post-issue), focusing on AI model + robot integration."
+  },
+  {
+    "id": "alibaba",
+    "name": "Alibaba Group (阿里巴巴集团)",
+    "stock_code": "9988.HK / BABA",
+    "exchange": "HKEX / NYSE",
+    "isin": "US01609W1027",
+    "country": "CN",
+    "entity_type": "related",
+    "sector": "Internet / e-commerce & cloud",
+    "description": "Chinese e-commerce and cloud conglomerate. C-round (2025-06) investor in Unitree via wholly-owned Hangzhou Haoyue (1.6343M shares); affiliate Ant Group via Shanghai Yunchang (0.8172M shares)."
+  },
+  {
+    "id": "ubtech",
+    "name": "UBTech Robotics (优必选)",
+    "stock_code": "9880.HK",
+    "exchange": "HKEX",
+    "isin": "KYG9318Q1085",
+    "country": "CN",
+    "entity_type": "related",
+    "sector": "Humanoid robots (industrial)",
+    "description": "Shenzhen humanoid robot maker (Walker S series), listed on HKEX (9880.HK). Direct competitor of Unitree in China's humanoid market — UBTech leads industrial deployments (BYD, Geely factories) while Unitree leads volume and research-market share."
+  }
+]
