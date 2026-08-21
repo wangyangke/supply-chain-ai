@@ -200,6 +200,18 @@ python scripts/sync_scores.py --data data --write
 pytest --cov=src
 ```
 
+**Agent 研究通道**（10-K 之外的第二条采集线）：来源分级、实体消歧、来源冲突仲裁、时效判定与共现防误判需要搜索 + 判断能力，由 agent 按 **[docs/research_agent_protocol.md](docs/research_agent_protocol.md)** 作业，机械部分（搜索执行 / 去重 / 字段归一化 / review 标记）由 `scripts/research_harvest.py` 自动化：
+
+```bash
+# agent 搜索产出原始命中（或直接调 tavily/brave 后端，需 API key）
+python scripts/research_harvest.py --backend manual --input hits.jsonl \
+    --target nvidia --out data/staging/candidates.json
+# agent 按 protocol §5-§8 逐条核验（消歧 / 共现防误判 / 原文引用 / 仲裁）后合入
+python scripts/research_harvest.py --check data/staging/candidates.json
+```
+
+staged candidate 未经核验**禁止**直接合入 `data/evidence.json`（红线见 protocol §2）。
+
 评分/状态是**派生物**而非人工输入：`sync_scores.py --write` 用引擎 + 证据重算 `confidence_score` 并按带映射推导 `status` 写回，dry-run 会报告任何与引擎不一致的人工状态；`validate_data.py` 独立检查 schema、引用完整性、时间窗合法性与引擎一致性。
 
 **持续集成**：仓库附带 GitHub Actions：`.github/workflows/ci.yml`（Python 3.11/3.12/3.13 上执行 `pytest`、`validate_data.py` 与 `sync_scores.py` 可复现性检查）+ `.github/workflows/docker.yml`（自动构建并推送 Docker 镜像至 GHCR）。

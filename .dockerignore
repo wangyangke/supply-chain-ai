@@ -41,3 +41,6 @@ tests/
 
 # Raw EDGAR data (large, not needed at runtime)
 data/raw_edgar/
+
+# Staging artifacts (agent research workflow, not needed at runtime)
+data/staging/
