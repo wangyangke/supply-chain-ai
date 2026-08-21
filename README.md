@@ -302,15 +302,17 @@ staged candidate 未经核验**禁止**直接合入数据集（红线见 protoco
 
 | 用途 | 具体产出 |
 |---|---|
-| 代码生成 | 采集/解析脚本（`fetch_edgar.py`、`extract_company_mentions.py`）、评分引擎、API/CLI、测试用例、Docker 配置、多目标架构（`TargetRegistry`、`onboard_target.py`、`merge_staged.py`） |
+| 代码生成 | 采集/解析脚本（`fetch_edgar.py`、`extract_company_mentions.py`）、评分引擎、API/CLI、测试用例、Docker 配置、多目标架构（`TargetRegistry`、`onboard_target.py`、`merge_staged.py`）、在线研究 agent（`research_agent.py` 及 API 任务端点） |
 | 文档撰写 | 本 README、`docs/` 方法文档、`data/README.md` |
-| 交互式仪表盘 | `dashboard.html`（内嵌数据、多目标切换） |
+| 交互式仪表盘 | `dashboard.html`（内嵌数据、多目标切换、在线研究搜索框） |
 | **AI 检索与证据研究** | 通过 WebSearch 检索公开来源（SEC/公司新闻稿/财经媒体），按 [docs/research_agent_protocol.md](docs/research_agent_protocol.md) 执行实体消歧、共现防误判、原文引用抽取与来源冲突仲裁，产出带 `agent_review_notes` 的 staging 文件（NVIDIA↔Oracle、宇树科技全目标，均为此路径接入） |
+| **在线研究 agent 的设计** | `scripts/research_agent.py` 把上述检索与核验自动化（LLM 经 OpenAI 兼容网关执行身份解析与证据核验，搜索经 Tavily/Brave）；其提示词、输出清洗规则与红线（只合 `agent_approved`）由本人设计 |
 | 机械执行 | staging → 合入 → 引擎重算 → 校验的脚本化步骤 |
 
 **② 人工验证方式**（机制保证 + 全程留痕，评审者可独立复核）：
 
 - **核验留痕**：agent 对每条证据的核验结论（含消歧依据、共现判定）写入 staging 文件的 `agent_approved` / `agent_review_notes` 字段；被拒候选（如 Oracle 案例中的股价共现陷阱）同样留档。所有 staging 文件提交于 `data/targets/*/staging/`，评审者可逐条对照原文 URL 复核——**核验过程是公开可审计的，而非一句"已人工核验"**；
+- **在线研究的额外约束**：`research_agent.py` 自动产出的 staging 与人工/agent 核验的 staging **走同一条红线**——必须经 `merge_staged.py` 检查（quote / locator / URL 齐全且 `agent_approved`）才能合入，合入后强制引擎重算与独立校验；在线研究的目标建议人工抽检后再对外展示（README 第 8 节已注明）；
 - **独立校验**：`scripts/validate_data.py`（schema + 引用完整性 + 引擎一致性）与 `scripts/sync_scores.py`（分数可复现性 dry-run）对两个目标全部通过，且由 CI 在每次 push 时强制执行；
 - **本人复核与裁决**：本人（研究者）对 agent 的核验结论行使最终复核与入库裁决权，对入库的每条关系、证据 quote、时效窗口与来源 URL 负责；
 - **分数非人工输入**：所有 `confidence_score` 与 `status` 由评分引擎从证据重新计算（`sync_scores.py --write`），人工无法直接改分。
