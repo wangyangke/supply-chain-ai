@@ -13,7 +13,7 @@
 services:
   scr:
     build: .
-    image: ghcr.io/iloveopt/supply-chain-research:latest
+    image: ghcr.io/wangyangke/supply-chain-research:latest
     container_name: supply-chain-research
     ports:
       - "8000:8000"
