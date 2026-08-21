@@ -125,7 +125,7 @@ curl "http://127.0.0.1:8000/api/v1/graph"
 
 ```bash
 # 方式一：直接 docker run
-docker run --rm -p 8000:8000 ghcr.io/wangyangke/supply-chain-research:latest
+docker run --rm -p 8000:8000 ghcr.io/wangyangke/supply-chain-ai:latest
 
 # 方式二：docker compose（克隆仓库后）
 docker compose up
@@ -142,7 +142,7 @@ docker compose up
 
 镜像基于 `python:3.12-slim` 多阶段构建，非 root 用户运行，内置 healthcheck，镜像约 120 MB。
 
-> 镜像由 GitHub Actions 自动构建并发布至 GHCR（`ghcr.io/wangyangke/supply-chain-research`），每次 push 到 `main` 或打 `v*` tag 自动更新 `latest`。
+> 镜像由 GitHub Actions 自动构建并发布至 GHCR（`ghcr.io/wangyangke/supply-chain-ai`），每次 push 到 `main` 或打 `v*` tag 自动更新 `latest`。
 
 ## 7. CLI（`scrs`）
 

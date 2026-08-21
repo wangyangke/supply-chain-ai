@@ -18,9 +18,9 @@ RUN pip install --no-cache-dir --prefix=/install \
 # ── stage 2: runtime ──────────────────────────────────────────────
 FROM python:3.12-slim AS runtime
 
-LABEL org.opencontainers.image.title="supply-chain-research"
+LABEL org.opencontainers.image.title="supply-chain-ai"
 LABEL org.opencontainers.image.description="Reproducible supply chain & partnership research service (NVIDIA dataset)"
-LABEL org.opencontainers.image.source="https://github.com/iloveopt/supply-chain-research"
+LABEL org.opencontainers.image.source="https://github.com/wangyangke/supply-chain-ai"
 LABEL org.opencontainers.image.licenses="MIT"
 
 # create non-root user
