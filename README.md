@@ -117,6 +117,8 @@ curl "http://127.0.0.1:8000/api/v1/relationships/rel_inv_001"   # 含 score_brea
 curl "http://127.0.0.1:8000/api/v1/graph"
 ```
 
+每个端点的**实测请求/响应记录**（含错误路径）见 **[docs/api_examples.md](docs/api_examples.md)**；交互式 OpenAPI 文档由 FastAPI 自动提供于 `http://127.0.0.1:8000/docs`。
+
 ## 7. CLI（`scrs`）
 
 与 API 共享同一 store，可脚本化（所有输出支持 `--json`）：
@@ -154,7 +156,8 @@ scrs graph [--json]
 pip install -e ".[dev]"
 uvicorn src.api:app --port 8000            # HTTP API
 scrs stats                                  # CLI
-pytest                                      # 93 个测试（store / scoring / api / cli）
+pytest --cov=src                            # 98 个测试，src 覆盖率 97%（下限 90%）
+python scripts/validate_data.py             # 独立数据校验（schema + 完整性 + 引擎一致性）
 ```
 
 **数据更新流程**（NVIDIA 或切换到任意新目标）：
@@ -165,17 +168,20 @@ python scripts/fetch_edgar.py --ticker NVDA --out data/raw_edgar
 # 2) 从 10-K 抽取公司提及，辅助发现关系候选
 python scripts/extract_company_mentions.py --data data/raw_edgar --out data/raw_edgar/company_mentions.json
 # 3) 人工核验：补充证据，编写 relationships.json / evidence.json（含方向、时效、来源字段）
-# 4) 引擎重算并写回分数与状态（保证可复现）
+# 4) 独立校验 + 引擎重算并写回分数与状态（保证可复现）
+python scripts/validate_data.py
 python scripts/sync_scores.py --data data --write
 # 5) 更新 dataset.json 的 as_of，运行测试并提交
-pytest
+pytest --cov=src
 ```
 
-评分/状态是**派生物**而非人工输入：`sync_scores.py --write` 用引擎 + 证据重算 `confidence_score` 并按带映射推导 `status` 写回，dry-run 会报告任何与引擎不一致的人工状态。
+评分/状态是**派生物**而非人工输入：`sync_scores.py --write` 用引擎 + 证据重算 `confidence_score` 并按带映射推导 `status` 写回，dry-run 会报告任何与引擎不一致的人工状态；`validate_data.py` 独立检查 schema、引用完整性、时间窗合法性与引擎一致性。
+
+**持续集成**：仓库附带 GitHub Actions（`.github/workflows/ci.yml`），在 Python 3.11/3.12/3.13 上执行 `pytest`、`validate_data.py` 与 `sync_scores.py` 可复现性检查。
 
 ## 9. 测试与限制
 
-**测试**（`tests/`，93 个用例）：store 层加载/完整性/过滤/分页、评分引擎各维度与两项细化、API 全部端点与 404/422 错误路径、CLI 命令与退出码；以及一条**全数据集可复现性断言**——每条关系的存储分数与状态必须与引擎重算结果完全一致（`test_scoring.py::TestReproducibility`）。
+**测试**（`tests/`，98 个用例，src 覆盖率 97%）：store 层加载/完整性/过滤/分页、评分引擎各维度与两项细化、API 全部端点与 404/422 错误路径、CLI 命令/退出码/人类可读输出；以及一条**全数据集可复现性断言**——每条关系的存储分数与状态必须与引擎重算结果完全一致（`test_scoring.py::TestReproducibility`）。独立校验脚本 `scripts/validate_data.py` 提供同等的评审入口。
 
 **已知限制与盲区**：
 

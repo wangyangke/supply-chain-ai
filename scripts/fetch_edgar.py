@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 import time
@@ -32,7 +33,7 @@ EDGAR_FTS = "https://efts.sec.gov/LATEST/search-index?q={q}"
 EDGAR_FTS_HTML = "https://efts.sec.gov/LATEST/search-index?q={q}&forms=10-K"
 EDGAR_ARCHIVES = "https://www.sec.gov/Archives/edgar/data/{cik_no_dashes}/{accession_no_dashes}/"
 
-DEFAULT_UA = "SupplyChainResearch/1.0 (research@example.com)"
+DEFAULT_UA = os.environ.get("SCR_EDGAR_USER_AGENT", "SupplyChainResearch/1.0 (research@example.com)")
 RATE_LIMIT_SLEEP = 0.4  # well below EDGAR's 10 req/s limit
 
 

@@ -127,3 +127,45 @@ class TestGraph:
         assert payload["research_target"] == "nvidia"
         assert len(payload["nodes"]) == 21
         assert len(payload["edges"]) == 20
+
+
+class TestHumanReadableOutput:
+    """Non-JSON table / detail output must still work (exit 0, key text).
+
+    Rich tables truncate cell content to the terminal width, so assertions
+    target the table title and the plain-text detail lines instead of
+    individual cells.
+    """
+
+    def test_companies_table(self, runner):
+        result = runner.invoke(app, ["companies", "--page-size", "5"])
+        assert result.exit_code == 0
+        assert "Companies (page 1/5)" in result.stdout
+        assert "accenture" in result.stdout  # first company alphabetically
+
+    def test_relationships_table(self, runner):
+        result = runner.invoke(app, ["relationships", "--type", "supplier"])
+        assert result.exit_code == 0
+        assert "Relationships (page 1/1)" in result.stdout
+        # 4 suppliers, all still active → the valid_until column shows 'active' 4 times.
+        assert result.stdout.count("active") == 4
+
+    def test_relationship_detail_text(self, runner):
+        result = runner.invoke(app, ["relationship", "rel_inv_001"])
+        assert result.exit_code == 0
+        assert "breakdown:" in result.stdout
+        assert "evidence ev_inv_001" in result.stdout
+        assert "coreweave.com" in result.stdout
+
+    def test_graph_table(self, runner):
+        result = runner.invoke(app, ["graph"])
+        assert result.exit_code == 0
+        assert "tsmc" in result.stdout
+        assert "supplier" in result.stdout
+
+    def test_load_failure_exits_1(self, runner):
+        result = runner.invoke(
+            app, ["health"], env={"SCR_DATA_DIR": "/nonexistent/data"}
+        )
+        assert result.exit_code == 1
+        assert "Failed to load dataset" in combined(result)
