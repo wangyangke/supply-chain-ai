@@ -25,7 +25,8 @@ from datetime import date, datetime, timezone
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Query
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
+from pathlib import Path as _Path
 
 from .models import HealthResponse
 from .scoring import score_relationship
@@ -79,6 +80,30 @@ async def dataset_error_handler(request, exc: DatasetError):
         status_code=500,
         content={"error": "dataset_error", "message": str(exc)},
     )
+
+
+@app.get("/", tags=["ui"], include_in_schema=False)
+def dashboard() -> HTMLResponse:
+    """Serve the interactive HTML dashboard (self-contained, zero-dependency)."""
+    candidates = [
+        _Path(__file__).resolve().parent.parent / "dashboard.html",
+        _Path("/app/dashboard.html"),
+        _Path("/app/static/dashboard.html"),
+    ]
+    for p in candidates:
+        if p.is_file():
+            return HTMLResponse(p.read_text(encoding="utf-8"))
+    return HTMLResponse(
+        "<h1>Dashboard not found</h1><p>dashboard.html is missing. "
+        "Use the <a href='/docs'>API docs</a> instead.</p>",
+        status_code=404,
+    )
+
+
+@app.get("/dashboard", tags=["ui"], include_in_schema=False)
+def dashboard_redirect() -> HTMLResponse:
+    """Alias for the dashboard."""
+    return dashboard()
 
 
 @app.get("/health", response_model=HealthResponse, tags=["meta"])

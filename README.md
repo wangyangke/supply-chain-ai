@@ -119,6 +119,31 @@ curl "http://127.0.0.1:8000/api/v1/graph"
 
 每个端点的**实测请求/响应记录**（含错误路径）见 **[docs/api_examples.md](docs/api_examples.md)**；交互式 OpenAPI 文档由 FastAPI 自动提供于 `http://127.0.0.1:8000/docs`。
 
+## 6.5. Docker 一键运行（推荐评审方式）
+
+无需安装 Python 或任何依赖——直接拉取镜像运行：
+
+```bash
+# 方式一：直接 docker run
+docker run --rm -p 8000:8000 ghcr.io/iloveopt/supply-chain-research:latest
+
+# 方式二：docker compose（克隆仓库后）
+docker compose up
+```
+
+启动后打开浏览器：
+
+| 地址 | 说明 |
+|---|---|
+| `http://localhost:8000/` | **交互式仪表盘**（21 家公司 / 20 条关系 / 26 条证据，可筛选/搜索/排序/关系图谱） |
+| `http://localhost:8000/docs` | OpenAPI / Swagger UI（交互式 API 文档） |
+| `http://localhost:8000/api/v1/stats` | 数据集统计 JSON |
+| `http://localhost:8000/api/v1/graph` | 关系图 JSON |
+
+镜像基于 `python:3.12-slim` 多阶段构建，非 root 用户运行，内置 healthcheck，镜像约 120 MB。
+
+> 镜像由 GitHub Actions 自动构建并发布至 GHCR（`ghcr.io/iloveopt/supply-chain-research`），每次 push 到 `main` 或打 `v*` tag 自动更新 `latest`。
+
 ## 7. CLI（`scrs`）
 
 与 API 共享同一 store，可脚本化（所有输出支持 `--json`）：
@@ -156,7 +181,7 @@ scrs graph [--json]
 pip install -e ".[dev]"
 uvicorn src.api:app --port 8000            # HTTP API
 scrs stats                                  # CLI
-pytest --cov=src                            # 98 个测试，src 覆盖率 97%（下限 90%）
+pytest --cov=src                            # 100 个测试，src 覆盖率 97%（下限 90%）
 python scripts/validate_data.py             # 独立数据校验（schema + 完整性 + 引擎一致性）
 ```
 
@@ -177,11 +202,11 @@ pytest --cov=src
 
 评分/状态是**派生物**而非人工输入：`sync_scores.py --write` 用引擎 + 证据重算 `confidence_score` 并按带映射推导 `status` 写回，dry-run 会报告任何与引擎不一致的人工状态；`validate_data.py` 独立检查 schema、引用完整性、时间窗合法性与引擎一致性。
 
-**持续集成**：仓库附带 GitHub Actions（`.github/workflows/ci.yml`），在 Python 3.11/3.12/3.13 上执行 `pytest`、`validate_data.py` 与 `sync_scores.py` 可复现性检查。
+**持续集成**：仓库附带 GitHub Actions：`.github/workflows/ci.yml`（Python 3.11/3.12/3.13 上执行 `pytest`、`validate_data.py` 与 `sync_scores.py` 可复现性检查）+ `.github/workflows/docker.yml`（自动构建并推送 Docker 镜像至 GHCR）。
 
 ## 9. 测试与限制
 
-**测试**（`tests/`，98 个用例，src 覆盖率 97%）：store 层加载/完整性/过滤/分页、评分引擎各维度与两项细化、API 全部端点与 404/422 错误路径、CLI 命令/退出码/人类可读输出；以及一条**全数据集可复现性断言**——每条关系的存储分数与状态必须与引擎重算结果完全一致（`test_scoring.py::TestReproducibility`）。独立校验脚本 `scripts/validate_data.py` 提供同等的评审入口。
+**测试**（`tests/`，100 个用例，src 覆盖率 97%）：store 层加载/完整性/过滤/分页、评分引擎各维度与两项细化、API 全部端点与 404/422 错误路径、CLI 命令/退出码/人类可读输出；以及一条**全数据集可复现性断言**——每条关系的存储分数与状态必须与引擎重算结果完全一致（`test_scoring.py::TestReproducibility`）。独立校验脚本 `scripts/validate_data.py` 提供同等的评审入口。
 
 **已知限制与盲区**：
 

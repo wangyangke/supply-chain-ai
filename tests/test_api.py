@@ -179,3 +179,18 @@ class TestGraph:
         for e in body["edges"]:
             assert e["source"] in node_ids
             assert e["target"] in node_ids
+
+
+class TestDashboard:
+    def test_dashboard_root(self, client):
+        """GET / should serve the interactive HTML dashboard."""
+        resp = client.get("/")
+        assert resp.status_code == 200
+        assert "text/html" in resp.headers.get("content-type", "")
+        assert "<html" in resp.text.lower()
+
+    def test_dashboard_alias(self, client):
+        """GET /dashboard should also serve the dashboard."""
+        resp = client.get("/dashboard")
+        assert resp.status_code == 200
+        assert "text/html" in resp.headers.get("content-type", "")

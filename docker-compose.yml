@@ -1,0 +1,30 @@
+# docker-compose.yml — one-command run
+#
+# Usage:
+#   docker compose up              # foreground
+#   docker compose up -d           # background
+#   docker compose down            # stop & remove
+#
+# Then open:
+#   http://localhost:8000/         # interactive dashboard
+#   http://localhost:8000/docs     # OpenAPI / Swagger UI
+#   http://localhost:8000/api/v1/stats
+
+services:
+  scr:
+    build: .
+    image: ghcr.io/iloveopt/supply-chain-research:latest
+    container_name: supply-chain-research
+    ports:
+      - "8000:8000"
+    environment:
+      - SCR_DATA_DIR=/app/data
+      - SCR_HOST=0.0.0.0
+      - SCR_PORT=8000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3

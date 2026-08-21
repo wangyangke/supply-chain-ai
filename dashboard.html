@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Supply Chain Research — NVIDIA</title>
+<style>
+  :root {
+    --bg: #f8f9fa; --surface: #ffffff; --border: #e0e0e0;
+    --text: #1a1a2e; --text-secondary: #555; --accent: #76b900;
+    --accent-light: #f0f7e8; --red: #e63946; --orange: #f4a261;
+    --green: #2a9d8f; --blue: #264653; --purple: #6b5b95;
+    --radius: 10px; --shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.6;
+  }
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #fff; padding: 28px 40px 20px;
+  }
+  .header h1 { font-size: 24px; font-weight: 700; }
+  .header .subtitle { font-size: 13px; opacity: 0.7; margin-top: 4px; }
+  .header .meta-row { display: flex; gap: 24px; margin-top: 14px; flex-wrap: wrap; }
+  .meta-badge {
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px; padding: 4px 12px; font-size: 12px;
+  }
+  .meta-badge b { color: var(--accent); }
+  /* Tabs */
+  .tabs {
+    display: flex; gap: 0; background: var(--surface);
+    border-bottom: 2px solid var(--border); padding: 0 40px; position: sticky; top: 0; z-index: 100;
+  }
+  .tab {
+    padding: 12px 20px; cursor: pointer; font-size: 14px; font-weight: 500;
+    border-bottom: 3px solid transparent; transition: all 0.2s; color: var(--text-secondary);
+  }
+  .tab:hover { color: var(--text); background: var(--accent-light); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+  /* Content */
+  .content { padding: 24px 40px; max-width: 1400px; margin: 0 auto; }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+  /* Stats cards */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .stat-card {
+    background: var(--surface); border-radius: var(--radius); padding: 20px;
+    box-shadow: var(--shadow); border: 1px solid var(--border);
+  }
+  .stat-card .label { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-card .value { font-size: 32px; font-weight: 700; color: var(--accent); margin-top: 4px; }
+  .stat-card .detail { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+  /* Table */
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+  th { background: #f1f3f5; padding: 10px 12px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; white-space: nowrap; }
+  th:hover { background: #e9ecef; }
+  td { padding: 10px 12px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:hover { background: var(--accent-light); }
+  tr { cursor: pointer; transition: background 0.15s; }
+  /* Badges */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .badge-confirmed { background: #d4edda; color: #155724; }
+  .badge-inferred { background: #fff3cd; color: #856404; }
+  .badge-unknown { background: #f8d7da; color: #721c24; }
+  .badge-supplier { background: #e3f2fd; color: #1565c0; }
+  .badge-customer { background: #f3e5f5; color: #7b1fa2; }
+  .badge-partner { background: #e8f5e9; color: #2e7d32; }
+  .badge-investor { background: #fff3e0; color: #e65100; }
+  .badge-peer { background: #fce4ec; color: #c62828; }
+  /* Score bar */
+  .score-bar { width: 80px; height: 8px; border-radius: 4px; background: #e9ecef; overflow: hidden; display: inline-block; vertical-align: middle; margin-right: 6px; }
+  .score-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .score-high { background: var(--green); }
+  .score-mid { background: var(--orange); }
+  .score-low { background: var(--red); }
+  /* Filters */
+  .filters { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .filter-group { display: flex; align-items: center; gap: 6px; }
+  .filter-group label { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+  select, input[type="text"] {
+    padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background: var(--surface);
+  }
+  select:focus, input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  /* Graph */
+  #graph-svg { width: 100%; height: 600px; background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); }
+  /* Modal */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5);
+    display: none; align-items: center; justify-content: center; z-index: 1000;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: 12px; max-width: 800px; width: 90%; max-height: 85vh;
+    overflow-y: auto; padding: 28px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  .modal h2 { font-size: 20px; margin-bottom: 4px; }
+  .modal .close-btn {
+    float: right; cursor: pointer; font-size: 22px; color: var(--text-secondary);
+    border: none; background: none; padding: 0 8px;
+  }
+  .modal .close-btn:hover { color: var(--text); }
+  .modal-section { margin-top: 18px; }
+  .modal-section h3 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); margin-bottom: 8px; }
+  /* Score breakdown */
+  .score-breakdown { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .score-dim {
+    background: #f8f9fa; border-radius: 6px; padding: 10px 12px;
+  }
+  .score-dim .dim-name { font-size: 12px; color: var(--text-secondary); }
+  .score-dim .dim-val { font-size: 20px; font-weight: 700; color: var(--accent); }
+  .score-dim .dim-bar { height: 4px; border-radius: 2px; background: #e9ecef; margin-top: 4px; overflow: hidden; }
+  .score-dim .dim-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; }
+  /* Evidence card */
+  .evidence-card {
+    border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-top: 10px; background: #fafafa;
+  }
+  .evidence-card .ev-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .evidence-card .ev-type { font-size: 11px; color: var(--text-secondary); }
+  .evidence-card .ev-quote { font-style: italic; color: var(--text); margin: 8px 0; padding-left: 12px; border-left: 3px solid var(--accent); font-size: 13px; }
+  .evidence-card .ev-meta { font-size: 11px; color: var(--text-secondary); display: flex; gap: 12px; flex-wrap: wrap; }
+  .evidence-card .ev-meta a { color: var(--accent); text-decoration: none; }
+  .evidence-card .ev-meta a:hover { text-decoration: underline; }
+  /* Search */
+  .search-box { flex: 1; min-width: 200px; }
+  .pill { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; background: #e9ecef; color: var(--text-secondary); }
+  .section-title { font-size: 16px; font-weight: 600; margin: 24px 0 12px; }
+  .footer { text-align: center; padding: 30px; font-size: 12px; color: var(--text-secondary); }
+  .footer a { color: var(--accent); text-decoration: none; }
+  /* Graph node styles */
+  .graph-node circle { stroke: #fff; stroke-width: 2; cursor: pointer; transition: r 0.2s; }
+  .graph-node:hover circle { r: 18; }
+  .graph-node text { font-size: 11px; pointer-events: none; text-anchor: middle; }
+  .graph-edge { stroke: #ccc; stroke-width: 1.5; fill: none; }
+  .graph-edge:hover { stroke: var(--accent); stroke-width: 3; }
+  .graph-node.target circle { fill: var(--accent); }
+  .graph-node.related circle { fill: #6b5b95; }
+  .legend { display: flex; gap: 16px; margin-bottom: 12px; font-size: 12px; align-items: center; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; vertical-align: middle; margin-right: 4px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Supply Chain & Partnership Research — NVIDIA (NVDA)</h1>
+  <div class="subtitle">可复现的供应链与合作关系研究服务 · Interactively explore relationships, evidence & confidence scoring</div>
+  <div class="meta-row">
+    <div class="meta-badge">Research Target: <b>NVIDIA Corporation</b></div>
+    <div class="meta-badge">Ticker: <b>NVDA / NASDAQ</b></div>
+    <div class="meta-badge">ISIN: <b>US67066G1040</b></div>
+    <div class="meta-badge">As-of: <b>2026-08-21</b></div>
+    <div class="meta-badge">Companies: <b>21</b></div>
+    <div class="meta-badge">Relationships: <b>20</b></div>
+    <div class="meta-badge">Evidence: <b>26</b></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-tab="overview">Overview</div>
+  <div class="tab" data-tab="relationships">Relationships</div>
+  <div class="tab" data-tab="companies">Companies</div>
+  <div class="tab" data-tab="graph">Relationship Graph</div>
+  <div class="tab" data-tab="scoring">Scoring Methodology</div>
+</div>
+
+<div class="content">
+
+  <!-- Overview -->
+  <div class="tab-pane active" id="tab-overview">
+    <div class="stats-grid" id="stats-grid"></div>
+    <div class="section-title">Relationship Summary by Type</div>
+    <table id="summary-table">
+      <thead><tr><th>Type</th><th>Count</th><th>Confirmed</th><th>Inferred</th><th>Avg Score</th><th>Score Range</th></tr></thead>
+      <tbody id="summary-body"></tbody>
+    </table>
+    <div class="section-title">Key Relationships (Score >= 75)</div>
+    <table id="key-table">
+      <thead><tr><th>ID</th><th>Type</th><th>Source → Target</th><th>Status</th><th>Score</th><th>Evidence</th><th>Valid Period</th></tr></thead>
+      <tbody id="key-body"></tbody>
+    </table>
+  </div>
+
+  <!-- Relationships -->
+  <div class="tab-pane" id="tab-relationships">
+    <div class="filters">
+      <div class="filter-group">
+        <label>Type:</label>
+        <select id="filter-type" onchange="applyFilters()">
+          <option value="">All</option>
+          <option value="supplier">Supplier</option>
+          <option value="customer">Customer</option>
+          <option value="partner">Partner</option>
+          <option value="investor_or_investee">Investor/Investee</option>
+          <option value="peer">Peer</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Status:</label>
+        <select id="filter-status" onchange="applyFilters()">
+          <option value="">All</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="inferred">Inferred</option>
+          <option value="unknown">Unknown</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Min Score:</label>
+        <select id="filter-min-score" onchange="applyFilters()">
+          <option value="0">0</option>
+          <option value="40">40</option>
+          <option value="60">60</option>
+          <option value="70">70</option>
+          <option value="80">80</option>
+        </select>
+      </div>
+      <div class="filter-group search-box">
+        <label>Search:</label>
+        <input type="text" id="filter-search" placeholder="Company name or keyword..." oninput="applyFilters()" style="width:200px">
+      </div>
+    </div>
+    <table id="rel-table">
+      <thead><tr>
+        <th onclick="sortBy('id')">ID</th>
+        <th onclick="sortBy('type')">Type</th>
+        <th onclick="sortBy('source')">Source → Target</th>
+        <th onclick="sortBy('status')">Status</th>
+        <th onclick="sortBy('score')">Score</th>
+        <th onclick="sortBy('evidence')">Evidence</th>
+        <th onclick="sortBy('valid')">Valid Period</th>
+      </tr></thead>
+      <tbody id="rel-body"></tbody>
+    </table>
+  </div>
+
+  <!-- Companies -->
+  <div class="tab-pane" id="tab-companies">
+    <div class="filters">
+      <div class="filter-group search-box">
+        <label>Search:</label>
+        <input type="text" id="comp-search" placeholder="Company name or ticker..." oninput="renderCompanies()" style="width:300px">
+      </div>
+    </div>
+    <table id="comp-table">
+      <thead><tr><th>ID</th><th>Name</th><th>Ticker</th><th>Exchange</th><th>Country</th><th>Entity Type</th><th>Sector</th></tr></thead>
+      <tbody id="comp-body"></tbody>
+    </table>
+  </div>
+
+  <!-- Graph -->
+  <div class="tab-pane" id="tab-graph">
+    <div class="legend">
+      <span><span class="legend-dot" style="background:var(--accent)"></span>Research Target (NVIDIA)</span>
+      <span><span class="legend-dot" style="background:#6b5b95"></span>Related Company</span>
+      <span style="margin-left:auto;color:var(--text-secondary)">Click a node to see its relationships · Hover edges to highlight</span>
+    </div>
+    <svg id="graph-svg"></svg>
+    <div id="graph-detail" style="margin-top:16px"></div>
+  </div>
+
+  <!-- Scoring -->
+  <div class="tab-pane" id="tab-scoring">
+    <div class="section-title">Confidence Scoring Engine (0–100)</div>
+    <p style="color:var(--text-secondary);margin-bottom:16px">Every relationship is scored across 5 weighted dimensions. The score determines its epistemic status: <b>≥70 = confirmed</b>, <b>40–69 = inferred</b>, <b>&lt;40 = unknown</b>.</p>
+    <table>
+      <thead><tr><th>Dimension</th><th>Max</th><th>What It Measures</th></tr></thead>
+      <tbody>
+        <tr><td><b>Authority</b></td><td>25</td><td>Source credibility: SEC filing (25) &gt; official IR (20) &gt; business media (14) &gt; Wikipedia (10) &gt; blog (6)</td></tr>
+        <tr><td><b>Evidence Quality</b></td><td>25</td><td>Number of independent sources: 1 = 10, 2 = 18, 3+ = 25. Same-URL duplicates count as one.</td></tr>
+        <tr><td><b>Recency</b></td><td>20</td><td>How fresh is the evidence? &lt;6mo = 20, &lt;1yr = 16, &lt;2yr = 12, &lt;3yr = 6, &gt;3yr = 0. <b>Official ongoing relationships stay at 20.</b></td></tr>
+        <tr><td><b>Specificity</b></td><td>20</td><td>Does the evidence name both parties and the relationship type? Direct official statement = +5 bonus.</td></tr>
+        <tr><td><b>Quantifiability</b></td><td>10</td><td>Are there hard numbers (revenue %, investment $, stake %)? Both money + percentage = 10; one = 5; none = 0.</td></tr>
+      </tbody>
+    </table>
+    <div class="section-title">Two Refinements</div>
+    <div style="background:var(--surface);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:16px">
+      <p><b>1. Official Ongoing Relationship Recency Rule</b><br>If a relationship is still valid (<code>valid_until is null</code>) and backed by an official source (SEC filing, exchange filing, government, company IR, or company press release), recency stays at full 20 — an officially ongoing relationship is inherently fresh.</p>
+      <p style="margin-top:12px"><b>2. Direct Statement Bonus</b><br>When an official source explicitly names the counterparty in a relationship context (e.g., "Our competitors include AMD"), specificity gets +5. Third-party estimates don't qualify even if specific.</p>
+    </div>
+    <div class="section-title">Score Distribution</div>
+    <div id="score-distribution"></div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<div class="footer">
+  <p>Supply Chain Research Service · NVIDIA dataset · As-of 2026-08-21</p>
+  <p style="margin-top:6px">Data sources: SEC EDGAR (10-K), official company IR/press releases, business media · Compliant collection: no bypass of access controls · <b>Not investment advice</b></p>
+</div>
+
+<script>
+const DATA = {"dataset": {"schema_version": "1.0", "as_of": "2026-08-21", "research_target": "nvidia"}, "companies": {"nvidia": {"id": "nvidia", "name": "NVIDIA Corporation", "stock_code": "NVDA", "exchange": "NASDAQ", "isin": "US67066G1040", "country": "US", "entity_type": "target", "sector": "Semiconductors (GPU / accelerated computing)", "description": "Research target. NVIDIA designs GPUs and accelerated-computing platforms for AI training/inference, data centers, gaming, and automotive. Fabless: relies on foundries and contract manufacturers."}, "tsmc": {"id": "tsmc", "name": "Taiwan Semiconductor Manufacturing Company (TSMC)", "stock_code": "TSM / 2330.TW", "exchange": "NYSE / TWSE", "isin": "US8740391003", "country": "TW", "entity_type": "related", "sector": "Semiconductor foundry", "description": "World's largest dedicated semiconductor foundry; primary manufacturing partner for NVIDIA's most advanced GPUs (wafer fabrication)."}, "sk_hynix": {"id": "sk_hynix", "name": "SK Hynix Inc.", "stock_code": "000660.KS", "exchange": "KRX", "isin": "KR7000660001", "country": "KR", "entity_type": "related", "sector": "Memory semiconductors", "description": "Leading memory maker; primary supplier of HBM (High Bandwidth Memory) used in NVIDIA AI accelerators."}, "micron": {"id": "micron", "name": "Micron Technology, Inc.", "stock_code": "MU", "exchange": "NASDAQ", "isin": "US5951121038", "country": "US", "entity_type": "related", "sector": "Memory semiconductors", "description": "US memory manufacturer; named by NVIDIA in its 10-K as a memory supplier."}, "asml": {"id": "asml", "name": "ASML Holding N.V.", "stock_code": "ASML", "exchange": "NASDAQ / Euronext Amsterdam", "isin": "USN070592100", "country": "NL", "entity_type": "related", "sector": "Semiconductor lithography equipment", "description": "Sole producer of EUV lithography machines. Indirect supplier: sells to foundries (TSMC, Samsung, Intel) that manufacture for NVIDIA; not a direct NVIDIA vendor."}, "microsoft": {"id": "microsoft", "name": "Microsoft Corporation", "stock_code": "MSFT", "exchange": "NASDAQ", "isin": "US5949181045", "country": "US", "entity_type": "related", "sector": "Software / cloud (hyperscaler)", "description": "Largest estimated customer of NVIDIA data-center GPUs (Omdia/Bloomberg estimates); also a strategic partner (Azure AI, NVIDIA partnership)."}, "meta": {"id": "meta", "name": "Meta Platforms, Inc.", "stock_code": "META", "exchange": "NASDAQ", "isin": "US30303M1027", "country": "US", "entity_type": "related", "sector": "Internet / social media (hyperscaler)", "description": "Major AI infrastructure spender; second-largest estimated NVIDIA GPU customer after Microsoft (Omdia estimates)."}, "amazon": {"id": "amazon", "name": "Amazon.com, Inc.", "stock_code": "AMZN", "exchange": "NASDAQ", "isin": "US0231351067", "country": "US", "entity_type": "related", "sector": "E-commerce / cloud (AWS hyperscaler)", "description": "Hyperscaler running NVIDIA GPUs in AWS; estimated top-4 NVIDIA customer. Also develops custom chips (Trainium/Inferentia), partially competing with NVIDIA."}, "alphabet": {"id": "alphabet", "name": "Alphabet Inc. (Google)", "stock_code": "GOOGL", "exchange": "NASDAQ", "isin": "US02079K3059", "country": "US", "entity_type": "related", "sector": "Internet / cloud (Google Cloud hyperscaler)", "description": "Google Cloud and Google TPU developer; estimated top-4 NVIDIA customer while also building custom accelerators."}, "dell": {"id": "dell", "name": "Dell Technologies Inc.", "stock_code": "DELL", "exchange": "NYSE", "isin": "US24703L2025", "country": "US", "entity_type": "related", "sector": "Enterprise IT / AI servers", "description": "Leading OEM of NVIDIA-powered AI servers (AI Factory initiative with NVIDIA); major channel customer for enterprise AI."}, "accenture": {"id": "accenture", "name": "Accenture plc", "stock_code": "ACN", "exchange": "NYSE", "isin": "IE00B4BNMY34", "country": "IE", "entity_type": "related", "sector": "IT services / consulting", "description": "Global professional services firm; strategic partner running an NVIDIA Business Group (30,000 trained professionals) around the AI Refinery platform."}, "servicenow": {"id": "servicenow", "name": "ServiceNow, Inc.", "stock_code": "NOW", "exchange": "NYSE", "isin": "US81762P1021", "country": "US", "entity_type": "related", "sector": "Enterprise software / AI workflows", "description": "Enterprise workflow AI platform; expanded strategic partnership with NVIDIA to co-develop agentic AI (NVIDIA NIM Agent Blueprints)."}, "snowflake": {"id": "snowflake", "name": "Snowflake Inc.", "stock_code": "SNOW", "exchange": "NYSE", "isin": "US8334451098", "country": "US", "entity_type": "related", "sector": "Cloud data platform", "description": "Data Cloud company; partnership with NVIDIA to run NVIDIA NeMo on the Snowflake platform for enterprise generative AI."}, "cisco": {"id": "cisco", "name": "Cisco Systems, Inc.", "stock_code": "CSCO", "exchange": "NASDAQ", "isin": "US17275R1023", "country": "US", "entity_type": "related", "sector": "Networking equipment", "description": "Networking leader; partner on 'Cisco Secure AI Factory with NVIDIA' and co-developer of NVIDIA Spectrum-X Ethernet-based switches (N9100 series)."}, "coreweave": {"id": "coreweave", "name": "CoreWeave, Inc.", "stock_code": "CRWV", "exchange": "NASDAQ", "isin": "US21871C1018", "country": "US", "entity_type": "related", "sector": "AI cloud / GPU cloud services", "description": "GPU-cloud provider; NVIDIA invested $100M (2023) and $2B (2026), and is its largest GPU supplier. CoreWeave builds AI data centers for NVIDIA."}, "recursion": {"id": "recursion", "name": "Recursion Pharmaceuticals, Inc.", "stock_code": "RXRX", "exchange": "NASDAQ", "isin": "US75629V1044", "country": "US", "entity_type": "related", "sector": "TechBio / AI drug discovery", "description": "AI-driven drug discovery company; NVIDIA invested $50M (July 2023) and collaborates on foundation models and DGX Cloud compute (BioHive supercomputer)."}, "soundhound": {"id": "soundhound", "name": "SoundHound AI, Inc.", "stock_code": "SOUN", "exchange": "NASDAQ", "isin": "US8361001077", "country": "US", "entity_type": "related", "sector": "Voice AI / conversational AI", "description": "Voice-AI company. NVIDIA participated in its 2017 $75M funding round but disclosed selling its stake in February 2025 — a now-expired investment relationship."}, "amd": {"id": "amd", "name": "Advanced Micro Devices, Inc. (AMD)", "stock_code": "AMD", "exchange": "NASDAQ", "isin": "US0079031078", "country": "US", "entity_type": "related", "sector": "Semiconductors (GPU / CPU)", "description": "Primary direct competitor in data-center GPUs and AI accelerators (MI-series). Named in NVIDIA's 10-K as a competitor."}, "intel": {"id": "intel", "name": "Intel Corporation", "stock_code": "INTC", "exchange": "NASDAQ", "isin": "US4581401001", "country": "US", "entity_type": "related", "sector": "Semiconductors (CPU / GPU / foundry)", "description": "Competitor in CPUs, AI accelerators (Gaudi) and emerging foundry services. Named in NVIDIA's 10-K as a competitor."}, "broadcom": {"id": "broadcom", "name": "Broadcom Inc.", "stock_code": "AVGO", "exchange": "NASDAQ", "isin": "US11135F1012", "country": "US", "entity_type": "related", "sector": "Semiconductors (networking / custom ASIC)", "description": "Competitor in data-center networking (DPUs, switches) and custom AI ASIC design for hyperscalers. Named in NVIDIA's 10-K."}, "qualcomm": {"id": "qualcomm", "name": "Qualcomm Incorporated", "stock_code": "QCOM", "exchange": "NASDAQ", "isin": "US7475251036", "country": "US", "entity_type": "related", "sector": "Semiconductors (mobile / SoC)", "description": "Competitor in edge/automotive/SoC computing. Named in NVIDIA's 10-K as a competitor in embedded and automotive devices."}}, "relationships": [{"id": "rel_sup_001", "source_company_id": "tsmc", "target_company_id": "nvidia", "type": "supplier", "direction": "tsmc -> nvidia", "status": "confirmed", "confidence_score": 83, "valid_from": "2010-01-01", "valid_until": null, "evidence_ids": ["ev_sup_001"], "summary": "TSMC is NVIDIA's primary foundry partner for its most advanced GPU wafers (fabless manufacturing); NVIDIA's 10-K explicitly names TSMC as a foundry supplier.", "evidence_items": [{"id": "ev_sup_001", "relationship_id": "rel_sup_001", "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000021/nvda-20260125.htm", "publisher": "U.S. Securities and Exchange Commission (NVIDIA FY2026 Form 10-K)", "source_type": "sec_filing", "published_at": "2026-02-25", "accessed_at": "2026-08-21", "evidence_locator": "10-K FY2026, Item 1 Business — Manufacturing section, sentence listing foundries", "access_restriction": "public", "license_note": "SEC filings are public domain under U.S. law; EDGAR is a public service.", "quote": "We utilize foundries, such as Taiwan Semiconductor Manufacturing Company Limited, or TSMC, and Samsung Electronics Co., Ltd., or Samsung, to produce our semiconductor wafers."}]}, {"id": "rel_sup_002", "source_company_id": "sk_hynix", "target_company_id": "nvidia", "type": "supplier", "direction": "sk_hynix -> nvidia", "status": "confirmed", "confidence_score": 77, "valid_from": "2019-01-01", "valid_until": null, "evidence_ids": ["ev_sup_002"], "summary": "SK Hynix is a named memory (incl. HBM) supplier to NVIDIA per NVIDIA's 10-K; HBM is critical for AI accelerators.", "evidence_items": [{"id": "ev_sup_002", "relationship_id": "rel_sup_002", "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000021/nvda-20260125.htm", "publisher": "U.S. Securities and Exchange Commission (NVIDIA FY2026 Form 10-K)", "source_type": "sec_filing", "published_at": "2026-02-25", "accessed_at": "2026-08-21", "evidence_locator": "10-K FY2026, Item 1 Business — Manufacturing section, sentence listing memory suppliers", "access_restriction": "public", "license_note": "SEC filings are public domain under U.S. law; EDGAR is a public service.", "quote": "We purchase memory from SK Hynix Inc., Micron Technology, Inc., and Samsung."}]}, {"id": "rel_sup_003", "source_company_id": "micron", "target_company_id": "nvidia", "type": "supplier", "direction": "micron -> nvidia", "status": "confirmed", "confidence_score": 77, "valid_from": "2015-01-01", "valid_until": null, "evidence_ids": ["ev_sup_003"], "summary": "Micron is a named memory supplier to NVIDIA per NVIDIA's 10-K (memory + HBM candidate supplier).", "evidence_items": [{"id": "ev_sup_003", "relationship_id": "rel_sup_003", "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000021/nvda-20260125.htm", "publisher": "U.S. Securities and Exchange Commission (NVIDIA FY2026 Form 10-K)", "source_type": "sec_filing", "published_at": "2026-02-25", "accessed_at": "2026-08-21", "evidence_locator": "10-K FY2026, Item 1 Business — Manufacturing section, sentence listing memory suppliers", "access_restriction": "public", "license_note": "SEC filings are public domain under U.S. law; EDGAR is a public service.", "quote": "We purchase memory from SK Hynix Inc., Micron Technology, Inc., and Samsung."}]}, {"id": "rel_sup_004", "source_company_id": "asml", "target_company_id": "nvidia", "type": "supplier", "direction": "asml -> (via foundries) -> nvidia", "status": "inferred", "confidence_score": 60, "valid_from": "2018-01-01", "valid_until": null, "evidence_ids": ["ev_sup_004"], "summary": "ASML is an INDIRECT supplier: it sells EUV lithography machines to foundries (mainly TSMC) that fabricate NVIDIA chips. ASML does not sell directly to NVIDIA; the link is inferred from the supply chain structure.", "evidence_items": [{"id": "ev_sup_004", "relationship_id": "rel_sup_004", "source_url": "https://timesofindia.indiatimes.com/technology/tech-news/how-europes-biggest-tech-company-asml-played-key-role-in-nvidia-becoming-worlds-most-valuable-company/articleshowprint/127778897.cms", "publisher": "The Times of India (technology section)", "source_type": "business_media", "published_at": "2026-06-01", "accessed_at": "2026-08-21", "evidence_locator": "Article: 'ASML may have played key role in Nvidia becoming world's most valuable company'", "access_restriction": "public", "license_note": "Public news article; reproduced for research citation only.", "quote": "These machines are purchased by semiconductor foundries, such as Taiwan-based TSMC, which manufactures chips on behalf of designers such as Nvidia. ... ASML is not a direct supplier to Nvidia, but it supplies TSMC with the extreme ultraviolet (EUV) lithography machines needed to fabricate Nvidia's most advanced chips."}]}, {"id": "rel_cus_001", "source_company_id": "nvidia", "target_company_id": "microsoft", "type": "customer", "direction": "nvidia -> microsoft", "status": "confirmed", "confidence_score": 72, "valid_from": "2020-01-01", "valid_until": null, "evidence_ids": ["ev_cus_001", "ev_cus_001b"], "summary": "Microsoft is widely reported as NVIDIA's largest data-center GPU customer (~19% of NVIDIA revenue per Bloomberg estimates; ~21% of data-center revenue per Epoch AI analysis of Omdia data).", "evidence_items": [{"id": "ev_cus_001", "relationship_id": "rel_cus_001", "source_url": "https://epoch.ai/data/ai-chip-owners-documentation/", "publisher": "Epoch AI (data research institute)", "source_type": "analyst_research", "published_at": "2026-01-01", "accessed_at": "2026-08-21", "evidence_locator": "'AI Chip Owners Documentation' — table of Nvidia revenue share by hyperscaler", "access_restriction": "public", "license_note": "Public research documentation; aggregated analyst estimates.", "quote": "The Information reports that Nvidia sources told them that Microsoft was Nvidia's biggest customer in 2024. ... Microsoft 19% [share of Nvidia total revenue], 21% [share of data center revenue]."}, {"id": "ev_cus_001b", "relationship_id": "rel_cus_001", "source_url": "https://finance.yahoo.com/news/big-techs-spending-drove-nvidias-rise-154027146.html", "publisher": "Yahoo Finance (citing Bloomberg estimates)", "source_type": "business_media", "published_at": "2025-06-01", "accessed_at": "2026-08-21", "evidence_locator": "Article: 'Big Tech's spending drove Nvidia's rise' — Bloomberg estimates", "access_restriction": "public", "license_note": "Public news article citing Bloomberg compiled estimates.", "quote": "Microsoft (MSFT) is the largest driver of Nvidia's revenue, followed by Meta (META), Amazon (AMZN), and Google parent Alphabet (GOOG), according to Bloomberg estimates."}]}, {"id": "rel_cus_002", "source_company_id": "nvidia", "target_company_id": "meta", "type": "customer", "direction": "nvidia -> meta", "status": "inferred", "confidence_score": 58, "valid_from": "2021-01-01", "valid_until": null, "evidence_ids": ["ev_cus_002"], "summary": "Meta is estimated as NVIDIA's #2 GPU customer (~9-11% of NVIDIA revenue per Omdia/Bloomberg estimates). NVIDIA does not disclose named customers, so this is a high-confidence inference from analyst data.", "evidence_items": [{"id": "ev_cus_002", "relationship_id": "rel_cus_002", "source_url": "https://finance.yahoo.com/news/big-techs-spending-drove-nvidias-rise-154027146.html", "publisher": "Yahoo Finance (citing Bloomberg estimates)", "source_type": "business_media", "published_at": "2025-06-01", "accessed_at": "2026-08-21", "evidence_locator": "Article: 'Big Tech's spending drove Nvidia's rise' — Bloomberg estimates", "access_restriction": "public", "license_note": "Public news article citing Bloomberg compiled estimates.", "quote": "25% of Meta's capital expenditures go to Nvidia and the company accounts for just over 9% of Nvidia's annual revenue."}]}, {"id": "rel_cus_003", "source_company_id": "nvidia", "target_company_id": "amazon", "type": "customer", "direction": "nvidia -> amazon", "status": "inferred", "confidence_score": 67, "valid_from": "2019-01-01", "valid_until": null, "evidence_ids": ["ev_cus_003"], "summary": "Amazon (AWS) is estimated as a top-4 NVIDIA customer (~7-8% of NVIDIA revenue per analyst estimates) while also deploying its own custom Trainium/Inferentia chips.", "evidence_items": [{"id": "ev_cus_003", "relationship_id": "rel_cus_003", "source_url": "https://epoch.ai/data/ai-chip-owners-documentation/", "publisher": "Epoch AI (data research institute)", "source_type": "analyst_research", "published_at": "2026-01-01", "accessed_at": "2026-08-21", "evidence_locator": "'AI Chip Owners Documentation' — Amazon row in revenue-share table", "access_restriction": "public", "license_note": "Public research documentation; aggregated analyst estimates.", "quote": "Amazon 7% [share of Nvidia total revenue], 8% [share of data center revenue]. ... media reports corroborate that Google and Amazon are still major Nvidia purchasers as of 2025."}]}, {"id": "rel_cus_004", "source_company_id": "nvidia", "target_company_id": "alphabet", "type": "customer", "direction": "nvidia -> alphabet", "status": "inferred", "confidence_score": 67, "valid_from": "2019-01-01", "valid_until": null, "evidence_ids": ["ev_cus_004"], "summary": "Google (Alphabet) is estimated as a top-4 NVIDIA customer (~7-8% of NVIDIA revenue per analyst estimates); Google also develops TPU accelerators and designs its own chips.", "evidence_items": [{"id": "ev_cus_004", "relationship_id": "rel_cus_004", "source_url": "https://epoch.ai/data/ai-chip-owners-documentation/", "publisher": "Epoch AI (data research institute)", "source_type": "analyst_research", "published_at": "2026-01-01", "accessed_at": "2026-08-21", "evidence_locator": "'AI Chip Owners Documentation' — Alphabet/Google row in revenue-share table", "access_restriction": "public", "license_note": "Public research documentation; aggregated analyst estimates.", "quote": "Google 7% [share of Nvidia total revenue], 8% [share of data center revenue]. ... As of August 2024, Google had placed orders for 400,000 GB200s (worth approximately $15 billion) with Nvidia."}]}, {"id": "rel_cus_005", "source_company_id": "nvidia", "target_company_id": "dell", "type": "customer", "direction": "nvidia -> dell", "status": "confirmed", "confidence_score": 70, "valid_from": "2023-01-01", "valid_until": null, "evidence_ids": ["ev_cus_005"], "summary": "Dell is a major OEM buying NVIDIA GPUs for its AI servers (AI Factory initiative); Dell's AI-server revenue surged to ~$12.9B in Q2 FY2025 on NVIDIA-powered systems. The 10-K also lists Dell's competitor HPE in networking context.", "evidence_items": [{"id": "ev_cus_005", "relationship_id": "rel_cus_005", "source_url": "https://www.ainvest.com/news/dell-ai-driven-server-surge-marginal-profit-shifts-growth-outpace-margin-pressures-2508", "publisher": "AInvest (financial news)", "source_type": "business_media", "published_at": "2025-08-01", "accessed_at": "2026-08-21", "evidence_locator": "Article: 'Dell's AI-Driven Server Surge...' — Q2 FY2025 AI server revenue", "access_restriction": "public", "license_note": "Public financial news article.", "quote": "Dell's AI server revenue surged 69% to $12.9B in Q2 2025, driven by $11.7B backlog and NVIDIA partnerships. ... the AI Factory initiative with NVIDIA."}]}, {"id": "rel_par_001", "source_company_id": "accenture", "target_company_id": "nvidia", "type": "partner", "direction": "accenture <-> nvidia (bidirectional)", "status": "confirmed", "confidence_score": 75, "valid_from": "2023-01-01", "valid_until": null, "evidence_ids": ["ev_par_001"], "summary": "Accenture launched an NVIDIA Business Group (Oct 2024) with 30,000 trained professionals; Accenture's AI Refinery is built on the full NVIDIA AI stack (AI Foundry, AI Enterprise, Omniverse).", "evidence_items": [{"id": "ev_par_001", "relationship_id": "rel_par_001", "source_url": "https://newsroom.accenture.com/news/2024/accenture-and-nvidia-lead-enterprises-into-era-of-ai", "publisher": "Accenture Newsroom (official press release)", "source_type": "company_press_release", "published_at": "2024-10-02", "accessed_at": "2026-08-21", "evidence_locator": "Press release: 'Accenture and NVIDIA Lead Enterprises into Era of AI'", "access_restriction": "public", "license_note": "Official company press release; public.", "quote": "Accenture and NVIDIA today announced an expanded partnership, including Accenture's formation of a new NVIDIA Business Group ... using Accenture's AI Refinery, which uses the full NVIDIA AI stack — including NVIDIA AI Foundry, NVIDIA AI Enterprise and NVIDIA Omniverse."}]}, {"id": "rel_par_002", "source_company_id": "servicenow", "target_company_id": "nvidia", "type": "partner", "direction": "servicenow <-> nvidia (bidirectional)", "status": "confirmed", "confidence_score": 78, "valid_from": "2023-05-01", "valid_until": null, "evidence_ids": ["ev_par_002"], "summary": "ServiceNow expanded its strategic partnership with NVIDIA (Oct 2024) to co-develop agentic AI using NVIDIA NIM Agent Blueprints on the ServiceNow platform.", "evidence_items": [{"id": "ev_par_002", "relationship_id": "rel_par_002", "source_url": "https://newsroom.servicenow.com/press-releases/details/2024/ServiceNow-partners-with-Nvidia-to-accelerate-enterprise-adoption-of-Agentic-AI-10-23-2024-traffic/default.aspx", "publisher": "ServiceNow Newsroom (official press release)", "source_type": "company_press_release", "published_at": "2024-10-23", "accessed_at": "2026-08-21", "evidence_locator": "Press release: 'ServiceNow partners with Nvidia to accelerate enterprise adoption of Agentic AI'", "access_restriction": "public", "license_note": "Official company press release; public.", "quote": "ServiceNow (NYSE: NOW) today announced a major expansion to its strategic partnership with NVIDIA to accelerate enterprise adoption of Agentic AI. The companies will use NVIDIA NIM Agent Blueprints to co-develop native AI Agents within the ServiceNow platform."}]}, {"id": "rel_par_003", "source_company_id": "snowflake", "target_company_id": "nvidia", "type": "partner", "direction": "snowflake <-> nvidia (bidirectional)", "status": "confirmed", "confidence_score": 77, "valid_from": "2023-06-01", "valid_until": null, "evidence_ids": ["ev_par_003", "ev_par_003b"], "summary": "Snowflake partners with NVIDIA to run NVIDIA NeMo and AI Enterprise software inside the Snowflake Data Cloud for enterprise generative AI (announced 2023 Summit, expanded 2024 GTC).", "evidence_items": [{"id": "ev_par_003", "relationship_id": "rel_par_003", "source_url": "https://nvidianews.nvidia.com/news/snowflake-and-nvidia-team-to-help-businesses-harness-their-data-for-generative-ai-in-the-data-cloud", "publisher": "NVIDIA Newsroom (official press release)", "source_type": "company_press_release", "published_at": "2023-06-26", "accessed_at": "2026-08-21", "evidence_locator": "Press release: 'Snowflake and NVIDIA Team to Help Businesses Harness Their Data for Generative AI'", "access_restriction": "public", "license_note": "Official company press release; public.", "quote": "Snowflake (NYSE: SNOW) and NVIDIA today announced at Snowflake Summit 2023 that they are partnering ... With the NVIDIA NeMo platform ... Snowflake will enable enterprises to use data in their Snowflake accounts to make custom LLMs for advanced generative AI services."}, {"id": "ev_par_003b", "relationship_id": "rel_par_003", "source_url": "https://investors.snowflake.com/news/news-details/2024/Snowflake-Teams-with-NVIDIA-to-Deliver-Full-Stack-AI-Platform-for-Customers-to-Transform-Their-Industries/default.aspx", "publisher": "Snowflake Investor Relations (official press release)", "source_type": "company_press_release", "published_at": "2024-03-18", "accessed_at": "2026-08-21", "evidence_locator": "Press release: 'Snowflake Teams with NVIDIA to Deliver Full-Stack AI Platform' (GTC 2024)", "access_restriction": "public", "license_note": "Official company press release; public.", "quote": "Snowflake today announced at NVIDIA GTC an expanded collaboration with NVIDIA ... bringing together the full-stack NVIDIA accelerated platform with the trusted data foundation and secure AI of Snowflake's Data Cloud."}]}, {"id": "rel_par_004", "source_company_id": "cisco", "target_company_id": "nvidia", "type": "partner", "direction": "cisco <-> nvidia (bidirectional)", "status": "confirmed", "confidence_score": 74, "valid_from": "2025-02-01", "valid_until": null, "evidence_ids": ["ev_par_004", "ev_par_004b"], "summary": "Cisco and NVIDIA partner on 'Cisco Secure AI Factory with NVIDIA' and co-develop NVIDIA Spectrum-X Ethernet switches (Cisco N9100 series), announced at GTC 2025.", "evidence_items": [{"id": "ev_par_004", "relationship_id": "rel_par_004", "source_url": "https://newsroom.cisco.com/c/r/newsroom/en/us/a/y2025/m10/cisco-delivers-ai-networking-innovations-across-neocloud-enterprise-and-telecom-with-nvidia.html", "publisher": "Cisco Newsroom (official press release)", "source_type": "company_press_release", "published_at": "2025-10-28", "accessed_at": "2026-08-21", "evidence_locator": "Press release: 'Cisco Delivers AI Innovations across Neocloud, Enterprise and Telecom with NVIDIA' (GTC DC 2025)", "access_restriction": "public", "license_note": "Official company press release; public.", "quote": "Cisco (NASDAQ: CSCO) today introduced major advancements to accelerate secure, scalable AI ... the Cisco N9100, the first NVIDIA partner-developed data center switch based on NVIDIA Spectrum-X Ethernet switch silicon. ... Cisco Secure AI Factory with NVIDIA."}, {"id": "ev_par_004b", "relationship_id": "rel_par_004", "source_url": "https://blogs.nvidia.com/blog/cisco-nvidia-security-enterprise-ai/", "publisher": "NVIDIA Blog (official NVIDIA channel)", "source_type": "company_press_release", "published_at": "2025-06-10", "accessed_at": "2026-08-21", "evidence_locator": "Blog post: 'Cisco and NVIDIA Advance Security for Enterprise AI Factories' (Cisco Live San Diego)", "access_restriction": "public", "license_note": "Official NVIDIA blog post; public.", "quote": "Announced today at the Cisco Live conference in San Diego, the Cisco AI Defense and Hypershield security solutions tap into NVIDIA AI to deliver comprehensive visibility, validation and runtime protection across entire AI workflows. This builds on the Cisco Secure AI Factory with NVIDIA unveiled at the NVIDIA GTC conference in March."}]}, {"id": "rel_inv_001", "source_company_id": "nvidia", "target_company_id": "coreweave", "type": "investor_or_investee", "direction": "nvidia -> coreweave (investor -> investee)", "status": "confirmed", "confidence_score": 86, "valid_from": "2023-04-01", "valid_until": null, "evidence_ids": ["ev_inv_001", "ev_inv_001b", "ev_inv_001c"], "summary": "NVIDIA invested $100M in CoreWeave (Apr 2023) and a further $2B (Jan 2026) at $87.20/share; CoreWeave also buys NVIDIA GPUs at scale and builds data centers for NVIDIA.", "evidence_items": [{"id": "ev_inv_001", "relationship_id": "rel_inv_001", "source_url": "https://en.wikipedia.org/wiki/CoreWeave", "publisher": "Wikipedia (citing WSJ, Forbes, Reuters, CNA)", "source_type": "reference", "published_at": "2026-01-01", "accessed_at": "2026-08-21", "evidence_locator": "CoreWeave article — 'Investments' and 'NVIDIA' sections", "access_restriction": "public", "license_note": "Wikipedia CC BY-SA; underlying sources are WSJ/Forbes/Reuters/CNA news reports.", "quote": "In April 2023, Nvidia invested $100 million in CoreWeave. ... In January 2026, CoreWeave received $2 billion in investment from NVIDIA at a purchase price of $87.20 per share as they expand their partnership."}, {"id": "ev_inv_001b", "relationship_id": "rel_inv_001", "source_url": "https://en.wikipedia.org/wiki/CoreWeave", "publisher": "Wikipedia (citing WSJ, Anandtech, Reuters)", "source_type": "reference", "published_at": "2026-01-01", "accessed_at": "2026-08-21", "evidence_locator": "CoreWeave article — GPU supply & supercomputer sections", "access_restriction": "public", "license_note": "Wikipedia CC BY-SA; underlying sources are WSJ/Anandtech/Reuters.", "quote": "Its $1.6 billion supercomputer data center for Nvidia in Plano, Texas, has been described by Nvidia as the fastest AI supercomputer in the world. ... CoreWeave was among the first cloud service providers to receive shipments of Nvidia's new Blackwell hardware."}, {"id": "ev_inv_001c", "relationship_id": "rel_inv_001", "source_url": "https://www.coreweave.com/news/nvidia-and-coreweave-strengthen-collaboration-to-accelerate-buildout-of-ai-factories", "publisher": "CoreWeave Newsroom (joint NVIDIA-CoreWeave press release)", "source_type": "company_press_release", "published_at": "2026-01-26", "accessed_at": "2026-08-21", "evidence_locator": "Press release: 'NVIDIA and CoreWeave Strengthen Collaboration to Accelerate Buildout of AI Factories'", "access_restriction": "public", "license_note": "Official company press release; public.", "quote": "NVIDIA (Nasdaq: NVDA) and CoreWeave, Inc. (Nasdaq: CRWV) today announced an expansion of their long-standing complementary relationship to enable CoreWeave to accelerate the buildout of more than 5 gigawatts of AI factories by 2030 ... In addition, NVIDIA has invested $2 billion in CoreWeave Class A common stock at a purchase price of $87.20 per share."}]}, {"id": "rel_inv_002", "source_company_id": "nvidia", "target_company_id": "recursion", "type": "investor_or_investee", "direction": "nvidia -> recursion (investor -> investee)", "status": "confirmed", "confidence_score": 75, "valid_from": "2023-07-12", "valid_until": null, "evidence_ids": ["ev_inv_002"], "summary": "NVIDIA invested $50M in Recursion Pharmaceuticals (announced July 12, 2023) as part of a multi-year AI drug-discovery collaboration (DGX Cloud, BioNeMo, BioHive supercomputer).", "evidence_items": [{"id": "ev_inv_002", "relationship_id": "rel_inv_002", "source_url": "https://ir.recursion.com/news-events/press-releases?l=50&page=9", "publisher": "Recursion Pharmaceuticals Investor Relations (official press release, GlobeNewswire)", "source_type": "company_press_release", "published_at": "2023-07-12", "accessed_at": "2026-08-21", "evidence_locator": "Press release: 'Recursion Announces Collaboration and $50 Million Investment from NVIDIA' (July 12, 2023)", "access_restriction": "public", "license_note": "Official company press release; public.", "quote": "Recursion (NASDAQ: RXRX) ... announced a $50 million investment and collaboration with NVIDIA. ... NVIDIA will assist in optimizing these models, provide priority access to computational resources on NVIDIA's cloud service DGX Cloud."}]}, {"id": "rel_inv_003", "source_company_id": "nvidia", "target_company_id": "soundhound", "type": "investor_or_investee", "direction": "nvidia -> soundhound (investor -> investee, now exited)", "status": "confirmed", "confidence_score": 72, "valid_from": "2017-01-01", "valid_until": "2025-02-14", "evidence_ids": ["ev_inv_003", "ev_inv_003b"], "summary": "NVIDIA participated in SoundHound's Jan 2017 $75M funding round (per VentureBeat), and a Feb 14 2025 regulatory filing (13F) reported by Reuters shows NVIDIA exited its SoundHound stake in Q4 2024 — the investment relationship is now ended (valid_until set accordingly). Evidence is secondary (Wikipedia + Reuters syndication of the filing), so the relationship is scored inferred.", "evidence_items": [{"id": "ev_inv_003", "relationship_id": "rel_inv_003", "source_url": "https://en.wikipedia.org/wiki/SoundHound", "publisher": "Wikipedia (citing VentureBeat 2017; Reuters 2025)", "source_type": "reference", "published_at": "2026-01-01", "accessed_at": "2026-08-21", "evidence_locator": "SoundHound article — funding and NVIDIA stake-sale sections", "access_restriction": "public", "license_note": "Wikipedia CC BY-SA; underlying sources are VentureBeat and Reuters.", "quote": "In January 2017, the company raised another $75 million in an investment round that included Nvidia ... In February 2025, Nvidia disclosed in a regulatory filing that it had sold its stake in SoundHound."}, {"id": "ev_inv_003b", "relationship_id": "rel_inv_003", "source_url": "https://www.stockopedia.com/share-prices/sound-hound-ai-NMQ:SOUN/news/nvidia-cuts-stake-in-arm-holdings-discloses-position-in-china-apos-s-we-ride-updated-019e6dce-6796-736e-988e-5cab4180e5d4", "publisher": "Reuters news wire (syndicated via Stockopedia)", "source_type": "business_media", "published_at": "2025-02-14", "accessed_at": "2026-08-21", "evidence_locator": "Reuters: 'Nvidia cuts stake in Arm Holdings, discloses position in China's WeRide' (Feb 14, 2025)", "access_restriction": "public", "license_note": "Reuters wire report; reproduced for research citation only.", "quote": "Feb 14 (Reuters) - Nvidia NVDA.O reduced its stake in British chip firm Arm Holdings ARM.O by about 44% and exited its holdings in Serve Robotics SERV.O and SoundHound AI SOUN.O in the fourth quarter, a regulatory filing showed on Friday."}]}, {"id": "rel_peer_001", "source_company_id": "amd", "target_company_id": "nvidia", "type": "peer", "direction": "amd <-> nvidia (competitors)", "status": "confirmed", "confidence_score": 74, "valid_from": "2000-01-01", "valid_until": null, "evidence_ids": ["ev_peer_001"], "summary": "AMD is NVIDIA's primary direct competitor in data-center GPUs and AI accelerators (AMD MI-series). Explicitly named as a competitor in NVIDIA's 10-K.", "evidence_items": [{"id": "ev_peer_001", "relationship_id": "rel_peer_001", "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000021/nvda-20260125.htm", "publisher": "U.S. Securities and Exchange Commission (NVIDIA FY2026 Form 10-K)", "source_type": "sec_filing", "published_at": "2026-02-25", "accessed_at": "2026-08-21", "evidence_locator": "10-K FY2026, Item 1 Business — Competition section, list of competitors", "access_restriction": "public", "license_note": "SEC filings are public domain under U.S. law; EDGAR is a public service.", "quote": "such as Advanced Micro Devices, Inc., or AMD, Huawei Technologies Co. Ltd., or Huawei, and Intel Corporation, or Intel ... competitors ... such as Ambarella, Inc., AMD, Broadcom, Intel, Qualcomm Incorporated, Renesas Electronics Corporation, and Samsung."}]}, {"id": "rel_peer_002", "source_company_id": "intel", "target_company_id": "nvidia", "type": "peer", "direction": "intel <-> nvidia (competitors)", "status": "confirmed", "confidence_score": 77, "valid_from": "2000-01-01", "valid_until": null, "evidence_ids": ["ev_peer_002"], "summary": "Intel competes with NVIDIA in CPUs, AI accelerators (Gaudi) and is entering foundry services. Named as a competitor in NVIDIA's 10-K.", "evidence_items": [{"id": "ev_peer_002", "relationship_id": "rel_peer_002", "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000021/nvda-20260125.htm", "publisher": "U.S. Securities and Exchange Commission (NVIDIA FY2026 Form 10-K)", "source_type": "sec_filing", "published_at": "2026-02-25", "accessed_at": "2026-08-21", "evidence_locator": "10-K FY2026, Item 1 Business — Competition section, list of competitors", "access_restriction": "public", "license_note": "SEC filings are public domain under U.S. law; EDGAR is a public service.", "quote": "such as Advanced Micro Devices, Inc., or AMD, Huawei Technologies Co. Ltd., or Huawei, and Intel Corporation, or Intel"}]}, {"id": "rel_peer_003", "source_company_id": "broadcom", "target_company_id": "nvidia", "type": "peer", "direction": "broadcom <-> nvidia (competitors)", "status": "confirmed", "confidence_score": 71, "valid_from": "2015-01-01", "valid_until": null, "evidence_ids": ["ev_peer_003"], "summary": "Broadcom competes with NVIDIA in data-center networking (DPUs, Ethernet switches) and custom AI ASICs for hyperscalers. Named in NVIDIA's 10-K.", "evidence_items": [{"id": "ev_peer_003", "relationship_id": "rel_peer_003", "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000021/nvda-20260125.htm", "publisher": "U.S. Securities and Exchange Commission (NVIDIA FY2026 Form 10-K)", "source_type": "sec_filing", "published_at": "2026-02-25", "accessed_at": "2026-08-21", "evidence_locator": "10-K FY2026, Item 1 Business — Competition section, list of networking competitors", "access_restriction": "public", "license_note": "SEC filings are public domain under U.S. law; EDGAR is a public service.", "quote": "such as AMD, Arista Networks, Broadcom, Cisco Systems, Inc., Hewlett Packard Enterprise Company, Huawei, Intel, Lumentum Holdings Inc., and Marvell Technology, Inc."}]}, {"id": "rel_peer_004", "source_company_id": "qualcomm", "target_company_id": "nvidia", "type": "peer", "direction": "qualcomm <-> nvidia (competitors)", "status": "confirmed", "confidence_score": 74, "valid_from": "2015-01-01", "valid_until": null, "evidence_ids": ["ev_peer_004"], "summary": "Qualcomm competes with NVIDIA in edge computing, automotive SoCs and embedded devices. Named in NVIDIA's 10-K as a competitor in those segments.", "evidence_items": [{"id": "ev_peer_004", "relationship_id": "rel_peer_004", "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000021/nvda-20260125.htm", "publisher": "U.S. Securities and Exchange Commission (NVIDIA FY2026 Form 10-K)", "source_type": "sec_filing", "published_at": "2026-02-25", "accessed_at": "2026-08-21", "evidence_locator": "10-K FY2026, Item 1 Business — Competition section, list of embedded/automotive competitors", "access_restriction": "public", "license_note": "SEC filings are public domain under U.S. law; EDGAR is a public service.", "quote": "such as Ambarella, Inc., AMD, Broadcom, Intel, Qualcomm Incorporated, Renesas Electronics Corporation, and Samsung, or companies with internal teams designing SoC products for their own products and services, such as Tesla, Inc."}]}], "evidence": {"ev_sup_001": {"id": "ev_sup_001", "relationship_id": "rel_sup_001", "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000021/nvda-20260125.htm", "publisher": "U.S. Securities and Exchange Commission (NVIDIA FY2026 Form 10-K)", "source_type": "sec_filing", "published_at": "2026-02-25", "accessed_at": "2026-08-21", "evidence_locator": "10-K FY2026, Item 1 Business — Manufacturing section, sentence listing foundries", "access_restriction": "public", "license_note": "SEC filings are public domain under U.S. law; EDGAR is a public service.", "quote": "We utilize foundries, such as Taiwan Semiconductor Manufacturing Company Limited, or TSMC, and Samsung Electronics Co., Ltd., or Samsung, to produce our semiconductor wafers."}, "ev_sup_002": {"id": "ev_sup_002", "relationship_id": "rel_sup_002", "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000021/nvda-20260125.htm", "publisher": "U.S. Securities and Exchange Commission (NVIDIA FY2026 Form 10-K)", "source_type": "sec_filing", "published_at": "2026-02-25", "accessed_at": "2026-08-21", "evidence_locator": "10-K FY2026, Item 1 Business — Manufacturing section, sentence listing memory suppliers", "access_restriction": "public", "license_note": "SEC filings are public domain under U.S. law; EDGAR is a public service.", "quote": "We purchase memory from SK Hynix Inc., Micron Technology, Inc., and Samsung."}, "ev_sup_003": {"id": "ev_sup_003", "relationship_id": "rel_sup_003", "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000021/nvda-20260125.htm", "publisher": "U.S. Securities and Exchange Commission (NVIDIA FY2026 Form 10-K)", "source_type": "sec_filing", "published_at": "2026-02-25", "accessed_at": "2026-08-21", "evidence_locator": "10-K FY2026, Item 1 Business — Manufacturing section, sentence listing memory suppliers", "access_restriction": "public", "license_note": "SEC filings are public domain under U.S. law; EDGAR is a public service.", "quote": "We purchase memory from SK Hynix Inc., Micron Technology, Inc., and Samsung."}, "ev_sup_004": {"id": "ev_sup_004", "relationship_id": "rel_sup_004", "source_url": "https://timesofindia.indiatimes.com/technology/tech-news/how-europes-biggest-tech-company-asml-played-key-role-in-nvidia-becoming-worlds-most-valuable-company/articleshowprint/127778897.cms", "publisher": "The Times of India (technology section)", "source_type": "business_media", "published_at": "2026-06-01", "accessed_at": "2026-08-21", "evidence_locator": "Article: 'ASML may have played key role in Nvidia becoming world's most valuable company'", "access_restriction": "public", "license_note": "Public news article; reproduced for research citation only.", "quote": "These machines are purchased by semiconductor foundries, such as Taiwan-based TSMC, which manufactures chips on behalf of designers such as Nvidia. ... ASML is not a direct supplier to Nvidia, but it supplies TSMC with the extreme ultraviolet (EUV) lithography machines needed to fabricate Nvidia's most advanced chips."}, "ev_cus_001": {"id": "ev_cus_001", "relationship_id": "rel_cus_001", "source_url": "https://epoch.ai/data/ai-chip-owners-documentation/", "publisher": "Epoch AI (data research institute)", "source_type": "analyst_research", "published_at": "2026-01-01", "accessed_at": "2026-08-21", "evidence_locator": "'AI Chip Owners Documentation' — table of Nvidia revenue share by hyperscaler", "access_restriction": "public", "license_note": "Public research documentation; aggregated analyst estimates.", "quote": "The Information reports that Nvidia sources told them that Microsoft was Nvidia's biggest customer in 2024. ... Microsoft 19% [share of Nvidia total revenue], 21% [share of data center revenue]."}, "ev_cus_001b": {"id": "ev_cus_001b", "relationship_id": "rel_cus_001", "source_url": "https://finance.yahoo.com/news/big-techs-spending-drove-nvidias-rise-154027146.html", "publisher": "Yahoo Finance (citing Bloomberg estimates)", "source_type": "business_media", "published_at": "2025-06-01", "accessed_at": "2026-08-21", "evidence_locator": "Article: 'Big Tech's spending drove Nvidia's rise' — Bloomberg estimates", "access_restriction": "public", "license_note": "Public news article citing Bloomberg compiled estimates.", "quote": "Microsoft (MSFT) is the largest driver of Nvidia's revenue, followed by Meta (META), Amazon (AMZN), and Google parent Alphabet (GOOG), according to Bloomberg estimates."}, "ev_cus_002": {"id": "ev_cus_002", "relationship_id": "rel_cus_002", "source_url": "https://finance.yahoo.com/news/big-techs-spending-drove-nvidias-rise-154027146.html", "publisher": "Yahoo Finance (citing Bloomberg estimates)", "source_type": "business_media", "published_at": "2025-06-01", "accessed_at": "2026-08-21", "evidence_locator": "Article: 'Big Tech's spending drove Nvidia's rise' — Bloomberg estimates", "access_restriction": "public", "license_note": "Public news article citing Bloomberg compiled estimates.", "quote": "25% of Meta's capital expenditures go to Nvidia and the company accounts for just over 9% of Nvidia's annual revenue."}, "ev_cus_003": {"id": "ev_cus_003", "relationship_id": "rel_cus_003", "source_url": "https://epoch.ai/data/ai-chip-owners-documentation/", "publisher": "Epoch AI (data research institute)", "source_type": "analyst_research", "published_at": "2026-01-01", "accessed_at": "2026-08-21", "evidence_locator": "'AI Chip Owners Documentation' — Amazon row in revenue-share table", "access_restriction": "public", "license_note": "Public research documentation; aggregated analyst estimates.", "quote": "Amazon 7% [share of Nvidia total revenue], 8% [share of data center revenue]. ... media reports corroborate that Google and Amazon are still major Nvidia purchasers as of 2025."}, "ev_cus_004": {"id": "ev_cus_004", "relationship_id": "rel_cus_004", "source_url": "https://epoch.ai/data/ai-chip-owners-documentation/", "publisher": "Epoch AI (data research institute)", "source_type": "analyst_research", "published_at": "2026-01-01", "accessed_at": "2026-08-21", "evidence_locator": "'AI Chip Owners Documentation' — Alphabet/Google row in revenue-share table", "access_restriction": "public", "license_note": "Public research documentation; aggregated analyst estimates.", "quote": "Google 7% [share of Nvidia total revenue], 8% [share of data center revenue]. ... As of August 2024, Google had placed orders for 400,000 GB200s (worth approximately $15 billion) with Nvidia."}, "ev_cus_005": {"id": "ev_cus_005", "relationship_id": "rel_cus_005", "source_url": "https://www.ainvest.com/news/dell-ai-driven-server-surge-marginal-profit-shifts-growth-outpace-margin-pressures-2508", "publisher": "AInvest (financial news)", "source_type": "business_media", "published_at": "2025-08-01", "accessed_at": "2026-08-21", "evidence_locator": "Article: 'Dell's AI-Driven Server Surge...' — Q2 FY2025 AI server revenue", "access_restriction": "public", "license_note": "Public financial news article.", "quote": "Dell's AI server revenue surged 69% to $12.9B in Q2 2025, driven by $11.7B backlog and NVIDIA partnerships. ... the AI Factory initiative with NVIDIA."}, "ev_par_001": {"id": "ev_par_001", "relationship_id": "rel_par_001", "source_url": "https://newsroom.accenture.com/news/2024/accenture-and-nvidia-lead-enterprises-into-era-of-ai", "publisher": "Accenture Newsroom (official press release)", "source_type": "company_press_release", "published_at": "2024-10-02", "accessed_at": "2026-08-21", "evidence_locator": "Press release: 'Accenture and NVIDIA Lead Enterprises into Era of AI'", "access_restriction": "public", "license_note": "Official company press release; public.", "quote": "Accenture and NVIDIA today announced an expanded partnership, including Accenture's formation of a new NVIDIA Business Group ... using Accenture's AI Refinery, which uses the full NVIDIA AI stack — including NVIDIA AI Foundry, NVIDIA AI Enterprise and NVIDIA Omniverse."}, "ev_par_002": {"id": "ev_par_002", "relationship_id": "rel_par_002", "source_url": "https://newsroom.servicenow.com/press-releases/details/2024/ServiceNow-partners-with-Nvidia-to-accelerate-enterprise-adoption-of-Agentic-AI-10-23-2024-traffic/default.aspx", "publisher": "ServiceNow Newsroom (official press release)", "source_type": "company_press_release", "published_at": "2024-10-23", "accessed_at": "2026-08-21", "evidence_locator": "Press release: 'ServiceNow partners with Nvidia to accelerate enterprise adoption of Agentic AI'", "access_restriction": "public", "license_note": "Official company press release; public.", "quote": "ServiceNow (NYSE: NOW) today announced a major expansion to its strategic partnership with NVIDIA to accelerate enterprise adoption of Agentic AI. The companies will use NVIDIA NIM Agent Blueprints to co-develop native AI Agents within the ServiceNow platform."}, "ev_par_003": {"id": "ev_par_003", "relationship_id": "rel_par_003", "source_url": "https://nvidianews.nvidia.com/news/snowflake-and-nvidia-team-to-help-businesses-harness-their-data-for-generative-ai-in-the-data-cloud", "publisher": "NVIDIA Newsroom (official press release)", "source_type": "company_press_release", "published_at": "2023-06-26", "accessed_at": "2026-08-21", "evidence_locator": "Press release: 'Snowflake and NVIDIA Team to Help Businesses Harness Their Data for Generative AI'", "access_restriction": "public", "license_note": "Official company press release; public.", "quote": "Snowflake (NYSE: SNOW) and NVIDIA today announced at Snowflake Summit 2023 that they are partnering ... With the NVIDIA NeMo platform ... Snowflake will enable enterprises to use data in their Snowflake accounts to make custom LLMs for advanced generative AI services."}, "ev_par_003b": {"id": "ev_par_003b", "relationship_id": "rel_par_003", "source_url": "https://investors.snowflake.com/news/news-details/2024/Snowflake-Teams-with-NVIDIA-to-Deliver-Full-Stack-AI-Platform-for-Customers-to-Transform-Their-Industries/default.aspx", "publisher": "Snowflake Investor Relations (official press release)", "source_type": "company_press_release", "published_at": "2024-03-18", "accessed_at": "2026-08-21", "evidence_locator": "Press release: 'Snowflake Teams with NVIDIA to Deliver Full-Stack AI Platform' (GTC 2024)", "access_restriction": "public", "license_note": "Official company press release; public.", "quote": "Snowflake today announced at NVIDIA GTC an expanded collaboration with NVIDIA ... bringing together the full-stack NVIDIA accelerated platform with the trusted data foundation and secure AI of Snowflake's Data Cloud."}, "ev_par_004": {"id": "ev_par_004", "relationship_id": "rel_par_004", "source_url": "https://newsroom.cisco.com/c/r/newsroom/en/us/a/y2025/m10/cisco-delivers-ai-networking-innovations-across-neocloud-enterprise-and-telecom-with-nvidia.html", "publisher": "Cisco Newsroom (official press release)", "source_type": "company_press_release", "published_at": "2025-10-28", "accessed_at": "2026-08-21", "evidence_locator": "Press release: 'Cisco Delivers AI Innovations across Neocloud, Enterprise and Telecom with NVIDIA' (GTC DC 2025)", "access_restriction": "public", "license_note": "Official company press release; public.", "quote": "Cisco (NASDAQ: CSCO) today introduced major advancements to accelerate secure, scalable AI ... the Cisco N9100, the first NVIDIA partner-developed data center switch based on NVIDIA Spectrum-X Ethernet switch silicon. ... Cisco Secure AI Factory with NVIDIA."}, "ev_par_004b": {"id": "ev_par_004b", "relationship_id": "rel_par_004", "source_url": "https://blogs.nvidia.com/blog/cisco-nvidia-security-enterprise-ai/", "publisher": "NVIDIA Blog (official NVIDIA channel)", "source_type": "company_press_release", "published_at": "2025-06-10", "accessed_at": "2026-08-21", "evidence_locator": "Blog post: 'Cisco and NVIDIA Advance Security for Enterprise AI Factories' (Cisco Live San Diego)", "access_restriction": "public", "license_note": "Official NVIDIA blog post; public.", "quote": "Announced today at the Cisco Live conference in San Diego, the Cisco AI Defense and Hypershield security solutions tap into NVIDIA AI to deliver comprehensive visibility, validation and runtime protection across entire AI workflows. This builds on the Cisco Secure AI Factory with NVIDIA unveiled at the NVIDIA GTC conference in March."}, "ev_inv_001": {"id": "ev_inv_001", "relationship_id": "rel_inv_001", "source_url": "https://en.wikipedia.org/wiki/CoreWeave", "publisher": "Wikipedia (citing WSJ, Forbes, Reuters, CNA)", "source_type": "reference", "published_at": "2026-01-01", "accessed_at": "2026-08-21", "evidence_locator": "CoreWeave article — 'Investments' and 'NVIDIA' sections", "access_restriction": "public", "license_note": "Wikipedia CC BY-SA; underlying sources are WSJ/Forbes/Reuters/CNA news reports.", "quote": "In April 2023, Nvidia invested $100 million in CoreWeave. ... In January 2026, CoreWeave received $2 billion in investment from NVIDIA at a purchase price of $87.20 per share as they expand their partnership."}, "ev_inv_001b": {"id": "ev_inv_001b", "relationship_id": "rel_inv_001", "source_url": "https://en.wikipedia.org/wiki/CoreWeave", "publisher": "Wikipedia (citing WSJ, Anandtech, Reuters)", "source_type": "reference", "published_at": "2026-01-01", "accessed_at": "2026-08-21", "evidence_locator": "CoreWeave article — GPU supply & supercomputer sections", "access_restriction": "public", "license_note": "Wikipedia CC BY-SA; underlying sources are WSJ/Anandtech/Reuters.", "quote": "Its $1.6 billion supercomputer data center for Nvidia in Plano, Texas, has been described by Nvidia as the fastest AI supercomputer in the world. ... CoreWeave was among the first cloud service providers to receive shipments of Nvidia's new Blackwell hardware."}, "ev_inv_001c": {"id": "ev_inv_001c", "relationship_id": "rel_inv_001", "source_url": "https://www.coreweave.com/news/nvidia-and-coreweave-strengthen-collaboration-to-accelerate-buildout-of-ai-factories", "publisher": "CoreWeave Newsroom (joint NVIDIA-CoreWeave press release)", "source_type": "company_press_release", "published_at": "2026-01-26", "accessed_at": "2026-08-21", "evidence_locator": "Press release: 'NVIDIA and CoreWeave Strengthen Collaboration to Accelerate Buildout of AI Factories'", "access_restriction": "public", "license_note": "Official company press release; public.", "quote": "NVIDIA (Nasdaq: NVDA) and CoreWeave, Inc. (Nasdaq: CRWV) today announced an expansion of their long-standing complementary relationship to enable CoreWeave to accelerate the buildout of more than 5 gigawatts of AI factories by 2030 ... In addition, NVIDIA has invested $2 billion in CoreWeave Class A common stock at a purchase price of $87.20 per share."}, "ev_inv_002": {"id": "ev_inv_002", "relationship_id": "rel_inv_002", "source_url": "https://ir.recursion.com/news-events/press-releases?l=50&page=9", "publisher": "Recursion Pharmaceuticals Investor Relations (official press release, GlobeNewswire)", "source_type": "company_press_release", "published_at": "2023-07-12", "accessed_at": "2026-08-21", "evidence_locator": "Press release: 'Recursion Announces Collaboration and $50 Million Investment from NVIDIA' (July 12, 2023)", "access_restriction": "public", "license_note": "Official company press release; public.", "quote": "Recursion (NASDAQ: RXRX) ... announced a $50 million investment and collaboration with NVIDIA. ... NVIDIA will assist in optimizing these models, provide priority access to computational resources on NVIDIA's cloud service DGX Cloud."}, "ev_inv_003": {"id": "ev_inv_003", "relationship_id": "rel_inv_003", "source_url": "https://en.wikipedia.org/wiki/SoundHound", "publisher": "Wikipedia (citing VentureBeat 2017; Reuters 2025)", "source_type": "reference", "published_at": "2026-01-01", "accessed_at": "2026-08-21", "evidence_locator": "SoundHound article — funding and NVIDIA stake-sale sections", "access_restriction": "public", "license_note": "Wikipedia CC BY-SA; underlying sources are VentureBeat and Reuters.", "quote": "In January 2017, the company raised another $75 million in an investment round that included Nvidia ... In February 2025, Nvidia disclosed in a regulatory filing that it had sold its stake in SoundHound."}, "ev_inv_003b": {"id": "ev_inv_003b", "relationship_id": "rel_inv_003", "source_url": "https://www.stockopedia.com/share-prices/sound-hound-ai-NMQ:SOUN/news/nvidia-cuts-stake-in-arm-holdings-discloses-position-in-china-apos-s-we-ride-updated-019e6dce-6796-736e-988e-5cab4180e5d4", "publisher": "Reuters news wire (syndicated via Stockopedia)", "source_type": "business_media", "published_at": "2025-02-14", "accessed_at": "2026-08-21", "evidence_locator": "Reuters: 'Nvidia cuts stake in Arm Holdings, discloses position in China's WeRide' (Feb 14, 2025)", "access_restriction": "public", "license_note": "Reuters wire report; reproduced for research citation only.", "quote": "Feb 14 (Reuters) - Nvidia NVDA.O reduced its stake in British chip firm Arm Holdings ARM.O by about 44% and exited its holdings in Serve Robotics SERV.O and SoundHound AI SOUN.O in the fourth quarter, a regulatory filing showed on Friday."}, "ev_peer_001": {"id": "ev_peer_001", "relationship_id": "rel_peer_001", "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000021/nvda-20260125.htm", "publisher": "U.S. Securities and Exchange Commission (NVIDIA FY2026 Form 10-K)", "source_type": "sec_filing", "published_at": "2026-02-25", "accessed_at": "2026-08-21", "evidence_locator": "10-K FY2026, Item 1 Business — Competition section, list of competitors", "access_restriction": "public", "license_note": "SEC filings are public domain under U.S. law; EDGAR is a public service.", "quote": "such as Advanced Micro Devices, Inc., or AMD, Huawei Technologies Co. Ltd., or Huawei, and Intel Corporation, or Intel ... competitors ... such as Ambarella, Inc., AMD, Broadcom, Intel, Qualcomm Incorporated, Renesas Electronics Corporation, and Samsung."}, "ev_peer_002": {"id": "ev_peer_002", "relationship_id": "rel_peer_002", "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000021/nvda-20260125.htm", "publisher": "U.S. Securities and Exchange Commission (NVIDIA FY2026 Form 10-K)", "source_type": "sec_filing", "published_at": "2026-02-25", "accessed_at": "2026-08-21", "evidence_locator": "10-K FY2026, Item 1 Business — Competition section, list of competitors", "access_restriction": "public", "license_note": "SEC filings are public domain under U.S. law; EDGAR is a public service.", "quote": "such as Advanced Micro Devices, Inc., or AMD, Huawei Technologies Co. Ltd., or Huawei, and Intel Corporation, or Intel"}, "ev_peer_003": {"id": "ev_peer_003", "relationship_id": "rel_peer_003", "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000021/nvda-20260125.htm", "publisher": "U.S. Securities and Exchange Commission (NVIDIA FY2026 Form 10-K)", "source_type": "sec_filing", "published_at": "2026-02-25", "accessed_at": "2026-08-21", "evidence_locator": "10-K FY2026, Item 1 Business — Competition section, list of networking competitors", "access_restriction": "public", "license_note": "SEC filings are public domain under U.S. law; EDGAR is a public service.", "quote": "such as AMD, Arista Networks, Broadcom, Cisco Systems, Inc., Hewlett Packard Enterprise Company, Huawei, Intel, Lumentum Holdings Inc., and Marvell Technology, Inc."}, "ev_peer_004": {"id": "ev_peer_004", "relationship_id": "rel_peer_004", "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000021/nvda-20260125.htm", "publisher": "U.S. Securities and Exchange Commission (NVIDIA FY2026 Form 10-K)", "source_type": "sec_filing", "published_at": "2026-02-25", "accessed_at": "2026-08-21", "evidence_locator": "10-K FY2026, Item 1 Business — Competition section, list of embedded/automotive competitors", "access_restriction": "public", "license_note": "SEC filings are public domain under U.S. law; EDGAR is a public service.", "quote": "such as Ambarella, Inc., AMD, Broadcom, Intel, Qualcomm Incorporated, Renesas Electronics Corporation, and Samsung, or companies with internal teams designing SoC products for their own products and services, such as Tesla, Inc."}}};
+
+// --- Tab switching ---
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('tab-' + t.dataset.tab).classList.add('active');
+    if (t.dataset.tab === 'graph') renderGraph();
+  });
+});
+
+// --- Helpers ---
+function companyName(id) { return DATA.companies[id] ? DATA.companies[id].name : id; }
+function companyTicker(id) { return DATA.companies[id] ? DATA.companies[id].stock_code : ''; }
+function scoreClass(s) { return s >= 70 ? 'score-high' : s >= 40 ? 'score-mid' : 'score-low'; }
+function statusBadge(s) { return '<span class="badge badge-' + s + '">' + s + '</span>'; }
+function typeBadge(t) {
+  const map = {supplier:'badge-supplier',customer:'badge-customer',partner:'badge-partner',investor_or_investee:'badge-investor',peer:'badge-peer'};
+  const labels = {supplier:'Supplier',customer:'Customer',partner:'Partner',investor_or_investee:'Investor',peer:'Peer'};
+  return '<span class="badge ' + (map[t]||'') + '">' + (labels[t]||t) + '</span>';
+}
+function scoreBar(s) { return '<div class="score-bar"><div class="score-fill ' + scoreClass(s) + '" style="width:' + s + '%"></div></div>' + s; }
+function validPeriod(r) {
+  const from = r.valid_from || '?';
+  const until = r.valid_until || 'present';
+  return from + ' ~ ' + until;
+}
+
+// --- Overview ---
+function renderOverview() {
+  const rels = DATA.relationships;
+  const types = {};
+  rels.forEach(r => {
+    if (!types[r.type]) types[r.type] = { count:0, confirmed:0, inferred:0, scores:[] };
+    types[r.type].count++;
+    if (r.status === 'confirmed') types[r.type].confirmed++;
+    if (r.status === 'inferred') types[r.type].inferred++;
+    types[r.type].scores.push(r.confidence_score);
+  });
+
+  // Stats cards
+  const confirmed = rels.filter(r => r.status === 'confirmed').length;
+  const inferred = rels.filter(r => r.status === 'inferred').length;
+  const avgScore = Math.round(rels.reduce((a,r) => a + r.confidence_score, 0) / rels.length);
+  const totalEvidence = Object.keys(DATA.evidence).length;
+  const html = `
+    <div class="stat-card"><div class="label">Companies</div><div class="value">${Object.keys(DATA.companies).length}</div><div class="detail">1 target + 20 related</div></div>
+    <div class="stat-card"><div class="label">Relationships</div><div class="value">${rels.length}</div><div class="detail">5 types covered</div></div>
+    <div class="stat-card"><div class="label">Evidence Items</div><div class="value">${totalEvidence}</div><div class="detail">All public access</div></div>
+    <div class="stat-card"><div class="label">Confirmed</div><div class="value" style="color:var(--green)">${confirmed}</div><div class="detail">Score >= 70</div></div>
+    <div class="stat-card"><div class="label">Inferred</div><div class="value" style="color:var(--orange)">${inferred}</div><div class="detail">Score 40-69</div></div>
+    <div class="stat-card"><div class="label">Avg Score</div><div class="value">${avgScore}</div><div class="detail">Out of 100</div></div>
+  `;
+  document.getElementById('stats-grid').innerHTML = html;
+
+  // Summary table
+  const typeLabels = {supplier:'Supplier',customer:'Customer',partner:'Partner',investor_or_investee:'Investor/Investee',peer:'Peer'};
+  document.getElementById('summary-body').innerHTML = Object.entries(types).map(([t,d]) => {
+    const avg = Math.round(d.scores.reduce((a,b)=>a+b,0) / d.scores.length);
+    const min = Math.min(...d.scores), max = Math.max(...d.scores);
+    return '<tr onclick="filterToType(\''+t+'\')"><td>' + typeBadge(t) + ' ' + typeLabels[t] + '</td><td>' + d.count + '</td><td>' + d.confirmed + '</td><td>' + d.inferred + '</td><td>' + scoreBar(avg) + '</td><td>' + min + '-' + max + '</td></tr>';
+  }).join('');
+
+  // Key relationships
+  const keyRels = rels.filter(r => r.confidence_score >= 75).sort((a,b) => b.confidence_score - a.confidence_score);
+  document.getElementById('key-body').innerHTML = keyRels.map(r => {
+    return '<tr onclick="showRelDetail(\''+r.id+'\')"><td>' + r.id + '</td><td>' + typeBadge(r.type) + '</td><td>' + companyName(r.source_company_id) + ' → ' + companyName(r.target_company_id) + '</td><td>' + statusBadge(r.status) + '</td><td>' + scoreBar(r.confidence_score) + '</td><td>' + r.evidence_ids.length + '</td><td>' + validPeriod(r) + '</td></tr>';
+  }).join('');
+}
+
+// --- Relationships table ---
+let sortCol = 'score', sortDir = -1;
+function sortBy(col) {
+  if (sortCol === col) sortDir *= -1; else { sortCol = col; sortDir = -1; }
+  applyFilters();
+}
+
+function applyFilters() {
+  const type = document.getElementById('filter-type').value;
+  const status = document.getElementById('filter-status').value;
+  const minScore = parseInt(document.getElementById('filter-min-score').value);
+  const search = document.getElementById('filter-search').value.toLowerCase();
+
+  let filtered = DATA.relationships.filter(r => {
+    if (type && r.type !== type) return false;
+    if (status && r.status !== status) return false;
+    if (r.confidence_score < minScore) return false;
+    if (search) {
+      const text = (companyName(r.source_company_id) + ' ' + companyName(r.target_company_id) + ' ' + (r.summary||'')).toLowerCase();
+      if (!text.includes(search)) return false;
+    }
+    return true;
+  });
+
+  // Sort
+  const sorters = {
+    'id': r => r.id,
+    'type': r => r.type,
+    'source': r => companyName(r.source_company_id),
+    'status': r => r.status,
+    'score': r => r.confidence_score,
+    'evidence': r => r.evidence_ids.length,
+    'valid': r => r.valid_from || '',
+  };
+  filtered.sort((a,b) => {
+    const va = sorters[sortCol](a), vb = sorters[sortCol](b);
+    if (va < vb) return -1*sortDir;
+    if (va > vb) return 1*sortDir;
+    return 0;
+  });
+
+  document.getElementById('rel-body').innerHTML = filtered.map(r => {
+    return '<tr onclick="showRelDetail(\''+r.id+'\')"><td>' + r.id + '</td><td>' + typeBadge(r.type) + '</td><td>' + companyName(r.source_company_id) + ' → ' + companyName(r.target_company_id) + '</td><td>' + statusBadge(r.status) + '</td><td>' + scoreBar(r.confidence_score) + '</td><td>' + r.evidence_ids.length + '</td><td>' + validPeriod(r) + '</td></tr>';
+  }).join('');
+}
+
+function filterToType(t) {
+  document.querySelector('[data-tab="relationships"]').click();
+  document.getElementById('filter-type').value = t;
+  applyFilters();
+}
+
+// --- Companies ---
+function renderCompanies() {
+  const search = document.getElementById('comp-search').value.toLowerCase();
+  let comps = Object.values(DATA.companies).filter(c => {
+    if (!search) return true;
+    return (c.name + ' ' + c.stock_code + ' ' + c.id).toLowerCase().includes(search);
+  });
+  comps.sort((a,b) => a.id < b.id ? -1 : 1);
+  const typeColors = {target: 'badge-confirmed', related: 'badge-investor'};
+  document.getElementById('comp-body').innerHTML = comps.map(c => {
+    const relCount = DATA.relationships.filter(r => r.source_company_id === c.id || r.target_company_id === c.id).length;
+    return '<tr onclick="showCompanyDetail(\''+c.id+'\')"><td>' + c.id + '</td><td><b>' + c.name + '</b></td><td>' + (c.stock_code||'') + '</td><td>' + (c.exchange||'') + '</td><td>' + (c.country||'') + '</td><td><span class="badge ' + (typeColors[c.entity_type]||'') + '">' + c.entity_type + '</span></td><td>' + (c.sector||'') + '</td></tr>';
+  }).join('');
+}
+
+// --- Relationship detail modal ---
+function showRelDetail(relId) {
+  const r = DATA.relationships.find(x => x.id === relId);
+  if (!r) return;
+  const src = DATA.companies[r.source_company_id] || {};
+  const tgt = DATA.companies[r.target_company_id] || {};
+  const bd = r.score_breakdown || {};
+  const dims = bd.dimensions || {};
+  const dimMax = {authority:25, evidence_quality:25, recency:20, specificity:20, quantifiability:10};
+  const dimLabels = {authority:'Authority', evidence_quality:'Evidence Quality', recency:'Recency', specificity:'Specificity', quantifiability:'Quantifiability'};
+
+  let evidenceHtml = (r.evidence_items||[]).map((e,i) => {
+    return '<div class="evidence-card">' +
+      '<div class="ev-header"><span class="badge badge-' + (e.access_restriction||'public') + '">' + (e.access_restriction||'public') + '</span><span class="ev-type">' + (e.source_type||'') + '</span></div>' +
+      '<div class="ev-meta"><span><b>Publisher:</b> ' + (e.publisher||'') + '</span><span><b>Published:</b> ' + (e.published_at||'') + '</span></div>' +
+      (e.quote ? '<div class="ev-quote">"' + e.quote + '"</div>' : '') +
+      '<div class="ev-meta">' +
+        '<a href="' + e.source_url + '" target="_blank">Source URL ↗</a>' +
+        '<span><b>Locator:</b> ' + (e.evidence_locator||'') + '</span>' +
+        '<span><b>License:</b> ' + (e.license_note||'') + '</span>' +
+        '<span><b>Accessed:</b> ' + (e.accessed_at||'') + '</span>' +
+      '</div></div>';
+  }).join('');
+
+  document.getElementById('modal-content').innerHTML =
+    '<button class="close-btn" onclick="closeModal()">×</button>' +
+    '<h2>' + typeBadge(r.type) + ' ' + r.id + '</h2>' +
+    '<div style="color:var(--text-secondary);margin-top:4px">' + (src.name||r.source_company_id) + ' (' + (src.stock_code||'') + ') → ' + (tgt.name||r.target_company_id) + ' (' + (tgt.stock_code||'') + ')</div>' +
+    '<div style="margin-top:8px">' + statusBadge(r.status) + ' ' + scoreBar(r.confidence_score) + ' <span class="pill">Band: ' + (bd.band||r.status) + '</span></div>' +
+    (r.summary ? '<div style="margin-top:12px;font-size:13px">' + r.summary + '</div>' : '') +
+    '<div style="margin-top:8px;font-size:12px;color:var(--text-secondary)"><b>Valid:</b> ' + validPeriod(r) + '</div>' +
+    '<div class="modal-section"><h3>Score Breakdown (Total: ' + (bd.total||r.confidence_score) + '/100)</h3>' +
+    '<div class="score-breakdown">' +
+      Object.entries(dimLabels).map(([k,label]) => {
+        const v = dims[k] || 0;
+        const max = dimMax[k];
+        const pct = (v/max)*100;
+        return '<div class="score-dim"><div class="dim-name">' + label + ' (' + v + '/' + max + ')</div><div class="dim-val">' + v + '</div><div class="dim-bar"><div class="dim-bar-fill" style="width:' + pct + '%"></div></div></div>';
+      }).join('') +
+    '</div></div>' +
+    '<div class="modal-section"><h3>Evidence (' + (r.evidence_items||[]).length + ' items)</h3>' + (evidenceHtml || '<p style="color:var(--text-secondary)">No evidence linked.</p>') + '</div>';
+
+  document.getElementById('modal-overlay').classList.add('show');
+}
+
+// --- Company detail modal ---
+function showCompanyDetail(compId) {
+  const c = DATA.companies[compId];
+  if (!c) return;
+  const rels = DATA.relationships.filter(r => r.source_company_id === compId || r.target_company_id === compId);
+  let relsHtml = rels.map(r => {
+    const other = r.source_company_id === compId ? r.target_company_id : r.source_company_id;
+    const dir = r.source_company_id === compId ? '→' : '←';
+    return '<tr onclick="showRelDetail(\''+r.id+'\')"><td>' + typeBadge(r.type) + '</td><td>' + dir + ' ' + companyName(other) + '</td><td>' + statusBadge(r.status) + '</td><td>' + scoreBar(r.confidence_score) + '</td></tr>';
+  }).join('');
+
+  document.getElementById('modal-content').innerHTML =
+    '<button class="close-btn" onclick="closeModal()">×</button>' +
+    '<h2>' + c.name + '</h2>' +
+    '<div style="color:var(--text-secondary);margin-top:4px">' + (c.stock_code||'') + ' · ' + (c.exchange||'') + ' · ' + (c.country||'') + ' · ISIN: ' + (c.isin||'') + '</div>' +
+    '<div style="margin-top:8px"><span class="badge ' + (c.entity_type==='target'?'badge-confirmed':'badge-investor') + '">' + c.entity_type + '</span> <span class="pill">' + (c.sector||'') + '</span></div>' +
+    (c.description ? '<div style="margin-top:12px;font-size:13px">' + c.description + '</div>' : '') +
+    '<div class="modal-section"><h3>Relationships (' + rels.length + ')</h3>' +
+    '<table><thead><tr><th>Type</th><th>Counterparty</th><th>Status</th><th>Score</th></tr></thead><tbody>' + relsHtml + '</tbody></table></div>';
+
+  document.getElementById('modal-overlay').classList.add('show');
+}
+
+function closeModal() { document.getElementById('modal-overlay').classList.remove('show'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// --- Graph ---
+function renderGraph() {
+  const svg = document.getElementById('graph-svg');
+  const w = svg.clientWidth || 1200, h = 600;
+  svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+  svg.innerHTML = '';
+
+  const companies = Object.values(DATA.companies);
+  const target = DATA.dataset.research_target;
+
+  // Position nodes in a circle around center
+  const cx = w/2, cy = h/2;
+  const radius = Math.min(w, h) * 0.35;
+  const targetNode = companies.find(c => c.id === target);
+  const others = companies.filter(c => c.id !== target);
+
+  const nodes = [];
+  nodes.push({ ...targetNode, x: cx, y: cy, isTarget: true });
+  others.forEach((c, i) => {
+    const angle = (i / others.length) * 2 * Math.PI - Math.PI/2;
+    nodes.push({ ...c, x: cx + radius * Math.cos(angle), y: cy + radius * Math.sin(angle), isTarget: false });
+  });
+  const nodeMap = {}; nodes.forEach(n => nodeMap[n.id] = n);
+
+  // Edges
+  const edges = DATA.relationships.map(r => ({
+    ...r,
+    x1: nodeMap[r.source_company_id].x,
+    y1: nodeMap[r.source_company_id].y,
+    x2: nodeMap[r.target_company_id].x,
+    y2: nodeMap[r.target_company_id].y,
+  }));
+
+  // Edge colors by type
+  const edgeColors = {supplier:'#1565c0', customer:'#7b1fa2', partner:'#2e7d32', investor_or_investee:'#e65100', peer:'#c62828'};
+
+  // Draw edges
+  edges.forEach(e => {
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', e.x1); line.setAttribute('y1', e.y1);
+    line.setAttribute('x2', e.x2); line.setAttribute('y2', e.y2);
+    line.setAttribute('class', 'graph-edge');
+    line.setAttribute('stroke', edgeColors[e.type] || '#ccc');
+    line.setAttribute('opacity', e.status === 'confirmed' ? '0.6' : '0.3');
+    line.style.cursor = 'pointer';
+    line.addEventListener('click', () => showRelDetail(e.id));
+    svg.appendChild(line);
+  });
+
+  // Draw nodes
+  nodes.forEach(n => {
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('class', 'graph-node ' + (n.isTarget ? 'target' : 'related'));
+    g.setAttribute('transform', 'translate(' + n.x + ',' + n.y + ')');
+
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('r', n.isTarget ? 22 : 12);
+    circle.setAttribute('fill', n.isTarget ? 'var(--accent)' : '#6b5b95');
+    g.appendChild(circle);
+
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('y', n.isTarget ? 38 : 28);
+    text.textContent = n.stock_code ? n.stock_code.split('/')[0].trim() : n.id;
+    text.setAttribute('fill', '#333');
+    g.appendChild(text);
+
+    g.addEventListener('click', () => showCompanyDetail(n.id));
+    svg.appendChild(g);
+  });
+
+  // Edge legend
+  const legendY = 20;
+  const legendItems = [
+    {type:'supplier',color:'#1565c0',label:'Supplier'},
+    {type:'customer',color:'#7b1fa2',label:'Customer'},
+    {type:'partner',color:'#2e7d32',label:'Partner'},
+    {type:'investor_or_investee',color:'#e65100',label:'Investor'},
+    {type:'peer',color:'#c62828',label:'Peer'},
+  ];
+  legendItems.forEach((li, i) => {
+    const x = 20 + i * 100;
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', x); line.setAttribute('y1', legendY);
+    line.setAttribute('x2', x+20); line.setAttribute('y2', legendY);
+    line.setAttribute('stroke', li.color); line.setAttribute('stroke-width', '3');
+    svg.appendChild(line);
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('x', x+24); text.setAttribute('y', legendY+4);
+    text.setAttribute('font-size', '11'); text.setAttribute('fill', '#666');
+    text.textContent = li.label;
+    svg.appendChild(text);
+  });
+}
+
+// --- Scoring distribution ---
+function renderScoreDist() {
+  const scores = DATA.relationships.map(r => r.confidence_score).sort((a,b)=>a-b);
+  const buckets = [0,0,0,0,0]; // 0-39, 40-49, 50-59, 60-69, 70-100
+  scores.forEach(s => {
+    if (s < 40) buckets[0]++;
+    else if (s < 50) buckets[1]++;
+    else if (s < 60) buckets[2]++;
+    else if (s < 70) buckets[3]++;
+    else buckets[4]++;
+  });
+  const labels = ['0-39 (unknown)','40-49','50-59','60-69 (inferred)','70-100 (confirmed)'];
+  const colors = ['#e63946','#f4a261','#f4a261','#f4a261','#2a9d8f'];
+  const maxB = Math.max(...buckets);
+  let html = '<div style="display:flex;align-items:flex-end;gap:16px;height:200px;padding:20px;background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow)">';
+  buckets.forEach((b,i) => {
+    const h = (b/maxB)*150;
+    html += '<div style="text-align:center;flex:1"><div style="font-size:24px;font-weight:700;color:'+colors[i]+'">' + b + '</div><div style="height:' + h + 'px;background:'+colors[i]+';border-radius:4px 4px 0 0;margin:4px 0;min-height:4px"></div><div style="font-size:11px;color:var(--text-secondary)">' + labels[i] + '</div></div>';
+  });
+  html += '</div>';
+  document.getElementById('score-distribution').innerHTML = html;
+}
+
+// --- Init ---
+renderOverview();
+applyFilters();
+renderCompanies();
+renderScoreDist();
+</script>
+</body>
+</html>
