@@ -250,3 +250,116 @@ class TestMultiTarget:
         assert len(body["edges"]) == 5
         node_ids = {n["id"] for n in body["nodes"]}
         assert node_ids == {"unitree", "nvidia", "meituan", "tencent", "alibaba", "ubtech"}
+
+
+class TestResearchAgent:
+    """Online research endpoints: POST /api/v1/research + polling."""
+
+    def test_not_configured_503(self, client, monkeypatch):
+        for var in ("SCR_TAVILY_API_KEY", "SCR_BRAVE_API_KEY",
+                    "SCR_LLM_BASE_URL", "SCR_LLM_API_KEY"):
+            monkeypatch.delenv(var, raising=False)
+        resp = client.post("/api/v1/research", json={"query": "Some Company"})
+        assert resp.status_code == 503
+        assert resp.json()["detail"]["error"] == "research_not_configured"
+
+    def test_invalid_query_422(self, client):
+        resp = client.post("/api/v1/research", json={"query": "x"})
+        assert resp.status_code == 422
+
+    def test_existing_target_409(self, client, monkeypatch):
+        monkeypatch.setenv("SCR_TAVILY_API_KEY", "dummy")
+        monkeypatch.setenv("SCR_LLM_BASE_URL", "http://localhost:1/v1")
+        monkeypatch.setenv("SCR_LLM_API_KEY", "dummy")
+        resp = client.post("/api/v1/research", json={"query": "nvidia"})
+        assert resp.status_code == 409
+        assert resp.json()["detail"]["error"] == "target_exists"
+
+    def test_unknown_job_404(self, client):
+        resp = client.get("/api/v1/research/deadbeef0000")
+        assert resp.status_code == 404
+        assert resp.json()["detail"]["error"] == "job_not_found"
+
+    def test_full_job_lifecycle(self, client, monkeypatch, tmp_path):
+        """Mock the agent class -> job runs -> new target becomes servable."""
+        import json as _json
+        import time
+
+        import src.api as api_mod
+
+        # tmp data root: registry + symlinked real targets
+        (tmp_path / "targets").mkdir()
+        real_root = api_mod.get_registry().root
+        registry = _json.loads((real_root / "targets.json").read_text())
+        (tmp_path / "targets.json").write_text(_json.dumps(registry))
+        for t in registry["targets"]:
+            (tmp_path / "targets" / t["id"]).symlink_to(real_root / "targets" / t["id"])
+
+        monkeypatch.setenv("SCR_TAVILY_API_KEY", "dummy")
+        monkeypatch.setenv("SCR_LLM_BASE_URL", "http://localhost:1/v1")
+        monkeypatch.setenv("SCR_LLM_API_KEY", "dummy")
+        monkeypatch.setenv("SCR_DATA_ROOT", str(tmp_path))
+
+        class FakeAgent:
+            def __init__(self, data_root, on_step=None):
+                self.data_root = data_root
+                self.on_step = on_step or (lambda n, d: None)
+
+            def run(self, query):
+                from pathlib import Path
+                root = Path(self.data_root)
+                tdir = root / "targets" / "testco"
+                (tdir / "staging").mkdir(parents=True)
+                (tdir / "dataset.json").write_text(_json.dumps(
+                    {"schema_version": "1.0", "as_of": "2026-08-21", "research_target": "testco"}))
+                (tdir / "companies.json").write_text(_json.dumps([{
+                    "id": "testco", "name": "Test Co", "stock_code": "TEST",
+                    "exchange": "NASDAQ", "isin": "", "country": "US",
+                    "entity_type": "target", "sector": "testing",
+                    "description": "Mock target from test."}]))
+                (tdir / "relationships.json").write_text("[]")
+                (tdir / "evidence.json").write_text("[]")
+                reg = _json.loads((root / "targets.json").read_text())
+                reg["targets"].append(
+                    {"id": "testco", "name": "Test Co", "stock_code": "TEST",
+                     "exchange": "NASDAQ", "path": "targets/testco", "description": "mock"})
+                (root / "targets.json").write_text(_json.dumps(reg))
+                self.on_step("done", "mock finished")
+                return {"target_id": "testco", "name": "Test Co",
+                        "companies": 1, "relationships": 0, "evidence": 0}
+
+        monkeypatch.setattr(api_mod, "_load_research_agent_class", lambda: FakeAgent)
+        monkeypatch.setattr(api_mod, "_registry", None)
+        monkeypatch.setattr(api_mod, "_stores", {})
+
+        try:
+            resp = client.post("/api/v1/research", json={"query": "Test Co"})
+            assert resp.status_code == 202
+            job_id = resp.json()["job_id"]
+
+            for _ in range(100):
+                job = client.get(f"/api/v1/research/{job_id}").json()
+                if job["status"] != "running":
+                    break
+                time.sleep(0.05)
+            assert job["status"] == "done", job
+            assert job["result"]["target_id"] == "testco"
+            assert any(s["step"] == "done" for s in job["steps"])
+
+            # new target is registered and servable
+            targets = client.get("/api/v1/targets").json()
+            assert "testco" in {t["id"] for t in targets["targets"]}
+            stats = client.get("/api/v1/stats", params={"target": "testco"}).json()
+            assert stats["research_target"] == "testco"
+            assert stats["companies"] == 1
+            # dataset snapshot endpoint (dashboard lazy-load)
+            snap = client.get("/api/v1/targets/testco/dataset").json()
+            assert snap["dataset"]["research_target"] == "testco"
+            assert "testco" in snap["companies"]
+        finally:
+            monkeypatch.setattr(api_mod, "_registry", None)
+            monkeypatch.setattr(api_mod, "_stores", {})
+
+    def test_dataset_endpoint_404(self, client):
+        resp = client.get("/api/v1/targets/nope/dataset")
+        assert resp.status_code == 404

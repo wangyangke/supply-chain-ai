@@ -126,8 +126,13 @@ uvicorn src.api:app --host 127.0.0.1 --port 8000
 | `GET /api/v1/relationships/{id}/evidence` | 关系证据列表 |
 | `GET /api/v1/evidence/{id}` | 单条证据 |
 | `GET /api/v1/graph` | 关系图（nodes + edges） |
+| `POST /api/v1/research` | **在线研究新公司**：启动异步 agent 任务（搜索 → 核验 → 合入 → 评分），返回 `job_id` |
+| `GET /api/v1/research/{job_id}` | 轮询研究任务状态（running + 步骤轨迹 → done / failed） |
+| `GET /api/v1/targets/{id}/dataset` | 单目标完整快照（仪表盘动态加载用） |
 
 **多目标**：所有数据端点支持 `?target=<id>` 查询参数（默认 nvidia）；未知目标返回 404 `target_not_found`。
+
+**在线研究（dashboard 搜索框 / POST /api/v1/research）**：配置 `SCR_TAVILY_API_KEY`（或 `SCR_BRAVE_API_KEY`）+ `SCR_LLM_BASE_URL` / `SCR_LLM_API_KEY`（任意 OpenAI 兼容网关，见 `.env.example`）后，在仪表盘右上角搜索框输入任意公司名 → agent 后台执行完整管线（身份解析 → 脚手架 → 分类搜索 → LLM 按 protocol 核验 → 合入 → 引擎重算 → 独立校验）→ 结果缓存到 `data/targets/<id>/` 并自动出现在切换列表。未配置密钥时端点返回 503 `research_not_configured`，已提交的目标快照不受影响；重复研究已存在目标返回 409。命令行等价物：`python scripts/research_agent.py "公司名"`。
 
 **输入校验**：`relationship_type` 限定五类枚举、`status` 限定三态（非法值 422）；`min_confidence > max_confidence` 返回 422 `invalid_range`；`page`/`page_size` 有界；未知资源返回结构化 404（`{"detail": {"error": "...", "message": "..."}}`）。
 
@@ -161,7 +166,7 @@ docker compose up
 
 | 地址 | 说明 |
 |---|---|
-| `http://localhost:8000/` | **交互式仪表盘**（右上角下拉切换研究目标：NVIDIA 22 家/21 条/29 证据 · 宇树科技 6 家/5 条/9 证据，可筛选/搜索/排序/关系图谱） |
+| `http://localhost:8000/` | **交互式仪表盘**（右上角下拉切换研究目标：NVIDIA 22 家/21 条/29 证据 · 宇树科技 6 家/5 条/9 证据；搜索框可在线研究新公司，可筛选/搜索/排序/关系图谱） |
 | `http://localhost:8000/docs` | OpenAPI / Swagger UI（交互式 API 文档） |
 | `http://localhost:8000/api/v1/targets` | 研究目标注册表 JSON |
 | `http://localhost:8000/api/v1/stats` | 数据集统计 JSON（默认 nvidia；`?target=unitree` 切换） |
@@ -170,6 +175,8 @@ docker compose up
 镜像基于 `python:3.12-slim` 多阶段构建，非 root 用户运行，内置 healthcheck，镜像约 120 MB。
 
 > 镜像由 GitHub Actions 自动构建并发布至 GHCR（`ghcr.io/wangyangke/supply-chain-ai`），每次 push 到 `main` 或打 `v*` tag 自动更新 `latest`。
+
+> **在线研究配置**：容器内启用搜索框需传入密钥（`docker run -e SCR_TAVILY_API_KEY=... -e SCR_LLM_BASE_URL=... -e SCR_LLM_API_KEY=...`）；研究结果写入容器内 `data/targets/`，挂卷可持久化（`-v $(pwd)/data:/app/data`）。
 
 ## 7. CLI（`scrs`）
 
@@ -205,6 +212,9 @@ scrs graph [--json]
 | `SCR_TARGET` | `nvidia` | 默认研究目标（CLI 全局 `--target` 等价） |
 | `SCR_HOST` / `SCR_PORT` | `127.0.0.1` / `8000` | API 监听地址 |
 | `SCR_EDGAR_USER_AGENT` | 模板值 | 仅供采集脚本使用，EDGAR 要求带联系信息的 UA |
+| `SCR_SEARCH_BACKEND` | `tavily` | 在线研究的搜索后端（tavily / brave） |
+| `SCR_TAVILY_API_KEY` / `SCR_BRAVE_API_KEY` | 空 | 在线研究搜索密钥（未配置则研究端点 503，其余功能不受影响） |
+| `SCR_LLM_BASE_URL` / `SCR_LLM_API_KEY` / `SCR_LLM_MODEL` | 空 | 在线研究的 LLM 网关（OpenAI 兼容，用于身份解析与证据核验） |
 
 **启动 / 测试**：
 
@@ -212,7 +222,7 @@ scrs graph [--json]
 pip install -e ".[dev]"
 uvicorn src.api:app --port 8000            # HTTP API
 scrs stats                                  # CLI
-pytest --cov=src                            # 115 个测试，src 覆盖率 ≥90%（下限 90%）
+pytest --cov=src                            # 121 个测试，src 覆盖率 ≥90%（下限 90%）
 python scripts/validate_data.py --data data/targets/nvidia    # 独立数据校验（schema + 完整性 + 引擎一致性）
 ```
 
@@ -270,7 +280,7 @@ staged candidate 未经核验**禁止**直接合入数据集（红线见 protoco
 
 ## 9. 测试与限制
 
-**测试**（`tests/`，115 个用例，src 覆盖率 ≥90%）：store 层加载/完整性/过滤/分页、评分引擎各维度与两项细化、API 全部端点与 404/422 错误路径、CLI 命令/退出码/人类可读输出、多目标注册表与 `?target=` 切换；以及一条**全数据集可复现性断言**——每条关系的存储分数与状态必须与引擎重算结果完全一致（`test_scoring.py::TestReproducibility`）。独立校验脚本 `scripts/validate_data.py` 提供同等的评审入口（CI 对全部目标执行）。
+**测试**（`tests/`，121 个用例，src 覆盖率 ≥90%）：store 层加载/完整性/过滤/分页、评分引擎各维度与两项细化、API 全部端点与 404/422 错误路径、CLI 命令/退出码/人类可读输出、多目标注册表与 `?target=` 切换、在线研究任务生命周期（503/409/404 + mock agent 全流程）；以及一条**全数据集可复现性断言**——每条关系的存储分数与状态必须与引擎重算结果完全一致（`test_scoring.py::TestReproducibility`）。独立校验脚本 `scripts/validate_data.py` 提供同等的评审入口（CI 对全部目标执行）。
 
 **已知限制与盲区**：
 

@@ -140,6 +140,10 @@
   .graph-node.related circle { fill: #6b5b95; }
   .legend { display: flex; gap: 16px; margin-bottom: 12px; font-size: 12px; align-items: center; }
   .legend-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; vertical-align: middle; margin-right: 4px; }
+  .spinner { width: 16px; height: 16px; border: 2px solid #c7d9fd; border-top-color: #1a56db; border-radius: 50%; display: inline-block; animation: spin 0.8s linear infinite; }
+  .spinner.done { animation: none; border-color: #2a9d8f; }
+  .spinner.failed { animation: none; border-color: #e63946; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -147,13 +151,25 @@
 <div class="header">
   <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
     <h1 id="hdr-title" style="margin:0">Supply Chain & Partnership Research</h1>
-    <div style="display:flex;align-items:center;gap:8px">
-      <label for="target-switch" style="font-size:13px;color:var(--text-secondary);white-space:nowrap">研究对象 Research Target:</label>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <label for="target-switch" style="font-size:13px;color:var(--text-secondary);white-space:nowrap">研究对象:</label>
       <select id="target-switch" onchange="switchTarget(this.value)" style="padding:6px 10px;border-radius:6px;border:1px solid #ddd;font-size:14px;background:#fff;cursor:pointer"></select>
+      <span style="color:#ccc">|</span>
+      <input id="search-input" type="text" placeholder="搜索新公司，如 Tesla / 比亚迪…"
+             onkeydown="if(event.key==='Enter')startResearch()"
+             style="padding:6px 10px;border-radius:6px;border:1px solid #ddd;font-size:14px;width:220px">
+      <button onclick="startResearch()" id="search-btn"
+              style="padding:6px 14px;border-radius:6px;border:none;background:#1a56db;color:#fff;font-size:14px;cursor:pointer">研究</button>
     </div>
   </div>
-  <div class="subtitle">可复现的供应链与合作关系研究服务 · Interactively explore relationships, evidence & confidence scoring · 多目标架构（默认 NVIDIA，可切换）</div>
+  <div class="subtitle">可复现的供应链与合作关系研究服务 · Interactively explore relationships, evidence & confidence scoring · 多目标架构（默认 NVIDIA，可切换 / 在线研究新公司）</div>
   <div class="meta-row" id="hdr-meta"></div>
+  <div id="research-panel" style="display:none;margin-top:12px;padding:12px 16px;background:#eef4ff;border:1px solid #c7d9fd;border-radius:8px;font-size:13px">
+    <div style="display:flex;align-items:center;gap:10px;font-weight:600;color:#1a56db">
+      <span class="spinner" id="research-spinner"></span><span id="research-title">研究中…</span>
+    </div>
+    <div id="research-steps" style="margin-top:8px;color:#444;max-height:160px;overflow-y:auto;line-height:1.7"></div>
+  </div>
 </div>
 
 <div class="tabs">
@@ -651,6 +667,95 @@ function switchTarget(id) {
   renderCompanies();
   renderScoreDist();
   renderGraph();
+}
+
+// --- Online research (search -> agent -> cache -> display) ---
+var _researchTimer = null;
+
+function _researchPanel(show) {
+  document.getElementById('research-panel').style.display = show ? 'block' : 'none';
+}
+
+function _researchSetState(title, spinnerClass) {
+  document.getElementById('research-title').textContent = title;
+  const sp = document.getElementById('research-spinner');
+  sp.className = 'spinner' + (spinnerClass ? ' ' + spinnerClass : '');
+}
+
+function _researchRenderSteps(steps) {
+  const box = document.getElementById('research-steps');
+  box.innerHTML = steps.map(s =>
+    '<div>[' + s.step + '] ' + String(s.detail).replace(/</g, '&lt;') + '</div>'
+  ).join('');
+  box.scrollTop = box.scrollHeight;
+}
+
+async function startResearch() {
+  const input = document.getElementById('search-input');
+  const q = input.value.trim();
+  if (!q) return;
+  if (location.protocol === 'file:') {
+    _researchPanel(true);
+    _researchSetState('在线研究需要通过 API 服务打开本页面', 'failed');
+    document.getElementById('research-steps').innerHTML =
+      '<div>当前是本地文件模式（file://），数据为内嵌快照，无法启动 agent。</div>' +
+      '<div>启动方式：<code>docker run --rm -p 8000:8000 ghcr.io/wangyangke/supply-chain-ai:latest</code> 或 <code>uvicorn src.api:app --port 8000</code>，然后访问 <code>http://localhost:8000/</code>。</div>' +
+      '<div>同时需配置 SCR_TAVILY_API_KEY（或 SCR_BRAVE_API_KEY）与 SCR_LLM_BASE_URL / SCR_LLM_API_KEY。</div>';
+    return;
+  }
+  document.getElementById('search-btn').disabled = true;
+  _researchPanel(true);
+  _researchSetState('研究「' + q + '」中… agent 正在执行 搜索 → 核验 → 合入 → 评分', '');
+  document.getElementById('research-steps').innerHTML = '';
+  try {
+    const resp = await fetch('/api/v1/research', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: q }),
+    });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      const msg = (err.detail && err.detail.message) || ('HTTP ' + resp.status);
+      _researchSetState('启动失败：' + msg, 'failed');
+      return;
+    }
+    const { job_id } = await resp.json();
+    pollResearch(job_id, q);
+  } catch (e) {
+    _researchSetState('网络错误：' + e.message, 'failed');
+  } finally {
+    document.getElementById('search-btn').disabled = false;
+  }
+}
+
+function pollResearch(jobId, query) {
+  if (_researchTimer) clearInterval(_researchTimer);
+  _researchTimer = setInterval(async () => {
+    try {
+      const job = await (await fetch('/api/v1/research/' + jobId)).json();
+      _researchRenderSteps(job.steps || []);
+      if (job.status === 'done') {
+        clearInterval(_researchTimer); _researchTimer = null;
+        const tid = job.result.target_id;
+        _researchSetState('完成：' + job.result.name + '（' + job.result.companies + ' 公司 / ' +
+          job.result.relationships + ' 关系 / ' + job.result.evidence + ' 证据），已加入切换列表', 'done');
+        await loadTargetIntoDashboard(tid);
+        document.getElementById('search-input').value = '';
+      } else if (job.status === 'failed') {
+        clearInterval(_researchTimer); _researchTimer = null;
+        _researchSetState('研究失败：' + (job.error || 'unknown error'), 'failed');
+      }
+    } catch (e) {
+      clearInterval(_researchTimer); _researchTimer = null;
+      _researchSetState('轮询错误：' + e.message, 'failed');
+    }
+  }, 1500);
+}
+
+async function loadTargetIntoDashboard(tid) {
+  const data = await (await fetch('/api/v1/targets/' + tid + '/dataset')).json();
+  ALL_DATA.targets[tid] = data;
+  switchTarget(tid);   // re-renders header incl. switcher with the new option, then switches to it
 }
 
 // --- Init ---

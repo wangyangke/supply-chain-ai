@@ -20,13 +20,18 @@ specificity / quantifiability).
 
 from __future__ import annotations
 
+import importlib.util
 import os
+import re
+import threading
+import uuid
 from datetime import date, datetime, timezone
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import HTMLResponse, JSONResponse
 from pathlib import Path as _Path
+from pydantic import BaseModel
 
 from .models import HealthResponse
 from .scoring import score_relationship
@@ -164,6 +169,32 @@ def list_targets():
     return {
         "default_target": registry.default_target,
         "targets": registry.summary(),
+    }
+
+
+@app.get("/api/v1/targets/{target_id}/dataset", tags=["meta"])
+def target_dataset(target_id: str):
+    """Full dataset snapshot for one target, in the dashboard's DATA shape
+    (used by the dashboard to lazy-load dynamically researched targets)."""
+    store = _resolve_store(target_id)
+    return {
+        "dataset": {
+            "schema_version": store.dataset.schema_version,
+            "as_of": store.dataset.as_of.isoformat(),
+            "research_target": store.dataset.research_target,
+        },
+        "companies": {cid: c.model_dump(mode="json") for cid, c in store.companies.items()},
+        "relationships": [
+            {
+                **r.model_dump(mode="json"),
+                "evidence_items": [
+                    e.model_dump(mode="json")
+                    for e in store.list_evidence_for_relationship(r.id)
+                ],
+            }
+            for r in store.relationships
+        ],
+        "evidence": {eid: e.model_dump(mode="json") for eid, e in store.evidence.items()},
     }
 
 
@@ -310,6 +341,140 @@ def get_evidence(
             detail={"error": "evidence_not_found", "message": f"Unknown evidence id '{evidence_id}'"},
         )
     return evidence.model_dump(mode="json")
+
+
+# ---------------------------------------------------------------------------
+# Online research agent (search -> agent verify -> merge -> cache -> serve)
+# ---------------------------------------------------------------------------
+
+class ResearchRequest(BaseModel):
+    query: str
+
+
+_research_jobs: dict[str, dict] = {}
+_research_lock = threading.Lock()
+
+
+def _slugify(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "_", value.lower()).strip("_")
+
+
+def _agent_config_status() -> Optional[str]:
+    """Return None if the research agent is fully configured, else an error message."""
+    backend = os.environ.get("SCR_SEARCH_BACKEND", "tavily")
+    if backend == "brave" and not os.environ.get("SCR_BRAVE_API_KEY"):
+        return "SCR_BRAVE_API_KEY not set"
+    if backend != "brave" and not os.environ.get("SCR_TAVILY_API_KEY"):
+        return "SCR_TAVILY_API_KEY not set"
+    if not os.environ.get("SCR_LLM_BASE_URL") or not os.environ.get("SCR_LLM_API_KEY"):
+        return "SCR_LLM_BASE_URL / SCR_LLM_API_KEY not set"
+    return None
+
+
+def _load_research_agent_class():
+    """Import scripts/research_agent.py (scripts/ is not a package)."""
+    script = _Path(__file__).resolve().parent.parent / "scripts" / "research_agent.py"
+    spec = importlib.util.spec_from_file_location("research_agent", script)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.ResearchAgent
+
+
+def _run_research_job(job_id: str, query: str) -> None:
+    global _registry
+    job = _research_jobs[job_id]
+    try:
+        agent_cls = _load_research_agent_class()
+        root = (
+            os.environ.get("SCR_DATA_ROOT")
+            or os.environ.get("SCR_DATA_DIR")
+            or "./data"
+        )
+        agent = agent_cls(
+            root,
+            on_step=lambda name, detail: job["steps"].append(
+                {"step": name, "detail": detail, "at": datetime.now(timezone.utc).isoformat()}
+            ),
+        )
+        result = agent.run(query)
+        # Invalidate registry + store caches so the new target is servable.
+        with _research_lock:
+            _registry = None
+            _stores.pop(result["target_id"], None)
+        job["status"] = "done"
+        job["result"] = result
+    except Exception as exc:  # agent / script / validation failure
+        job["status"] = "failed"
+        job["error"] = str(exc)
+    job["finished_at"] = datetime.now(timezone.utc).isoformat()
+
+
+@app.post("/api/v1/research", tags=["research"], status_code=202)
+def start_research(req: ResearchRequest):
+    """Start an async research job for a new company.
+
+    The job runs the full agent pipeline (resolve identity -> onboard ->
+    search -> LLM verification -> merge -> rescore -> validate). On success
+    the new target is registered in targets.json, cached on disk under
+    data/targets/<id>/, and immediately servable via ?target=<id> and the
+    dashboard switcher.
+    """
+    query = req.query.strip()
+    if not (2 <= len(query) <= 120):
+        raise HTTPException(
+            status_code=422,
+            detail={"error": "invalid_query", "message": "query must be 2-120 characters"},
+        )
+    config_error = _agent_config_status()
+    if config_error:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "error": "research_not_configured",
+                "message": f"research agent not configured: {config_error}. "
+                "Set SCR_TAVILY_API_KEY (or SCR_BRAVE_API_KEY) and "
+                "SCR_LLM_BASE_URL / SCR_LLM_API_KEY to enable online research.",
+            },
+        )
+    slug = _slugify(query)
+    registry = get_registry()
+    if slug in registry.targets:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": "target_exists",
+                "message": f"target '{slug}' already registered — use ?target={slug} instead",
+            },
+        )
+    with _research_lock:
+        for j in _research_jobs.values():
+            if j["status"] == "running" and _slugify(j["query"]) == slug:
+                return {"job_id": j["job_id"], "status": "running", "deduplicated": True}
+        job_id = uuid.uuid4().hex[:12]
+        _research_jobs[job_id] = {
+            "job_id": job_id,
+            "query": query,
+            "status": "running",
+            "steps": [],
+            "result": None,
+            "error": None,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "finished_at": None,
+        }
+        threading.Thread(target=_run_research_job, args=(job_id, query), daemon=True).start()
+    return {"job_id": job_id, "status": "running"}
+
+
+@app.get("/api/v1/research/{job_id}", tags=["research"])
+def research_status(job_id: str):
+    """Poll a research job: running (with step trace) -> done | failed."""
+    job = _research_jobs.get(job_id)
+    if job is None:
+        raise HTTPException(
+            status_code=404,
+            detail={"error": "job_not_found", "message": f"Unknown research job '{job_id}'"},
+        )
+    return job
 
 
 @app.get("/api/v1/graph", tags=["graph"])
