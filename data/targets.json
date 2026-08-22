@@ -27,14 +27,6 @@
       "description": "Research target '比亚迪', auto-registered in rule-based mode (no LLM configured). Verify and enrich identity fields manually."
     },
     {
-      "id": "c_bcb56023",
-      "name": "吉利",
-      "stock_code": "",
-      "exchange": "",
-      "path": "targets/c_bcb56023",
-      "description": "Research target '吉利', auto-registered in rule-based mode (no LLM configured). Verify and enrich identity fields manually."
-    },
-    {
       "id": "tesla",
       "name": "tesla",
       "stock_code": "",
