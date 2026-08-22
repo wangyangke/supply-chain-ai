@@ -116,10 +116,11 @@ class TestRelationships:
 
     def test_filter_by_status(self, store):
         result = store.list_relationships(status="inferred", page_size=100)
-        assert result.total == 4
+        assert result.total == 6
         assert all(r.status.value == "inferred" for r in result.items)
         assert {r.id for r in result.items} == {
-            "rel_sup_004", "rel_cus_002", "rel_cus_003", "rel_cus_004",
+            "rel_sup_004", "rel_cus_001", "rel_cus_002",
+            "rel_cus_003", "rel_cus_004", "rel_cus_005",
         }
 
     def test_filter_by_confidence_range(self, store):

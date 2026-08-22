@@ -20,8 +20,8 @@ class TestMeta:
         assert body["relationships_by_type"]["supplier"] == 4
         assert body["relationships_by_type"]["customer"] == 5
         assert body["relationships_by_type"]["partner"] == 5
-        assert body["relationships_by_status"]["confirmed"] == 17
-        assert body["relationships_by_status"]["inferred"] == 4
+        assert body["relationships_by_status"]["confirmed"] == 15
+        assert body["relationships_by_status"]["inferred"] == 6
 
 
 class TestCompanies:

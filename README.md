@@ -69,10 +69,19 @@
 ## 3. 合规的数据采集
 
 - **仅使用合法可公开访问的来源**：SEC EDGAR 公开 API（10-K 年报）、上市公司官网/IR/新闻稿、财经媒体、行业协会页面等；
-- **不绕过任何访问控制**：不破解 robots.txt、不绕过登录/付费墙/验证码/限流；
+- **不绕过任何访问控制**：不破解 robots.txt、不绕过登录/付费墙/验证码/限流；所有采集 URL 在暂存前经 `scripts/robots_check.py` 程序化校验,被 `Disallow` 的 URL 一律丢弃；
 - **SEC EDGAR 调用规范**：`scripts/fetch_edgar.py` 使用带联系信息的 User-Agent（见 `.env.example` 的 `SCR_EDGAR_USER_AGENT`）、遵守 EDGAR 速率限制（≤10 req/s）；
+- **亚太交易所披露接入（Track A）**：`scripts/fetch_exchange.py` 提供 SSE STAR Market（688xxx,上交所 e-interaction 披露平台）与 HKEX（HKEXnews 搜索）两个适配器,产出的 filing 经 `filing_to_staging_candidate()` 归一化为 `source_type = exchange_filing`（评分权威层级 25,无需改评分引擎）的 staging 骨架,再走与 EDGAR 相同的 agent 核验 + 合入流程。两个适配器共享同一速率限制（≤10 req/s,令牌桶节流）与带联系信息的 User-Agent（`SCR_USER_AGENT`）,并复用 robots.txt 合规门;
 - **不提交受限数据**：仓库不含密钥、个人数据、客户机密；付费墙内容仅使用其公开摘要并标注访问限制（`access_restriction: paywall`）；
-- **证据留痕**：每条证据记录 `source_url`、`publisher`、`published_at`/`accessed_at`、`evidence_locator`（章节/段落定位）、`access_restriction`、`license_note`。
+- **证据留痕**：每条证据记录 `source_url`、`publisher`、`published_at`/`accessed_at`、`evidence_locator`（章节/段落定位）、`access_restriction`、`license_note`、`content_hash`（原文哈希指纹,见 §10）。
+
+**采集脚本一览**：
+
+| 脚本 | 数据源 | 速率限制 | robots 校验 |
+|---|---|---|---|
+| `scripts/fetch_edgar.py` | SEC EDGAR 公开 API | ≤10 req/s,带联系信息 UA | 文档承诺不绕过 robots.txt |
+| `scripts/fetch_exchange.py` | SSE STAR Market / HKEXnews | ≤10 req/s,令牌桶节流 | `scripts/robots_check.py` 程序化校验 |
+| `scripts/research_harvest.py` | Tavily / Brave 搜索 API | 后端自带限速 | 暂存前 robots 门过滤 |
 
 **实体歧义 / 来源冲突 / 过期信息 / 共现误判的处理**：证据引用使用原文 quote 而非转述；同名公司通过证券标识与正文全称消歧；来源冲突时优先官方来源并在 summary 中标注分歧；过期关系用 `valid_until` 显式终止并让评分衰减（见评分方法文档）。
 

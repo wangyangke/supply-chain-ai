@@ -8,11 +8,26 @@ validation and API serialization.
 
 from __future__ import annotations
 
+import hashlib
 from datetime import date, datetime
 from enum import Enum
 from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+
+def compute_content_hash(
+    source_url: str, evidence_locator: str, quote: str
+) -> str:
+    """SHA-256 fingerprint of an evidence item's immutable content.
+
+    Hashes the canonical triple ``(source_url, evidence_locator, quote)``
+    so that any tampering with the cited text, its locator, or the source
+    URL is detectable by the validation script. The hash is stored on the
+    Evidence object as ``content_hash`` and re-checked on load.
+    """
+    payload = f"{source_url}\u241f{evidence_locator}\u241f{quote}"
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
 # ---------------------------------------------------------------------------
@@ -144,6 +159,29 @@ class Evidence(BaseModel):
     quote: str = Field(
         description="Direct quote or precise paraphrase from the source"
     )
+    content_hash: str = Field(
+        default="",
+        description=(
+            "SHA-256 fingerprint of (source_url, evidence_locator, quote). "
+            "If empty on construction, it is auto-computed; if non-empty, "
+            "it is verified against the recomputed hash. The validation "
+            "script treats a mismatch as a tampering error."
+        ),
+    )
+
+    @model_validator(mode="after")
+    def _check_content_hash(self) -> "Evidence":
+        expected = compute_content_hash(
+            self.source_url, self.evidence_locator, self.quote
+        )
+        if not self.content_hash:
+            object.__setattr__(self, "content_hash", expected)
+        elif self.content_hash != expected:
+            raise ValueError(
+                "content_hash does not match (source_url, evidence_locator, "
+                "quote) — run `python scripts/sync_scores.py --write` to recompute"
+            )
+        return self
 
 
 # ---------------------------------------------------------------------------

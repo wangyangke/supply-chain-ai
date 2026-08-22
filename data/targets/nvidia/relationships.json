@@ -51,7 +51,7 @@
     "type": "supplier",
     "direction": "asml -> (via foundries) -> nvidia",
     "status": "inferred",
-    "confidence_score": 60,
+    "confidence_score": 59,
     "valid_from": "2018-01-01",
     "valid_until": null,
     "evidence_ids": [
@@ -65,8 +65,8 @@
     "target_company_id": "microsoft",
     "type": "customer",
     "direction": "nvidia -> microsoft",
-    "status": "confirmed",
-    "confidence_score": 72,
+    "status": "inferred",
+    "confidence_score": 69,
     "valid_from": "2020-01-01",
     "valid_until": null,
     "evidence_ids": [
@@ -82,7 +82,7 @@
     "type": "customer",
     "direction": "nvidia -> meta",
     "status": "inferred",
-    "confidence_score": 58,
+    "confidence_score": 57,
     "valid_from": "2021-01-01",
     "valid_until": null,
     "evidence_ids": [
@@ -97,7 +97,7 @@
     "type": "customer",
     "direction": "nvidia -> amazon",
     "status": "inferred",
-    "confidence_score": 67,
+    "confidence_score": 64,
     "valid_from": "2019-01-01",
     "valid_until": null,
     "evidence_ids": [
@@ -112,7 +112,7 @@
     "type": "customer",
     "direction": "nvidia -> alphabet",
     "status": "inferred",
-    "confidence_score": 67,
+    "confidence_score": 64,
     "valid_from": "2019-01-01",
     "valid_until": null,
     "evidence_ids": [
@@ -126,8 +126,8 @@
     "target_company_id": "dell",
     "type": "customer",
     "direction": "nvidia -> dell",
-    "status": "confirmed",
-    "confidence_score": 70,
+    "status": "inferred",
+    "confidence_score": 69,
     "valid_from": "2023-01-01",
     "valid_until": null,
     "evidence_ids": [
@@ -236,7 +236,7 @@
     "type": "investor_or_investee",
     "direction": "nvidia -> soundhound (investor -> investee, now exited)",
     "status": "confirmed",
-    "confidence_score": 72,
+    "confidence_score": 71,
     "valid_from": "2017-01-01",
     "valid_until": "2025-02-14",
     "evidence_ids": [

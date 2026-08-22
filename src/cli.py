@@ -86,23 +86,34 @@ def _print_json(payload) -> None:
 
 
 @app.command()
-def health() -> None:
+def health(
+    as_json: bool = typer.Option(False, "--json", help="Emit raw JSON"),
+) -> None:
     """Show dataset / service health."""
     store = _load_store()
     stats = store.stats()
-    _print_json(
-        {
-            "status": "ok",
-            "dataset": store.dataset.research_target,
-            "as_of": store.dataset.as_of.isoformat(),
-            "schema_version": store.dataset.schema_version,
-            **stats,
-        }
-    )
+    payload = {
+        "status": "ok",
+        "dataset": store.dataset.research_target,
+        "as_of": store.dataset.as_of.isoformat(),
+        "schema_version": store.dataset.schema_version,
+        **stats,
+    }
+    if as_json:
+        _print_json(payload)
+        return
+    table = Table(title=f"Health — {store.dataset.research_target}")
+    table.add_column("Metric", style="cyan")
+    table.add_column("Value", style="green")
+    for k, v in payload.items():
+        table.add_row(k, str(v))
+    console.print(table)
 
 
 @app.command()
-def stats() -> None:
+def stats(
+    as_json: bool = typer.Option(False, "--json", help="Emit raw JSON"),
+) -> None:
     """Show dataset statistics, including breakdowns by type and status."""
     store = _load_store()
     by_type: dict[str, int] = {}
@@ -110,14 +121,20 @@ def stats() -> None:
     for rel in store.relationships:
         by_type[rel.type.value] = by_type.get(rel.type.value, 0) + 1
         by_status[rel.status.value] = by_status.get(rel.status.value, 0) + 1
+    payload = {
+        **store.stats(),
+        "research_target": store.dataset.research_target,
+        "relationships_by_type": by_type,
+        "relationships_by_status": by_status,
+    }
+    if as_json:
+        _print_json(payload)
+        return
     table = Table(title=f"Dataset stats — {store.dataset.research_target}")
     table.add_column("Metric", style="cyan")
     table.add_column("Value", style="green")
-    for k, v in store.stats().items():
-        table.add_row(k, str(v))
-    table.add_row("research_target", store.dataset.research_target)
-    table.add_row("relationships_by_type", json.dumps(by_type, ensure_ascii=False))
-    table.add_row("relationships_by_status", json.dumps(by_status, ensure_ascii=False))
+    for k, v in payload.items():
+        table.add_row(k, json.dumps(v, ensure_ascii=False) if isinstance(v, dict) else str(v))
     console.print(table)
 
 
@@ -177,14 +194,26 @@ def companies(
 
 
 @app.command()
-def company(company_id: str) -> None:
+def company(
+    company_id: str,
+    as_json: bool = typer.Option(False, "--json", help="Emit raw JSON"),
+) -> None:
     """Show a single company."""
     store = _load_store()
     c = store.get_company(company_id)
     if c is None:
         err_console.print(f"[bold red]Unknown company id '{company_id}'[/]")
         raise typer.Exit(code=1)
-    _print_json(c.model_dump(mode="json"))
+    payload = c.model_dump(mode="json")
+    if as_json:
+        _print_json(payload)
+        return
+    table = Table(title=f"Company — {c.name}")
+    table.add_column("Field", style="cyan")
+    table.add_column("Value", style="green")
+    for k, v in payload.items():
+        table.add_row(k, str(v))
+    console.print(table)
 
 
 @app.command()
@@ -279,18 +308,33 @@ def relationship(
 
 
 @app.command()
-def evidence(evidence_id: str) -> None:
+def evidence(
+    evidence_id: str,
+    as_json: bool = typer.Option(False, "--json", help="Emit raw JSON"),
+) -> None:
     """Show a single evidence item."""
     store = _load_store()
     e = store.get_evidence(evidence_id)
     if e is None:
         err_console.print(f"[bold red]Unknown evidence id '{evidence_id}'[/]")
         raise typer.Exit(code=1)
-    _print_json(e.model_dump(mode="json"))
+    payload = e.model_dump(mode="json")
+    if as_json:
+        _print_json(payload)
+        return
+    table = Table(title=f"Evidence — {e.id}")
+    table.add_column("Field", style="cyan")
+    table.add_column("Value", style="green")
+    for k, v in payload.items():
+        table.add_row(k, str(v))
+    console.print(table)
 
 
 @app.command()
-def score(relationship_id: str) -> None:
+def score(
+    relationship_id: str,
+    as_json: bool = typer.Option(False, "--json", help="Emit raw JSON"),
+) -> None:
     """Recompute and explain the confidence score of one relationship."""
     store = _load_store()
     rel = store.get_relationship(relationship_id)
@@ -305,21 +349,65 @@ def score(relationship_id: str) -> None:
         company_names=_company_names(store),
         research_target_id=store.dataset.research_target,
     )
-    _print_json(
-        {
-            "relationship_id": rel.id,
-            "stored_score": rel.confidence_score,
-            "stored_status": rel.status.value,
-            **breakdown.to_dict(),
-            "evidence_ids": [e.id for e in evidence],
-        }
-    )
+    payload = {
+        "relationship_id": rel.id,
+        "stored_score": rel.confidence_score,
+        "stored_status": rel.status.value,
+        **breakdown.to_dict(),
+        "evidence_ids": [e.id for e in evidence],
+    }
+    if as_json:
+        _print_json(payload)
+        return
+    table = Table(title=f"Score — {rel.id}")
+    table.add_column("Field", style="cyan")
+    table.add_column("Value", style="green")
+    for k, v in payload.items():
+        table.add_row(k, json.dumps(v, ensure_ascii=False) if isinstance(v, list) else str(v))
+    console.print(table)
 
 
 @app.command()
-def graph(as_json: bool = typer.Option(False, "--json", help="Emit raw JSON")) -> None:
-    """Print the relationship graph (nodes + edges)."""
+def graph(
+    as_of: Optional[str] = typer.Option(
+        None, "--as-of",
+        help="ISO date (yyyy-mm-dd); slice edges to those valid at this date",
+    ),
+    as_json: bool = typer.Option(False, "--json", help="Emit raw JSON"),
+) -> None:
+    """Print the relationship graph (nodes + edges).
+
+    Optional ``--as-of`` reconstructs the network at a historical date
+    (Track B temporal replay): edges are filtered to relationships whose
+    ``[valid_from, valid_until]`` interval contains the date, and
+    ``risk_metrics`` are recomputed on the sliced edge set.
+    """
+    from .graph import (
+        degree_centrality as _deg,
+        slice_graph as _slice,
+        supplier_dependency_concentration as _hhi,
+    )
+
     store = _load_store()
+
+    # Resolve slice date. When --as-of is omitted, return the full
+    # graph (backward compatibility); only an explicit --as-of
+    # triggers temporal slicing.
+    if as_of:
+        try:
+            slice_date = date_type.fromisoformat(as_of)
+        except ValueError:
+            err_console.print(
+                f"[bold red]Invalid --as-of date: {as_of!r} "
+                "(expected yyyy-mm-dd)[/]"
+            )
+            raise typer.Exit(code=1)
+        sliced_rels = _slice(store.relationships, slice_date)
+        response_as_of = slice_date.isoformat()
+    else:
+        sliced_rels = store.relationships
+        response_as_of = store.dataset.as_of.isoformat()
+
     nodes = [
         {
             "id": c.id,
@@ -341,18 +429,27 @@ def graph(as_json: bool = typer.Option(False, "--json", help="Emit raw JSON")) -
             "status": r.status.value,
             "confidence_score": r.confidence_score,
         }
-        for r in store.relationships
+        for r in sliced_rels
     ]
     payload = {
         "research_target": store.dataset.research_target,
-        "as_of": store.dataset.as_of.isoformat(),
+        "as_of": response_as_of,
         "nodes": nodes,
         "edges": edges,
+        "risk_metrics": {
+            "degree_centrality": _deg(sliced_rels),
+            "supplier_dependency_concentration": _hhi(
+                sliced_rels, store.dataset.research_target,
+            ),
+        },
     }
     if as_json:
         _print_json(payload)
         return
-    table = Table(title=f"Relationship graph — {store.dataset.research_target}")
+    table = Table(
+        title=f"Relationship graph — {store.dataset.research_target} "
+        f"(as_of {response_as_of})"
+    )
     table.add_column("edge", style="cyan")
     table.add_column("source", style="green")
     table.add_column("->", style="dim")
@@ -366,6 +463,11 @@ def graph(as_json: bool = typer.Option(False, "--json", help="Emit raw JSON")) -
             e["type"], e["status"], str(e["confidence_score"]),
         )
     console.print(table)
+    hhi = payload["risk_metrics"]["supplier_dependency_concentration"]
+    console.print(
+        f"  [dim]risk_metrics:[/] supplier_dependency_concentration={hhi} "
+        f"(0=diversified, 10000=single-source)"
+    )
 
 
 if __name__ == "__main__":

@@ -78,16 +78,20 @@ EVIDENCE_COUNT_SCALE = [
     (4, 25.0),
 ]
 
-# Recency bands (days) -> points. Filings are refreshed annually and are
-# slow-moving information, so authority is factored in: high-authority
-# sources decay slower than news.
-RECENCY_BANDS = [
-    (180, 20.0),
-    (365, 16.0),
-    (730, 12.0),
-    (1095, 8.0),
-    (1825, 4.0),
-]
+# Recency: continuous exponential decay (upgraded from the prior
+# step-function bands). Filings are refreshed annually and are slow-moving
+# information, so authority is factored in: high-authority sources decay
+# more slowly than news.
+#
+# points = MAX_RECENCY * exp(-age_days / RECENCY_HALF_LIFE_DAYS)
+#
+# The half-life (~730 days ≈ 2 years) is calibrated so the continuous curve
+# tracks the prior band edges closely: age 0 → 20.0, age 365 → ~14.1,
+# age 730 → ~10.0, age 1825 → ~2.7. A small floor of 1.0 is retained for
+# very old evidence.
+RECENCY_HALF_LIFE_DAYS = 730
+RECENCY_MAX_POINTS = 20.0
+RECENCY_FLOOR = 1.0
 
 # Strong relationship words -> +SPECIFICITY_TERM_POINTS each (evidence
 # quote and relationship summary are scanned together).
@@ -236,16 +240,20 @@ def _score_evidence_quality(evidence: list[Evidence]) -> float:
 
 
 def _score_recency(rel: Relationship, evidence: list[Evidence], as_of: date) -> float:
-    """Banded decay based on the newest evidence's age.
+    """Continuous exponential decay based on the newest evidence's age.
 
-    Two adjustments reflect real-world research judgment:
+    Two adjustments carry over from the prior band model:
     - High-authority sources (filings, company IR/press releases) carry
-      slow-moving facts and decay more slowly than news.
+      slow-moving facts and decay more slowly than news: official sources
+      get an effective-age reduction of 180 days.
     - Relationships still marked valid (valid_until is None) get a
       freshness bonus: the evidence *proves* an ongoing relationship, so
-      age is halved before band lookup. Terminated relationships
+      age is halved before decay. Terminated relationships
       (valid_until in the past) keep full decay — this is how a stale
       or exited relationship loses recency points.
+
+    points = RECENCY_MAX_POINTS * exp(-age_days / RECENCY_HALF_LIFE_DAYS),
+    floored at RECENCY_FLOOR (= 1.0). The half-life is 730 days (~2 years).
     """
     dates = [e.published_at for e in evidence if e.published_at is not None]
     if not dates:
@@ -262,10 +270,10 @@ def _score_recency(rel: Relationship, evidence: list[Evidence], as_of: date) -> 
     # Official confirmation of an *ongoing* relationship is fresh by
     # definition: the source asserts the relationship continues to exist as
     # of as_of. Filings are refreshed annually and official announcements do
-    # not expire while the partnership continues, so cap effective age at
-    # the top band. Terminated relationships keep full decay.
+    # not expire while the partnership continues, so the effective age is 0.
+    # Terminated relationships keep full decay.
     if still_valid and official:
-        return RECENCY_BANDS[0][1]
+        return RECENCY_MAX_POINTS
 
     # Filings refresh ~annually; treat them as fresh for longer.
     if official:
@@ -274,10 +282,9 @@ def _score_recency(rel: Relationship, evidence: list[Evidence], as_of: date) -> 
     if still_valid:
         age_days = age_days // 2
 
-    for threshold_days, points in RECENCY_BANDS:
-        if age_days <= threshold_days:
-            return points
-    return 1.0  # very old evidence keeps a small floor
+    import math
+    points = RECENCY_MAX_POINTS * math.exp(-age_days / RECENCY_HALF_LIFE_DAYS)
+    return max(points, RECENCY_FLOOR)
 
 
 def _is_direct_statement(

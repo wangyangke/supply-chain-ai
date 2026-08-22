@@ -31,6 +31,7 @@ from src.models import (
     RelationshipStatus,
     RelationshipType,
     SourceType,
+    compute_content_hash,
 )
 from src.scoring import expected_band, score_relationship
 from src.store import Store
@@ -108,6 +109,21 @@ def validate(store: Store, report: Report) -> None:
             report.err(f"evidence {eid}: empty evidence_locator")
         if not ev.quote.strip():
             report.err(f"evidence {eid}: empty quote")
+        # Anti-tamper assertion: the stored content_hash must match the
+        # recomputed SHA-256 of (source_url, evidence_locator, quote).
+        expected = compute_content_hash(
+            ev.source_url, ev.evidence_locator, ev.quote
+        )
+        if not ev.content_hash:
+            report.err(
+                f"evidence {eid}: empty content_hash — run "
+                f"`python scripts/sync_scores.py --write` to populate"
+            )
+        elif ev.content_hash != expected:
+            report.err(
+                f"evidence {eid}: content_hash tamper detected — stored "
+                f"{ev.content_hash[:12]}… != recomputed {expected[:12]}…"
+            )
 
     # ---- relationships.json ------------------------------------------------
     seen_rel_ids: set[str] = set()

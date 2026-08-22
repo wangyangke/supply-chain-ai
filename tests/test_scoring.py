@@ -7,6 +7,8 @@ exactly what the engine produces from the committed evidence).
 
 from datetime import date
 
+import pytest
+
 from src.models import Evidence, Relationship
 from src.scoring import (
     _name_in_text,
@@ -127,8 +129,9 @@ class TestEvidenceQuality:
 
 class TestRecency:
     def test_official_ongoing_relationship_is_fresh(self):
-        # sec_filing from 2015, relationship still valid in 2026 → top band,
-        # because an official filing asserts the relationship continues.
+        # sec_filing from 2015, relationship still valid in 2026 → top
+        # points, because an official filing asserts the relationship
+        # continues.
         ev = make_ev(source_type="sec_filing", published_at=date(2015, 1, 1))
         rel = make_rel(valid_until=None)
         assert _score_recency(rel, [ev], AS_OF) == 20.0
@@ -144,10 +147,18 @@ class TestRecency:
         rel = make_rel(valid_until=date(2025, 2, 14))
         assert _score_recency(rel, [ev], AS_OF) < 20.0
 
-    def test_recent_non_official_news(self):
+    def test_recent_non_official_news_near_max(self):
+        # 20-day-old business media, ongoing → age halved to 10, near max.
         ev = make_ev(source_type="business_media", published_at=date(2026, 8, 1))
         rel = make_rel(valid_until=None)
-        assert _score_recency(rel, [ev], AS_OF) == 20.0
+        assert _score_recency(rel, [ev], AS_OF) == pytest.approx(19.73, abs=0.05)
+
+    def test_decay_is_monotonic_in_age(self):
+        # Older evidence (same source type) scores strictly lower.
+        ev_new = make_ev(source_type="business_media", published_at=date(2026, 7, 1))
+        ev_old = make_ev(id="ev_old", source_type="business_media", published_at=date(2024, 7, 1))
+        rel = make_rel(valid_until=None)
+        assert _score_recency(rel, [ev_new], AS_OF) > _score_recency(rel, [ev_old], AS_OF)
 
     def test_very_old_evidence_keeps_floor(self):
         ev = make_ev(source_type="informal", published_at=date(2000, 1, 1))

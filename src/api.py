@@ -24,11 +24,12 @@ import importlib.util
 import os
 import re
 import threading
+import time
 import uuid
 from datetime import date, datetime, timezone
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from pathlib import Path as _Path
 from pydantic import BaseModel
@@ -36,6 +37,7 @@ from pydantic import BaseModel
 from .models import HealthResponse
 from .scoring import score_relationship, scoring_methodology
 from .store import DatasetError, Store, TargetRegistry
+from .graph import degree_centrality, supplier_dependency_concentration
 
 app = FastAPI(
     title="Supply Chain & Partnership Research Service",
@@ -48,6 +50,17 @@ app = FastAPI(
         "scripts/onboard_target.py + the agent research protocol."
     ),
 )
+
+
+@app.middleware("http")
+async def _process_time_header(request: Request, call_next):
+    """Attach ``X-Process-Ms`` to every response for latency observability."""
+    start = time.perf_counter()
+    response = await call_next(request)
+    elapsed_ms = (time.perf_counter() - start) * 1000.0
+    response.headers["X-Process-Ms"] = f"{elapsed_ms:.2f}"
+    return response
+
 
 _stores: dict[str, Store] = {}
 _registry: Optional[TargetRegistry] = None
@@ -487,9 +500,48 @@ def research_status(job_id: str):
 
 
 @app.get("/api/v1/graph", tags=["graph"])
-def graph(target: Optional[str] = Query(None, description="Research target id")):
-    """Relationship graph: nodes are companies, edges are relationships."""
+def graph(
+    target: Optional[str] = Query(None, description="Research target id"),
+    as_of: Optional[str] = Query(
+        None,
+        description=(
+            "ISO date (yyyy-mm-dd). When set, returns the time-sliced "
+            "subgraph of relationships valid at this date "
+            "(valid_from <= as_of <= valid_until). Defaults to the "
+            "dataset snapshot date."
+        ),
+    ),
+):
+    """Relationship graph: nodes are companies, edges are relationships.
+
+    Optional ``as_of`` reconstructs the partnership network at an
+    arbitrary historical date (Track B temporal replay). When ``as_of``
+    is given, ``edges`` are filtered to relationships whose
+    ``[valid_from, valid_until]`` interval contains the date, and
+    ``risk_metrics`` are recomputed on the sliced edge set.
+    """
+    from datetime import date as _date
+
     store = _resolve_store(target)
+
+    # Resolve the as_of date for slicing. When not provided, return the
+    # full graph (backward compatibility); only an explicit as_of
+    # triggers temporal slicing.
+    if as_of:
+        try:
+            slice_date = _date.fromisoformat(as_of)
+        except ValueError:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid as_of date: {as_of!r} (expected yyyy-mm-dd)",
+            )
+        from .graph import slice_graph as _slice_graph
+        sliced_rels = _slice_graph(store.relationships, slice_date)
+        response_as_of = slice_date.isoformat()
+    else:
+        sliced_rels = store.relationships
+        response_as_of = store.dataset.as_of.isoformat()
+
     nodes = [
         {
             "id": c.id,
@@ -514,13 +566,19 @@ def graph(target: Optional[str] = Query(None, description="Research target id"))
             "valid_from": r.valid_from.isoformat() if r.valid_from else None,
             "valid_until": r.valid_until.isoformat() if r.valid_until else None,
         }
-        for r in store.relationships
+        for r in sliced_rels
     ]
     return {
         "research_target": store.dataset.research_target,
-        "as_of": store.dataset.as_of.isoformat(),
+        "as_of": response_as_of,
         "nodes": nodes,
         "edges": edges,
+        "risk_metrics": {
+            "degree_centrality": degree_centrality(sliced_rels),
+            "supplier_dependency_concentration": supplier_dependency_concentration(
+                sliced_rels, store.dataset.research_target,
+            ),
+        },
     }
 
 

@@ -12,7 +12,7 @@ def combined(result) -> str:
 
 class TestHealthAndStats:
     def test_health(self, runner):
-        result = runner.invoke(app, ["health"])
+        result = runner.invoke(app, ["health", "--json"])
         assert result.exit_code == 0
         payload = json.loads(result.stdout)
         assert payload["status"] == "ok"
@@ -40,7 +40,7 @@ class TestCompanies:
         assert payload["total"] == 3  # amd, micron, microsoft
 
     def test_get(self, runner):
-        result = runner.invoke(app, ["company", "nvidia"])
+        result = runner.invoke(app, ["company", "nvidia", "--json"])
         assert result.exit_code == 0
         payload = json.loads(result.stdout)
         assert payload["name"] == "NVIDIA Corporation"
@@ -97,7 +97,7 @@ class TestRelationships:
 
 class TestEvidenceAndScore:
     def test_evidence(self, runner):
-        result = runner.invoke(app, ["evidence", "ev_sup_001"])
+        result = runner.invoke(app, ["evidence", "ev_sup_001", "--json"])
         assert result.exit_code == 0
         payload = json.loads(result.stdout)
         assert payload["relationship_id"] == "rel_sup_001"
@@ -108,10 +108,10 @@ class TestEvidenceAndScore:
         assert result.exit_code == 1
 
     def test_score_recompute_matches_stored(self, runner):
-        result = runner.invoke(app, ["score", "rel_sup_004"])
+        result = runner.invoke(app, ["score", "rel_sup_004", "--json"])
         assert result.exit_code == 0
         payload = json.loads(result.stdout)
-        assert payload["stored_score"] == 60
+        assert payload["stored_score"] == 59
         assert payload["stored_status"] == "inferred"
         assert payload["band"] == payload["stored_status"]
         assert round(payload["total"]) == payload["stored_score"]
@@ -182,7 +182,7 @@ class TestMultiTarget:
         assert {t["id"] for t in payload["targets"]} >= {"nvidia", "unitree"}
 
     def test_target_option_switch(self, runner):
-        result = runner.invoke(app, ["--target", "unitree", "health"])
+        result = runner.invoke(app, ["--target", "unitree", "health", "--json"])
         assert result.exit_code == 0
         payload = json.loads(result.stdout)
         assert payload["dataset"] == "unitree"

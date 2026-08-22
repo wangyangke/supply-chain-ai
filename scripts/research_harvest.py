@@ -188,7 +188,21 @@ def stage_candidates(
     target: str,
     relationship_id: Optional[str],
 ) -> list[dict[str, Any]]:
-    """Normalize raw hits into staged evidence candidates (review required)."""
+    """Normalize raw hits into staged evidence candidates (review required).
+
+    Before a hit is staged, its URL is passed through the robots.txt
+    compliance gate (scripts/robots_check.py). Hits disallowed by the
+    site's robots.txt are dropped — the pipeline never fetches them.
+    """
+    # Lazy import: robots_check is only needed at harvest time, and the
+    # module sits in scripts/ which is not a package.
+    import importlib.util
+    _rc_path = Path(__file__).resolve().parent / "robots_check.py"
+    _spec = importlib.util.spec_from_file_location("robots_check", _rc_path)
+    _rc = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(_rc)
+    gate = _rc.RobotsGate()
+
     seen: set[str] = set()
     staged: list[dict[str, Any]] = []
     today = date.today().isoformat()
@@ -196,6 +210,10 @@ def stage_candidates(
     for hit in hits:
         url = canonicalize_url(hit.get("url", ""))
         if not url or url in seen:
+            continue
+        # Robots.txt gate: skip any URL the site disallows.
+        if not gate.allowed(url):
+            print(f"skip (robots.txt disallow): {url}", file=sys.stderr)
             continue
         seen.add(url)
 

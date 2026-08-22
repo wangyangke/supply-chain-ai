@@ -65,24 +65,20 @@ mistaken for independent sources (deliverable #3: source conflict &
 co-occurrence misjudgment). The group is captured and validated for every
 item; it is the audit trail reviewers use to judge independent support.
 
-## Recency bands (days since newest evidence → points)
+## Recency — continuous exponential decay
 
-| age ≤ | points |
-|---:|---:|
-| 180 | 20 |
-| 365 | 16 |
-| 730 | 12 |
-| 1095 | 8 |
-| 1825 | 4 |
-| older | 1 (floor) |
+`points = 20 * exp(-age_days / 730)`, floored at 1.0. The half-life is
+~730 days (2 years): age 0 → 20.0, age 365 → ~14.1, age 730 → ~10.0,
+age 1825 → ~2.7. The curve is continuous and monotonic — no step-function
+band edges.
 
 **Refinement — official-ongoing freshness:** an official confirmation
 (`sec`/`exchange` filing, `government`, company `ir`/`press_release`) of an
 *ongoing* relationship (`valid_until` is null or in the future) scores the
-top recency band — the source asserts the relationship still holds as of the
-snapshot date. Terminated relationships (`valid_until` in the past) decay
-normally. Evidence with no publication date uses `accessed_at` as a proxy
-(capped lower, since collection metadata is not publication proof).
+maximum recency points — the source asserts the relationship still holds as
+of the snapshot date. Terminated relationships (`valid_until` in the past)
+decay normally. Evidence with no publication date uses `accessed_at` as a
+proxy (capped lower, since collection metadata is not publication proof).
 
 ## Specificity
 
