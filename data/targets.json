@@ -35,28 +35,12 @@
       "description": "Research target 'tesla', auto-registered in rule-based mode (no LLM configured). Verify and enrich identity fields manually."
     },
     {
-      "id": "testcorp_c2689abe",
-      "name": "TestCorp_c2689abe",
+      "id": "testcorp_6976ed2c",
+      "name": "TestCorp_6976ed2c",
       "stock_code": "",
       "exchange": "",
-      "path": "targets/testcorp_c2689abe",
-      "description": "Research target 'TestCorp_c2689abe', auto-registered in rule-based mode (no LLM configured). Verify and enrich identity fields manually."
-    },
-    {
-      "id": "testcorp_cb6187cf",
-      "name": "TestCorp_cb6187cf",
-      "stock_code": "",
-      "exchange": "",
-      "path": "targets/testcorp_cb6187cf",
-      "description": "Research target 'TestCorp_cb6187cf', auto-registered in rule-based mode (no LLM configured). Verify and enrich identity fields manually."
-    },
-    {
-      "id": "testcorp_689f472e",
-      "name": "TestCorp_689f472e",
-      "stock_code": "",
-      "exchange": "",
-      "path": "targets/testcorp_689f472e",
-      "description": "Research target 'TestCorp_689f472e', auto-registered in rule-based mode (no LLM configured). Verify and enrich identity fields manually."
+      "path": "targets/testcorp_6976ed2c",
+      "description": "Research target 'TestCorp_6976ed2c', auto-registered in rule-based mode (no LLM configured). Verify and enrich identity fields manually."
     }
   ]
 }

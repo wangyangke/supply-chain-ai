@@ -280,7 +280,26 @@ staged candidate 未经核验**禁止**直接合入数据集（红线见 protoco
 
 ## 9. 测试与限制
 
-**测试**（`tests/`，121 个用例，src 覆盖率 ≥90%）：store 层加载/完整性/过滤/分页、评分引擎各维度与两项细化、API 全部端点与 404/422 错误路径、CLI 命令/退出码/人类可读输出、多目标注册表与 `?target=` 切换、在线研究任务生命周期（202 接受 / 409 重复 / 404 未知 + mock agent 全流程）；以及一条**全数据集可复现性断言**——每条关系的存储分数与状态必须与引擎重算结果完全一致（`test_scoring.py::TestReproducibility`）。独立校验脚本 `scripts/validate_data.py` 提供同等的评审入口（CI 对全部目标执行）。
+**测试**（`tests/`，124 个用例，src 覆盖率 ≥90%）：store 层加载/完整性/过滤/分页、评分引擎各维度与两项细化、API 全部端点与 404/422 错误路径、CLI 命令/退出码/人类可读输出、多目标注册表与 `?target=` 切换、在线研究任务生命周期（202 接受 / 409 重复 / 404 未知 + mock agent 全流程）；一条**全数据集可复现性断言**——每条关系的存储分数与状态必须与引擎重算结果完全一致（`test_scoring.py::TestReproducibility`）；以及 **XSS 安全三层测试**（`tests/test_dashboard_xss.py`：纯 Python 静态审计 + Node 运行 dashboard 内真实 `esc()`/`safeUrl()` 函数中和经典 payload + linkedom 端到端渲染断言）。独立校验脚本 `scripts/validate_data.py` 与一键验收门禁 `scripts/verify_gate.py` 提供同等的评审 / CI 入口（CI 对全部四个目标执行）。
+
+**本地验证入口**：
+
+```bash
+# 1) 单元测试 + 覆盖率门禁（≥90%）
+pytest --cov=src --cov-report=term-missing
+#    DOM 级 XSS 渲染测试需要 linkedom；缺失时自动跳过：
+npm install --no-save linkedom
+
+# 2) 一键验收门禁：数据校验 + 评分可复现 + 方法论端点一致性
+python scripts/verify_gate.py
+
+# 3) 仅校验某个目标的数据快照
+python scripts/validate_data.py --data data/targets/nvidia
+```
+
+**Schema 2.0 证据谱系**：每条证据含 `independence_group`（来源谱系组，区分转载 / 聚合避免重复计分）、`support_level`（direct / indirect / contextual，独立于 source_type，专治共现误判与来源冲突）、`access_notes`（可访问性 / 生成注意事项）三字段，由采集 / 合并脚本自动填充，并由 `validate_data.py` 校验。
+
+**评分方法论（防漂移）**：`docs/scoring_methodology.md` 与运行时端点 `GET /api/v1/scoring-methodology`（由引擎函数 `scoring_methodology()` 单源产出）保持一致；dashboard 的 Scoring 标签页在联网时实时渲染该端点，离线时回退到内嵌的规范快照。完整验收证据见 `ACCEPTANCE_REPORT.md`（其中 XSS 一项由 `tests/test_dashboard_xss.py` 的三层验证覆盖）。
 
 **已知限制与盲区**：
 

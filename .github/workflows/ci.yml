@@ -24,15 +24,23 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
 
-      - name: Run tests
-        run: pytest
+      - name: Install linkedom (DOM-level XSS render check)
+        run: npm install --no-save linkedom
+
+      - name: Run tests + coverage gate (>=90%)
+        run: pytest --cov=src --cov-report=term-missing
 
       - name: Validate committed dataset snapshots (all targets)
         run: |
-          python scripts/validate_data.py --data data/targets/nvidia
-          python scripts/validate_data.py --data data/targets/unitree
+          for t in nvidia unitree tesla c_1de9a5e2; do
+            python scripts/validate_data.py --data data/targets/$t
+          done
 
-      - name: Verify scores are engine-reproducible (dry-run, all targets)
+      - name: Verify scores are engine-reproducible (all targets)
         run: |
-          python scripts/sync_scores.py --data data/targets/nvidia
-          python scripts/sync_scores.py --data data/targets/unitree
+          for t in nvidia unitree tesla c_1de9a5e2; do
+            python scripts/sync_scores.py --data data/targets/$t
+          done
+
+      - name: Acceptance gate (data + scoring + methodology endpoint)
+        run: python scripts/verify_gate.py

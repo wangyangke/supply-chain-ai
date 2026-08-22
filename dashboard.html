@@ -148,6 +148,15 @@
   .spinner.done { animation: none; border-color: #2a9d8f; }
   .spinner.failed { animation: none; border-color: #e63946; }
   @keyframes spin { to { transform: rotate(360deg); } }
+  @media (max-width: 768px) {
+    .content { padding: 16px; }
+    .tabs { overflow-x: auto; flex-wrap: nowrap; }
+    .score-breakdown { grid-template-columns: 1fr; }
+    table { font-size: 12px; }
+    .modal { width: 95%; padding: 18px; }
+    .meta-badge { font-size: 12px; }
+    .legend { flex-wrap: wrap; }
+  }
 </style>
 </head>
 <body>
@@ -335,7 +344,7 @@ document.querySelectorAll('.tab').forEach(t => {
 function companyName(id) { return DATA.companies[id] ? DATA.companies[id].name : id; }
 function companyTicker(id) { return DATA.companies[id] ? DATA.companies[id].stock_code : ''; }
 function scoreClass(s) { return s >= 70 ? 'score-high' : s >= 40 ? 'score-mid' : 'score-low'; }
-function statusBadge(s) { return '<span class="badge badge-' + s + '">' + s + '</span>'; }
+function statusBadge(s) { return '<span class="badge badge-' + s + '">' + esc(s) + '</span>'; }
 // XSS hardening: every data-derived string rendered via innerHTML is escaped.
 function esc(s) {
   return String(s == null ? '' : s)
@@ -543,7 +552,7 @@ function showCompanyDetail(compId) {
     '<button class="close-btn" onclick="closeModal()">×</button>' +
     '<h2>' + esc(c.name) + '</h2>' +
     '<div style="color:var(--text-secondary);margin-top:4px">' + esc(c.stock_code||'') + ' · ' + esc(c.exchange||'') + ' · ' + esc(c.country||'') + ' · ISIN: ' + esc(c.isin||'') + '</div>' +
-    '<div style="margin-top:8px"><span class="badge ' + (c.entity_type==='target'?'badge-confirmed':'badge-investor') + '">' + c.entity_type + '</span> <span class="pill">' + esc(c.sector||'') + '</span></div>' +
+    '<div style="margin-top:8px"><span class="badge ' + (c.entity_type==='target'?'badge-confirmed':'badge-investor') + '">' + esc(c.entity_type) + '</span> <span class="pill">' + esc(c.sector||'') + '</span></div>' +
     (c.description ? '<div style="margin-top:12px;font-size:13px">' + esc(c.description) + '</div>' : '') +
     '<div class="modal-section"><h3>Relationships (' + rels.length + ')</h3>' +
     '<table><thead><tr><th>Type</th><th>Counterparty</th><th>Status</th><th>Score</th></tr></thead><tbody>' + relsHtml + '</tbody></table></div>';
@@ -802,10 +811,14 @@ async function loadTargetIntoDashboard(tid) {
 
 // --- Live scoring methodology (anti-drift: rendered from the API) ---
 async function loadMethodology() {
+  const live = document.getElementById('methodology-live');
+  const stat = document.getElementById('methodology-static');
   if (location.protocol === 'file:') return;  // offline snapshot uses static table
+  if (live) live.innerHTML = '<div style="color:var(--text-secondary);padding:8px 0">Loading methodology from engine…</div>';
+  if (stat) stat.style.display = 'none';  // hide static until we know live succeeded
   try {
     const resp = await fetch('/api/v1/scoring-methodology');
-    if (!resp.ok) return;
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const m = await resp.json();
     const w = m.weights || {};
     const tiers = m.authority_tiers || {};
@@ -813,8 +826,8 @@ async function loadMethodology() {
     const dimRows = Object.entries(w).map(([k, v]) =>
       '<tr><td><b>' + k.replace(/_/g, ' ') + '</b></td><td>' + v + '</td><td style="color:var(--text-secondary)">engine dimension</td></tr>'
     ).join('');
-    const tierRows = Object.entries(tiers).sort((a, b) => b[1] - a[1]).map(([k, v]) =>
-      '<tr><td><code>' + k + '</code></td><td>' + v + '</td></tr>'
+    const tierRows = Object.entries(tiers).sort((a, b) => b[1] - a[1]).map(([a, b]) =>
+      '<tr><td><code>' + a + '</code></td><td>' + b + '</td></tr>'
     ).join('');
     const bandRows = Object.entries(bands).map(([k, v]) =>
       '<tr><td><b>' + k + '</b></td><td>' + v + '</td></tr>'
@@ -827,11 +840,13 @@ async function loadMethodology() {
       '<div class="section-title">Status bands</div>' +
       '<table><thead><tr><th>Status</th><th>Score</th></tr></thead><tbody>' + bandRows + '</tbody></table>' +
       (esc(m.support_level_field) ? '<p style="color:var(--text-secondary);font-size:12px;margin-top:8px">' + esc(m.support_level_field) + '</p>' : '');
-    const live = document.getElementById('methodology-live');
-    const stat = document.getElementById('methodology-static');
     if (live) live.innerHTML = html;
     if (stat) stat.style.display = 'none';
-  } catch (e) { /* keep static fallback */ }
+  } catch (e) {
+    // Surface the failure and fall back to the canonical offline snapshot.
+    if (live) live.innerHTML = '<div style="color:#c0392b;padding:8px 0">Could not load live methodology (' + esc(String(e.message || e)) + '). Showing the canonical offline snapshot below.</div>';
+    if (stat) stat.style.display = '';
+  }
 }
 
 // --- Init ---
