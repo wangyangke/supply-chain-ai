@@ -1,0 +1,79 @@
+[
+  {
+    "id": "c_bcb56023",
+    "name": "吉利",
+    "stock_code": "",
+    "exchange": "",
+    "isin": "",
+    "country": "CN",
+    "entity_type": "target",
+    "sector": "",
+    "description": "Research target '吉利', auto-registered in rule-based mode (no LLM configured). Verify and enrich identity fields manually."
+  },
+  {
+    "id": "c_87af04ed",
+    "name": "吉利汽车",
+    "stock_code": "",
+    "exchange": "",
+    "isin": "",
+    "country": "CN",
+    "entity_type": "related",
+    "sector": "",
+    "description": "Auto-extracted counterparty of 吉利 (rule-based mode; verify identity manually)."
+  },
+  {
+    "id": "c_8c1abe83",
+    "name": "吉利控股集团",
+    "stock_code": "",
+    "exchange": "",
+    "isin": "",
+    "country": "CN",
+    "entity_type": "related",
+    "sector": "",
+    "description": "Auto-extracted counterparty of 吉利 (rule-based mode; verify identity manually)."
+  },
+  {
+    "id": "c_e80cef77",
+    "name": "涉数据来源于吉利汽车",
+    "stock_code": "",
+    "exchange": "",
+    "isin": "",
+    "country": "CN",
+    "entity_type": "related",
+    "sector": "",
+    "description": "Auto-extracted counterparty of 吉利 (rule-based mode; verify identity manually)."
+  },
+  {
+    "id": "c_9372241b",
+    "name": "浙江吉利控股集团",
+    "stock_code": "",
+    "exchange": "",
+    "isin": "",
+    "country": "CN",
+    "entity_type": "related",
+    "sector": "",
+    "description": "Auto-extracted counterparty of 吉利 (rule-based mode; verify identity manually)."
+  },
+  {
+    "id": "geely_global_geely_auto_group",
+    "name": "Geely Global Geely Auto Group",
+    "stock_code": "",
+    "exchange": "",
+    "isin": "",
+    "country": "US",
+    "entity_type": "related",
+    "sector": "",
+    "description": "Auto-extracted counterparty of 吉利 (rule-based mode; verify identity manually)."
+  },
+  {
+    "id": "c_65263f88",
+    "name": "吉利银河汽车",
+    "stock_code": "",
+    "exchange": "",
+    "isin": "",
+    "country": "CN",
+    "entity_type": "related",
+    "sector": "",
+    "description": "Auto-extracted counterparty of 吉利 (rule-based mode; verify identity manually)."
+  }
+]

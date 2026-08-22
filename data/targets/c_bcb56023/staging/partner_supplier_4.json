@@ -1,0 +1,50 @@
+{
+  "counterparty": {
+    "id": "geely_global_geely_auto_group",
+    "name": "Geely Global Geely Auto Group",
+    "stock_code": "",
+    "exchange": "",
+    "isin": "",
+    "country": "US",
+    "entity_type": "related",
+    "sector": "",
+    "description": "Auto-extracted counterparty of 吉利 (rule-based mode; verify identity manually)."
+  },
+  "relationship": {
+    "type": "partner",
+    "direction": "geely_global_geely_auto_group <-> c_bcb56023",
+    "valid_from": null,
+    "valid_until": null,
+    "summary": "Auto-staged partner relationship between Geely Global Geely Auto Group and 吉利 (rule-based extraction; needs human review)."
+  },
+  "candidates": [
+    {
+      "title": "Geely Global",
+      "source_url": "https://www.geely.com/",
+      "publisher": "geely.com",
+      "source_type": "unknown",
+      "published_at": null,
+      "accessed_at": "2026-08-22",
+      "access_restriction": "public",
+      "evidence_locator": "Search result snippet for query category 'partner_supplier'",
+      "quote": "Geely Auto Group is a leading automobile manufacturer based in Hangzhou, China and was founded in 1997 as a subsidiary unit of …",
+      "license_note": "Public search-result snippet; quoted for research with attribution.",
+      "agent_approved": true,
+      "needs_review": [
+        "entity_disambiguation",
+        "type_confirmation"
+      ],
+      "agent_review_notes": "rule-based fallback (no LLM configured): verb 'partner_supplier' matched; counterparty extracted by name pattern; REQUIRES human spot-check"
+    }
+  ],
+  "staging_version": "1.0",
+  "research_target": "c_bcb56023",
+  "generated_at": "2026-08-22",
+  "protocol": "docs/research_agent_protocol.md",
+  "merged": true,
+  "merged_into": "rel_par_003",
+  "merged_evidence_ids": [
+    "ev_par_003"
+  ],
+  "merged_at": "2026-08-22"
+}

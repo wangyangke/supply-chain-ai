@@ -1,0 +1,50 @@
+{
+  "counterparty": {
+    "id": "c_8c1abe83",
+    "name": "吉利控股集团",
+    "stock_code": "",
+    "exchange": "",
+    "isin": "",
+    "country": "CN",
+    "entity_type": "related",
+    "sector": "",
+    "description": "Auto-extracted counterparty of 吉利 (rule-based mode; verify identity manually)."
+  },
+  "relationship": {
+    "type": "partner",
+    "direction": "c_8c1abe83 <-> c_bcb56023",
+    "valid_from": null,
+    "valid_until": null,
+    "summary": "Auto-staged partner relationship between 吉利控股集团 and 吉利 (rule-based extraction; needs human review)."
+  },
+  "candidates": [
+    {
+      "title": "ZGH - 吉利控股集团官网",
+      "source_url": "https://www.zgh.com/",
+      "publisher": "zgh.com",
+      "source_type": "unknown",
+      "published_at": null,
+      "accessed_at": "2026-08-22",
+      "access_restriction": "public",
+      "evidence_locator": "Search result snippet for query category 'partner_supplier'",
+      "quote": "1 天前 · 李书福先生继续担任浙江吉利控股集团董事长。 凭借丰富的行业经验，以及对公司战略和业务运营的深刻洞察，安聪慧先生获 …",
+      "license_note": "Public search-result snippet; quoted for research with attribution.",
+      "agent_approved": true,
+      "needs_review": [
+        "entity_disambiguation",
+        "type_confirmation"
+      ],
+      "agent_review_notes": "rule-based fallback (no LLM configured): verb '战略' matched; counterparty extracted by name pattern; REQUIRES human spot-check"
+    }
+  ],
+  "staging_version": "1.0",
+  "research_target": "c_bcb56023",
+  "generated_at": "2026-08-22",
+  "protocol": "docs/research_agent_protocol.md",
+  "merged": true,
+  "merged_into": "rel_par_001",
+  "merged_evidence_ids": [
+    "ev_par_001"
+  ],
+  "merged_at": "2026-08-22"
+}

@@ -1,0 +1,80 @@
+[
+  {
+    "id": "ev_par_001",
+    "relationship_id": "rel_par_001",
+    "source_url": "https://baike.baidu.com/item/%e7%89%b9%e6%96%af%e6%8b%89/2984315",
+    "publisher": "baike.baidu.com",
+    "source_type": "unknown",
+    "published_at": null,
+    "accessed_at": "2026-08-22",
+    "evidence_locator": "Search result snippet for query category 'partner_supplier'",
+    "access_restriction": "public",
+    "license_note": "Public search-result snippet; quoted for research with attribution.",
+    "quote": "这些Tesla在华的预订用户称：Tesla或没有按照应有的“既定顺序”交车，一些较晚订车的北京和上海用户已经被通知可以提车，而其它 …"
+  },
+  {
+    "id": "ev_par_002",
+    "relationship_id": "rel_par_002",
+    "source_url": "https://baike.baidu.com/item/%e5%b0%bc%e5%8f%a4%e6%8b%89%c2%b7%e7%89%b9%e6%96%af%e6%8b%89/4481228",
+    "publisher": "baike.baidu.com",
+    "source_type": "unknown",
+    "published_at": null,
+    "accessed_at": "2026-08-22",
+    "evidence_locator": "Search result snippet for query category 'partner_supplier'",
+    "access_restriction": "public",
+    "license_note": "Public search-result snippet; quoted for research with attribution.",
+    "quote": "尼古拉&#183;特斯拉（英文：Nikola Tesla，1856年7月10日—1943年1月7日），出生在克罗地亚斯米湾村，毕业于奥地利格拉茨科技大学， …"
+  },
+  {
+    "id": "ev_inv_001",
+    "relationship_id": "rel_inv_001",
+    "source_url": "https://baike.baidu.com/item/%e7%89%b9%e6%96%af%e6%8b%89/2984315",
+    "publisher": "baike.baidu.com",
+    "source_type": "unknown",
+    "published_at": null,
+    "accessed_at": "2026-08-22",
+    "evidence_locator": "Search result snippet for query category 'investor'",
+    "access_restriction": "public",
+    "license_note": "Public search-result snippet; quoted for research with attribution.",
+    "quote": "这些Tesla在华的预订用户称：Tesla或没有按照应有的“既定顺序”交车，一些较晚订车的北京和上海用户已经被通知可以提车，而其它 …"
+  },
+  {
+    "id": "ev_inv_002",
+    "relationship_id": "rel_inv_002",
+    "source_url": "https://baike.baidu.com/item/%e5%b0%bc%e5%8f%a4%e6%8b%89%c2%b7%e7%89%b9%e6%96%af%e6%8b%89/4481228",
+    "publisher": "baike.baidu.com",
+    "source_type": "unknown",
+    "published_at": null,
+    "accessed_at": "2026-08-22",
+    "evidence_locator": "Search result snippet for query category 'investor'",
+    "access_restriction": "public",
+    "license_note": "Public search-result snippet; quoted for research with attribution.",
+    "quote": "尼古拉&#183;特斯拉（英文：Nikola Tesla，1856年7月10日—1943年1月7日），出生在克罗地亚斯米湾村，毕业于奥地利格拉茨科技大学， …"
+  },
+  {
+    "id": "ev_peer_001",
+    "relationship_id": "rel_peer_001",
+    "source_url": "https://baike.baidu.com/item/%e7%89%b9%e6%96%af%e6%8b%89/2984315",
+    "publisher": "baike.baidu.com",
+    "source_type": "unknown",
+    "published_at": null,
+    "accessed_at": "2026-08-22",
+    "evidence_locator": "Search result snippet for query category 'peer_customer'",
+    "access_restriction": "public",
+    "license_note": "Public search-result snippet; quoted for research with attribution.",
+    "quote": "这些Tesla在华的预订用户称：Tesla或没有按照应有的“既定顺序”交车，一些较晚订车的北京和上海用户已经被通知可以提车，而其它 …"
+  },
+  {
+    "id": "ev_peer_002",
+    "relationship_id": "rel_peer_002",
+    "source_url": "https://baike.baidu.com/item/%e5%b0%bc%e5%8f%a4%e6%8b%89%c2%b7%e7%89%b9%e6%96%af%e6%8b%89/4481228",
+    "publisher": "baike.baidu.com",
+    "source_type": "unknown",
+    "published_at": null,
+    "accessed_at": "2026-08-22",
+    "evidence_locator": "Search result snippet for query category 'peer_customer'",
+    "access_restriction": "public",
+    "license_note": "Public search-result snippet; quoted for research with attribution.",
+    "quote": "尼古拉&#183;特斯拉（英文：Nikola Tesla，1856年7月10日—1943年1月7日），出生在克罗地亚斯米湾村，毕业于奥地利格拉茨科技大学， …"
+  }
+]

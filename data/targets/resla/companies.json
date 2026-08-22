@@ -1,0 +1,13 @@
+[
+  {
+    "id": "resla",
+    "name": "resla",
+    "stock_code": "",
+    "exchange": "",
+    "isin": "",
+    "country": "",
+    "entity_type": "target",
+    "sector": "",
+    "description": "Research target 'resla', auto-registered in rule-based mode (no LLM configured). Verify and enrich identity fields manually."
+  }
+]

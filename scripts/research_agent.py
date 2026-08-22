@@ -394,10 +394,15 @@ class ResearchAgent:
 
     @staticmethod
     def _guess_country(text: str) -> str:
-        """Best-effort country guess from text content (rule-based mode only)."""
+        """Best-effort country guess from text content (rule-based mode only).
+
+        Chinese characters -> CN; otherwise default to US (English company
+        queries in a supply-chain context are overwhelmingly US/global firms).
+        All rule-based records are flagged needs_review anyway.
+        """
         if re.search(r"[一-鿿]", text):
             return "CN"
-        return ""
+        return "US"
 
     def _resolve_identity_heuristic(self, query: str) -> dict[str, Any]:
         """Zero-config identity: no LLM — slug from the query, details left to
