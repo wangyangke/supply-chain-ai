@@ -291,13 +291,24 @@ class TestResearchAgent:
 
         import src.api as api_mod
 
-        # tmp data root: registry + symlinked real targets
+        # tmp data root: registry + symlinked/copied real targets
+        import shutil
+
         (tmp_path / "targets").mkdir()
         real_root = api_mod.get_registry().root
         registry = _json.loads((real_root / "targets.json").read_text())
         (tmp_path / "targets.json").write_text(_json.dumps(registry))
         for t in registry["targets"]:
-            (tmp_path / "targets" / t["id"]).symlink_to(real_root / "targets" / t["id"])
+            src = real_root / "targets" / t["id"]
+            dst = tmp_path / "targets" / t["id"]
+            try:
+                dst.symlink_to(src, target_is_directory=src.is_dir())
+            except OSError:
+                # Windows non-admin / developer-mode off: fall back to copy
+                if src.is_dir():
+                    shutil.copytree(src, dst)
+                else:
+                    shutil.copy2(src, dst)
 
         monkeypatch.setenv("SCR_TAVILY_API_KEY", "dummy")
         monkeypatch.setenv("SCR_LLM_BASE_URL", "http://localhost:1/v1")

@@ -28,19 +28,27 @@
     },
     {
       "id": "tesla",
-      "name": "tesla",
-      "stock_code": "",
-      "exchange": "",
+      "name": "Tesla, Inc.",
+      "stock_code": "TSLA",
+      "exchange": "NASDAQ",
       "path": "targets/tesla",
-      "description": "Research target 'tesla', auto-registered in rule-based mode (no LLM configured). Verify and enrich identity fields manually."
+      "description": "Demo target. Auto-registered placeholder dataset used to exercise multi-target registry and agent onboarding flow. Identity fields intentionally left sparse for demo purposes."
     },
     {
-      "id": "testcorp_6976ed2c",
-      "name": "TestCorp_6976ed2c",
+      "id": "testcorp_b5156a35",
+      "name": "TestCorp_b5156a35",
       "stock_code": "",
       "exchange": "",
-      "path": "targets/testcorp_6976ed2c",
-      "description": "Research target 'TestCorp_6976ed2c', auto-registered in rule-based mode (no LLM configured). Verify and enrich identity fields manually."
+      "path": "targets/testcorp_b5156a35",
+      "description": "Research target 'TestCorp_b5156a35', auto-registered in rule-based mode (no LLM configured). Verify and enrich identity fields manually."
+    },
+    {
+      "id": "testcorp_2b95694a",
+      "name": "TestCorp_2b95694a",
+      "stock_code": "",
+      "exchange": "",
+      "path": "targets/testcorp_2b95694a",
+      "description": "Research target 'TestCorp_2b95694a', auto-registered in rule-based mode (no LLM configured). Verify and enrich identity fields manually."
     }
   ]
 }

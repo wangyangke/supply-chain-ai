@@ -1,6 +1,9 @@
 # Supply Chain & Partnership Research Service
 
-可复现的供应链与合作伙伴关系研究服务。**多目标（multi-target）架构**：`data/targets.json` 注册任意数量的研究目标，API/CLI/仪表盘可在目标间一键切换，接入新公司零代码改动。当前内置两个研究目标：**NVIDIA Corporation**（默认，22 家公司 / 21 条关系 / 29 条证据）与 **宇树科技 Unitree Robotics**（6 家公司 / 5 条关系 / 9 条证据，由 agent 研究通道全程采集验证）。
+可复现的供应链与合作伙伴关系研究服务。**多目标（multi-target）架构**：`data/targets.json` 注册任意数量的研究目标，API/CLI/仪表盘可在目标间一键切换，接入新公司零代码改动。当前注册表包含：
+- **NVIDIA Corporation**（默认，22 家公司 / 21 条关系 / 29 条证据）
+- **宇树科技 Unitree Robotics**（6 家公司 / 5 条关系 / 9 条证据，由 agent 研究通道全程采集验证）
+- **Tesla, Inc.**（3 家公司 / 6 条关系 / 6 条证据）与 **比亚迪**（6 家公司 / 15 条关系 / 24 条证据）作为辅助目标，identity 字段较 sparse，用于验证多目标切换与 onboarding 流程。
 
 > ⚠️ **不构成投资建议。** 本仓库是面试研究挑战交付物，所有结论仅基于公开资料，供评审与教学使用，不构成任何投资、交易或法律建议。
 
@@ -26,6 +29,15 @@
 | 研究对象 | 宇树科技 Unitree Robotics（**688836.SH**，上交所科创板，2026-08-19 上市） |
 | 覆盖范围 | 5 家关联上市公司、3 类关系（5 条）、9 条证据 |
 | 覆盖实体 | NVIDIA（合作伙伴）、美团/腾讯/阿里巴巴（投资方）、优必选（竞争对手） |
+
+**辅助研究目标（auxiliary targets）：**
+
+| 项目 | 内容 |
+|---|---|
+| Tesla, Inc.（`tesla`） | 辅助目标，3 家公司 / 6 条关系 / 6 条证据（as-of 2026-08-22）；identity 字段较 sparse，数据规模小于 NVIDIA/宇树，用于验证多目标切换与 onboarding 流程。 |
+| 比亚迪（`c_1de9a5e2`） | 辅助目标，6 家公司 / 15 条关系 / 24 条证据（as-of 2026-08-22）；由 agent 自动注册生成，identity 字段待人工补齐。 |
+
+> 注：tesla 与比亚迪为**辅助/补充数据集**，质量与字段完整度低于 NVIDIA/宇树；评审时请以 NVIDIA 与宇树科技为主要研究对象。
 
 **不覆盖边界（explicitly out of scope）：**
 
@@ -85,6 +97,16 @@ data/
       relationships.json  # 5 条关系
       evidence.json       # 9 条证据
       staging/            # 5 份 staging 文件（含 merged 审计标记）
+    tesla/                # demo 目标：占位数据集
+      dataset.json
+      companies.json
+      relationships.json
+      evidence.json
+    c_1de9a5e2/           # demo 目标：比亚迪占位数据集
+      dataset.json
+      companies.json
+      relationships.json
+      evidence.json
 ```
 
 关系数据中的 `confidence_score` 与 `status` 由评分引擎统一生成并写回（`scripts/sync_scores.py --write`），保证"提交的数据 = 引擎 + 证据"的**完全可复现**（见第 8 节）。
@@ -166,7 +188,7 @@ docker compose up
 
 | 地址 | 说明 |
 |---|---|
-| `http://localhost:8000/` | **交互式仪表盘**（右上角下拉切换研究目标：NVIDIA 22 家/21 条/29 证据 · 宇树科技 6 家/5 条/9 证据；搜索框可在线研究新公司，可筛选/搜索/排序/关系图谱） |
+| `http://localhost:8000/` | **交互式仪表盘**（右上角下拉切换研究目标：NVIDIA / 宇树科技 / Tesla / 比亚迪；搜索框可在线研究新公司，可筛选/搜索/排序/关系图谱） |
 | `http://localhost:8000/docs` | OpenAPI / Swagger UI（交互式 API 文档） |
 | `http://localhost:8000/api/v1/targets` | 研究目标注册表 JSON |
 | `http://localhost:8000/api/v1/stats` | 数据集统计 JSON（默认 nvidia；`?target=unitree` 切换） |
