@@ -359,16 +359,22 @@ def _slugify(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", "_", value.lower()).strip("_")
 
 
-def _agent_config_status() -> Optional[str]:
-    """Return None if the research agent is fully configured, else an error message."""
-    backend = os.environ.get("SCR_SEARCH_BACKEND", "tavily")
-    if backend == "brave" and not os.environ.get("SCR_BRAVE_API_KEY"):
-        return "SCR_BRAVE_API_KEY not set"
-    if backend != "brave" and not os.environ.get("SCR_TAVILY_API_KEY"):
-        return "SCR_TAVILY_API_KEY not set"
-    if not os.environ.get("SCR_LLM_BASE_URL") or not os.environ.get("SCR_LLM_API_KEY"):
-        return "SCR_LLM_BASE_URL / SCR_LLM_API_KEY not set"
-    return None
+def _agent_mode_info() -> str:
+    """Describe the active research agent configuration (informational only).
+
+    The agent is always usable — DuckDuckGo is the zero-config search default
+    and rule-based verification kicks in when no LLM key is present.  Tavily /
+    Brave / LLM keys are optional quality upgrades.
+    """
+    backend = os.environ.get("SCR_SEARCH_BACKEND", "").lower()
+    if backend == "brave" and os.environ.get("SCR_BRAVE_API_KEY"):
+        search = "brave"
+    elif backend == "tavily" and os.environ.get("SCR_TAVILY_API_KEY"):
+        search = "tavily"
+    else:
+        search = "duckduckgo"
+    llm = "llm" if (os.environ.get("SCR_LLM_BASE_URL") and os.environ.get("SCR_LLM_API_KEY")) else "rule-based"
+    return f"{search}+{llm}"
 
 
 def _load_research_agent_class():
@@ -424,17 +430,6 @@ def start_research(req: ResearchRequest):
         raise HTTPException(
             status_code=422,
             detail={"error": "invalid_query", "message": "query must be 2-120 characters"},
-        )
-    config_error = _agent_config_status()
-    if config_error:
-        raise HTTPException(
-            status_code=503,
-            detail={
-                "error": "research_not_configured",
-                "message": f"research agent not configured: {config_error}. "
-                "Set SCR_TAVILY_API_KEY (or SCR_BRAVE_API_KEY) and "
-                "SCR_LLM_BASE_URL / SCR_LLM_API_KEY to enable online research.",
-            },
         )
     slug = _slugify(query)
     registry = get_registry()

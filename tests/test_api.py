@@ -255,13 +255,15 @@ class TestMultiTarget:
 class TestResearchAgent:
     """Online research endpoints: POST /api/v1/research + polling."""
 
-    def test_not_configured_503(self, client, monkeypatch):
+    def test_zero_config_accepted_202(self, client, monkeypatch):
+        """Without any API keys the endpoint still accepts the job (DuckDuckGo
+        + rule-based fallback).  It no longer hard-fails with 503."""
         for var in ("SCR_TAVILY_API_KEY", "SCR_BRAVE_API_KEY",
                     "SCR_LLM_BASE_URL", "SCR_LLM_API_KEY"):
             monkeypatch.delenv(var, raising=False)
-        resp = client.post("/api/v1/research", json={"query": "Some Company"})
-        assert resp.status_code == 503
-        assert resp.json()["detail"]["error"] == "research_not_configured"
+        resp = client.post("/api/v1/research", json={"query": "ZeroConfigTestCorp"})
+        assert resp.status_code == 202
+        assert "job_id" in resp.json()
 
     def test_invalid_query_422(self, client):
         resp = client.post("/api/v1/research", json={"query": "x"})

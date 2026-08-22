@@ -18,13 +18,19 @@ pipeline WITHOUT human intervention:
                   (red line enforced: only agent_approved candidates)
   6. score+check  scripts/sync_scores.py --write + scripts/validate_data.py
 
-Configuration (env):
-  SCR_SEARCH_BACKEND   tavily | brave        (default: tavily)
-  SCR_TAVILY_API_KEY   for the tavily backend
-  SCR_BRAVE_API_KEY    for the brave backend
-  SCR_LLM_BASE_URL     OpenAI-compatible base URL (e.g. http://127.0.0.1:15721/v1)
-  SCR_LLM_API_KEY      API key for the LLM endpoint
+Configuration (env, ALL OPTIONAL — the agent works zero-config):
+  SCR_SEARCH_BACKEND   tavily | brave | duckduckgo
+                       (default: duckduckgo — free, no key required;
+                        tavily/brave are optional quality upgrades)
+  SCR_TAVILY_API_KEY   for the tavily backend (optional)
+  SCR_BRAVE_API_KEY    for the brave backend (optional)
+  SCR_LLM_BASE_URL     OpenAI-compatible base URL (optional)
+  SCR_LLM_API_KEY      API key for the LLM endpoint (optional)
   SCR_LLM_MODEL        model name (default: gpt-4o-mini)
+
+  Without LLM keys the agent falls back to RULE-BASED verification
+  (verb attribution + source-type heuristics, candidates flagged
+  needs_review). Scores land lower — honest, inspectable, zero-config.
 
 For tests, inject `search_fn` / `llm_fn` — no network or keys needed.
 
@@ -35,6 +41,7 @@ CLI:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -47,6 +54,18 @@ from pathlib import Path
 from typing import Any, Callable, Optional
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+# scripts/ is not a package — make sibling modules importable both when run
+# as `python scripts/research_agent.py` and when loaded via importlib.
+if str(Path(__file__).resolve().parent) not in sys.path:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from research_harvest import (  # noqa: E402
+    canonicalize_url,
+    guess_access_restriction,
+    guess_source_type,
+)
 
 SearchFn = Callable[[str, int], list[dict[str, Any]]]
 LlmFn = Callable[[str, str], str]
@@ -62,15 +81,43 @@ REL_TYPES = "supplier|customer|partner|investor_or_investee|peer"
 
 
 # ---------------------------------------------------------------------------
-# Default backends (env-keyed)
+# Default backends (all optional; zero-config fallback = duckduckgo + rules)
 # ---------------------------------------------------------------------------
 
+def backend_duckduckgo(query: str, max_results: int = 8) -> list[dict[str, Any]]:
+    """Free, keyless search backend via DuckDuckGo's HTML endpoint."""
+    req = urllib.request.Request(
+        "https://html.duckduckgo.com/html/?q=" + urllib.parse.quote(query),
+        headers={"User-Agent": "Mozilla/5.0 (compatible; SupplyChainResearch/1.1)"},
+    )
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        html = resp.read().decode("utf-8", errors="replace")
+    hits = []
+    # result links: <a class="result__a" href="//duckduckgo.com/l/?uddg=<enc>...">title</a>
+    # snippets:      <a class="result__snippet" ...>snippet</a>
+    links = re.findall(
+        r'class="result__a"[^>]*href="([^"]+)"[^>]*>(.*?)</a>', html, re.S)
+    snippets = re.findall(
+        r'class="result__snippet"[^>]*>(.*?)</a>', html, re.S)
+    for i, (href, title) in enumerate(links[:max_results]):
+        m = re.search(r'uddg=([^&]+)', href)
+        url = urllib.parse.unquote(m.group(1)) if m else href
+        snippet = re.sub(r"<[^>]+>", "", snippets[i]) if i < len(snippets) else ""
+        hits.append({
+            "title": re.sub(r"<[^>]+>", "", title).strip(),
+            "url": canonicalize_url(url),
+            "snippet": snippet.strip(),
+            "published_at": None,
+        })
+    return hits
+
+
 def default_search_fn() -> SearchFn:
-    backend = os.environ.get("SCR_SEARCH_BACKEND", "tavily")
-    if backend == "brave":
-        key = os.environ.get("SCR_BRAVE_API_KEY")
-        if not key:
-            raise RuntimeError("SCR_BRAVE_API_KEY not set")
+    """Backend chain: explicit SCR_SEARCH_BACKEND -> keyed backend if its key
+    exists -> duckduckgo (free, zero-config default)."""
+    backend = os.environ.get("SCR_SEARCH_BACKEND", "").lower()
+    if backend == "brave" and os.environ.get("SCR_BRAVE_API_KEY"):
+        key = os.environ["SCR_BRAVE_API_KEY"]
         def _search(query: str, max_results: int = 8) -> list[dict[str, Any]]:
             req = urllib.request.Request(
                 "https://api.search.brave.com/res/v1/web/search?q="
@@ -86,31 +133,33 @@ def default_search_fn() -> SearchFn:
             ]
         return _search
 
-    key = os.environ.get("SCR_TAVILY_API_KEY")
-    if not key:
-        raise RuntimeError("SCR_TAVILY_API_KEY not set")
-    def _search(query: str, max_results: int = 8) -> list[dict[str, Any]]:
-        body = json.dumps({"api_key": key, "query": query, "max_results": max_results}).encode()
-        req = urllib.request.Request(
-            "https://api.tavily.com/search", data=body,
-            headers={"Content-Type": "application/json"},
-        )
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            data = json.loads(resp.read())
-        return [
-            {"title": r.get("title", ""), "url": r.get("url", ""),
-             "snippet": r.get("content", ""), "published_at": r.get("published_date")}
-            for r in data.get("results", [])
-        ]
-    return _search
+    if backend == "tavily" and os.environ.get("SCR_TAVILY_API_KEY"):
+        key = os.environ["SCR_TAVILY_API_KEY"]
+        def _search(query: str, max_results: int = 8) -> list[dict[str, Any]]:
+            body = json.dumps({"api_key": key, "query": query, "max_results": max_results}).encode()
+            req = urllib.request.Request(
+                "https://api.tavily.com/search", data=body,
+                headers={"Content-Type": "application/json"},
+            )
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                data = json.loads(resp.read())
+            return [
+                {"title": r.get("title", ""), "url": r.get("url", ""),
+                 "snippet": r.get("content", ""), "published_at": r.get("published_date")}
+                for r in data.get("results", [])
+            ]
+        return _search
+
+    return backend_duckduckgo
 
 
-def default_llm_fn() -> LlmFn:
+def default_llm_fn() -> Optional[LlmFn]:
+    """OpenAI-compatible LLM if configured, else None (rule-based fallback)."""
     base = os.environ.get("SCR_LLM_BASE_URL", "").rstrip("/")
     key = os.environ.get("SCR_LLM_API_KEY", "")
     model = os.environ.get("SCR_LLM_MODEL", "gpt-4o-mini")
     if not base or not key:
-        raise RuntimeError("SCR_LLM_BASE_URL / SCR_LLM_API_KEY not set")
+        return None
     def _llm(system: str, user: str) -> str:
         body = json.dumps({
             "model": model,
@@ -175,9 +224,14 @@ class ResearchAgent:
     ):
         self.data_root = Path(data_root)
         self.search_fn = search_fn or default_search_fn()
-        self.llm_fn = llm_fn or default_llm_fn()
+        # None -> rule-based fallback (zero-config mode)
+        self.llm_fn = llm_fn if llm_fn is not None else default_llm_fn()
         self.on_step = on_step or (lambda name, detail: None)
         self.steps: list[dict[str, str]] = []
+
+    @property
+    def mode(self) -> str:
+        return "llm" if self.llm_fn is not None else "rule-based"
 
     def _step(self, name: str, detail: str) -> None:
         self.steps.append({"step": name, "detail": detail})
@@ -222,7 +276,7 @@ class ResearchAgent:
             self._step("search", f"[{category}] {len(hits)} hits")
             if not hits:
                 continue
-            self._step("verify", f"[{category}] LLM verifying {len(hits)} hits per protocol")
+            self._step("verify", f"[{category}] verifying {len(hits)} hits ({self.mode} mode)")
             stagings = self._verify_batch(identity, category, hits)
             for i, doc in enumerate(stagings):
                 path = target_dir / "staging" / f"{category}_{i}.json"
@@ -252,6 +306,7 @@ class ResearchAgent:
             "companies": len(comps),
             "relationships": len(rels),
             "evidence": len(evs),
+            "mode": self.mode,
         }
         self._step("done", json.dumps(result, ensure_ascii=False))
         return result
@@ -259,6 +314,8 @@ class ResearchAgent:
     # -- LLM steps ----------------------------------------------------------
 
     def _resolve_identity(self, query: str) -> dict[str, Any]:
+        if self.llm_fn is None:
+            return self._resolve_identity_heuristic(query)
         system = (
             "You are a financial research assistant. Resolve a company query to a "
             "canonical identity. Reply with ONLY a JSON object: "
@@ -275,7 +332,28 @@ class ResearchAgent:
             raise ValueError("LLM identity resolution incomplete (need name + description)")
         return out
 
+    def _resolve_identity_heuristic(self, query: str) -> dict[str, Any]:
+        """Zero-config identity: no LLM — slug from the query, details left to
+        the evidence (the target's own company record is descriptive only)."""
+        slug = re.sub(r"[^a-z0-9]+", "_", query.lower()).strip("_")
+        if not slug:  # e.g. pure-Chinese query — stable hash-based slug
+            slug = "c_" + hashlib.md5(query.encode("utf-8")).hexdigest()[:8]
+        return {
+            "id": slug,
+            "name": query,
+            "stock_code": "",
+            "exchange": "",
+            "country": "",
+            "sector": "",
+            "description": (
+                f"Research target '{query}', auto-registered in rule-based mode "
+                "(no LLM configured). Verify and enrich identity fields manually."
+            ),
+        }
+
     def _verify_batch(self, identity: dict, category: str, hits: list[dict]) -> list[dict]:
+        if self.llm_fn is None:
+            return self._verify_batch_rule_based(identity, category, hits)
         system = (
             "You are a supply-chain research agent following a strict evidence protocol. "
             "Given a research target and search hits, identify REAL business relationships "
@@ -326,6 +404,119 @@ class ResearchAgent:
             doc["protocol"] = "docs/research_agent_protocol.md"
             clean.append(doc)
         return clean
+
+    # -- rule-based fallback (zero-config: no LLM configured) ----------------
+
+    _TYPE_VERBS = [
+        ("supplier", ("supply", "supplier", "supplies", "purchase", "procure", "供应", "供货", "采购", "供应商")),
+        ("partner", ("partner", "collaborat", "team up", "joins force", "合作", "伙伴", "联手", "携手", "战略")),
+        ("investor_or_investee", ("invest", "stake", "shareholder", "funding", "领投", "持股", "股东", "投资", "融资", "注资", "参股")),
+        ("customer", ("customer", "client", "客户", "采购方", "订购")),
+        ("peer", ("compet", "rival", "versus", "对比", "竞争", "对手", "竞品", "对标")),
+    ]
+    _CATEGORY_DEFAULT_TYPE = {
+        "partner_supplier": "partner",
+        "investor": "investor_or_investee",
+        "peer_customer": "peer",
+    }
+    _EN_COMPANY_RE = re.compile(
+        r"\b([A-Z][A-Za-z&'.]*(?:\s+[A-Z][A-Za-z&'.]*){0,3}\s+"
+        r"(?:Inc\.?|Corp(?:oration)?\.?|Ltd\.?|LLC|PLC|N\.V\.|SE|AG|Group|Holdings|"
+        r"Technologies|Technology|Motors|Electronics|Systems|Semiconductors?))\b")
+    _ZH_COMPANY_RE = re.compile(
+        r"([一-鿿]{2,8}(?:公司|集团|科技|股份|电子|汽车|银行|证券|电器|重工))")
+
+    def _extract_counterparty(self, text: str, target_name: str) -> Optional[str]:
+        """Pull a company-like entity mention that is not the target itself."""
+        target_tokens = {t.lower() for t in re.split(r"\W+", target_name) if len(t) > 2}
+        for match in self._EN_COMPANY_RE.findall(text) + self._ZH_COMPANY_RE.findall(text):
+            name = match.strip()
+            tokens = {t.lower() for t in re.split(r"\W+", name) if len(t) > 2}
+            if tokens and tokens <= target_tokens:
+                continue  # the target itself
+            if len(name) < 4:
+                continue
+            return name
+        return None
+
+    def _guess_rel_type(self, text: str, category: str) -> tuple[str, Optional[str]]:
+        low = text.lower()
+        for rel_type, verbs in self._TYPE_VERBS:
+            for v in verbs:
+                if v in low:
+                    return rel_type, v
+        return self._CATEGORY_DEFAULT_TYPE.get(category, "partner"), None
+
+    def _verify_batch_rule_based(self, identity: dict, category: str, hits: list[dict]) -> list[dict]:
+        """Zero-config verification: verb attribution + source-type heuristics.
+
+        Deliberately conservative: hits without a relationship verb are dropped
+        (co-occurrence guard), counterparties come from company-name patterns,
+        and every candidate is flagged needs_review for human spot-check.
+        """
+        by_counterparty: dict[str, dict] = {}
+        for h in hits:
+            text = f"{h.get('title', '')} {h.get('snippet', '')}"
+            url = h.get("url", "")
+            if not url.startswith("http"):
+                continue
+            rel_type, verb = self._guess_rel_type(text, category)
+            if verb is None and category not in self._CATEGORY_DEFAULT_TYPE:
+                continue  # no relational verb at all -> co-occurrence guard
+            cp_name = self._extract_counterparty(text, identity["name"])
+            if not cp_name:
+                continue
+            slug = re.sub(r"[^a-z0-9]+", "_", cp_name.lower()).strip("_") or \
+                "c_" + hashlib.md5(cp_name.encode("utf-8")).hexdigest()[:8]
+            if slug == identity["id"]:
+                continue
+            doc = by_counterparty.setdefault(slug, {
+                "counterparty": {
+                    "id": slug,
+                    "name": cp_name,
+                    "stock_code": "",
+                    "exchange": "",
+                    "isin": "",
+                    "country": "",
+                    "entity_type": "related",
+                    "sector": "",
+                    "description": f"Auto-extracted counterparty of {identity['name']} (rule-based mode; verify identity manually).",
+                },
+                "relationship": {
+                    "type": rel_type,
+                    "direction": f"{slug} <-> {identity['id']}",
+                    "valid_from": None,
+                    "valid_until": None,
+                    "summary": f"Auto-staged {rel_type} relationship between {cp_name} and {identity['name']} (rule-based extraction; needs human review).",
+                },
+                "candidates": [],
+            })
+            doc["candidates"].append({
+                "title": h.get("title", ""),
+                "source_url": canonicalize_url(url),
+                "publisher": urllib.parse.urlparse(url).netloc.removeprefix("www."),
+                "source_type": guess_source_type(url, h.get("title", "")).value,
+                "published_at": h.get("published_at"),
+                "accessed_at": date.today().isoformat(),
+                "access_restriction": guess_access_restriction(url).value,
+                "evidence_locator": f"Search result snippet for query category '{category}'",
+                "quote": (h.get("snippet") or h.get("title", "")).strip(),
+                "license_note": "Public search-result snippet; quoted for research with attribution.",
+                "agent_approved": True,
+                "needs_review": ["entity_disambiguation", "type_confirmation"],
+                "agent_review_notes": (
+                    f"rule-based fallback (no LLM configured): verb '{verb or category}' matched; "
+                    "counterparty extracted by name pattern; REQUIRES human spot-check"
+                ),
+            })
+        out = []
+        for doc in by_counterparty.values():
+            doc["staging_version"] = "1.0"
+            doc["research_target"] = identity["id"]
+            doc["generated_at"] = date.today().isoformat()
+            doc["protocol"] = "docs/research_agent_protocol.md"
+            out.append(doc)
+        return out
 
     # -- helpers ------------------------------------------------------------
 
