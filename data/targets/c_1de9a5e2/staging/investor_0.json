@@ -1,0 +1,107 @@
+{
+  "counterparty": {
+    "id": "c_325c50a9",
+    "name": "比亚迪汽车",
+    "stock_code": "",
+    "exchange": "",
+    "isin": "",
+    "country": "CN",
+    "entity_type": "related",
+    "sector": "",
+    "description": "Auto-extracted counterparty of 比亚迪 (rule-based mode; verify identity manually)."
+  },
+  "relationship": {
+    "type": "investor_or_investee",
+    "direction": "c_325c50a9 <-> c_1de9a5e2",
+    "valid_from": null,
+    "valid_until": null,
+    "summary": "Auto-staged investor_or_investee relationship between 比亚迪汽车 and 比亚迪 (rule-based extraction; needs human review)."
+  },
+  "candidates": [
+    {
+      "title": "比亚迪汽车官方网站首页 - 新能源汽车世界冠军",
+      "source_url": "https://www.byd.com/cn/index.html",
+      "publisher": "byd.com",
+      "source_type": "unknown",
+      "published_at": null,
+      "accessed_at": "2026-08-22",
+      "access_restriction": "public",
+      "evidence_locator": "Search result snippet for query category 'investor'",
+      "quote": "包括比亚迪夏、比亚迪汉、比亚迪宋、 比亚迪唐、比亚迪秦、比亚迪元、比亚迪海豹、比亚迪海狮、比亚迪海豚、比亚迪海鸥、比亚 …",
+      "license_note": "Public search-result snippet; quoted for research with attribution.",
+      "agent_approved": true,
+      "needs_review": [
+        "entity_disambiguation",
+        "type_confirmation"
+      ],
+      "agent_review_notes": "rule-based fallback (no LLM configured): verb 'investor' matched; counterparty extracted by name pattern; REQUIRES human spot-check"
+    },
+    {
+      "title": "【比亚迪】比亚迪价格_比亚迪汽车报价_图片_汽车之家",
+      "source_url": "https://car.autohome.com.cn/price/brand-75-146.html",
+      "publisher": "car.autohome.com.cn",
+      "source_type": "unknown",
+      "published_at": null,
+      "accessed_at": "2026-08-22",
+      "access_restriction": "public",
+      "evidence_locator": "Search result snippet for query category 'investor'",
+      "quote": "比亚迪e5 (停售) (9) 比亚迪F3 (停售) (58) 比亚迪F3R (停售) (16) 比亚迪F3新能源 (停售) (2) 比亚迪G3 (停售) (15) 比亚迪G3R (停售) …",
+      "license_note": "Public search-result snippet; quoted for research with attribution.",
+      "agent_approved": true,
+      "needs_review": [
+        "entity_disambiguation",
+        "type_confirmation"
+      ],
+      "agent_review_notes": "rule-based fallback (no LLM configured): verb 'investor' matched; counterparty extracted by name pattern; REQUIRES human spot-check"
+    },
+    {
+      "title": "【比亚迪】_比亚迪汽车价格_比亚迪报价_图片_关注度高_在 ...",
+      "source_url": "https://www.autohome.com.cn/cars/brand-75-x-x-x-x-1.html",
+      "publisher": "autohome.com.cn",
+      "source_type": "unknown",
+      "published_at": null,
+      "accessed_at": "2026-08-22",
+      "access_restriction": "public",
+      "evidence_locator": "Search result snippet for query category 'investor'",
+      "quote": "2026年8月14日 · 汽车之家比亚迪汽车频道，提供2026在售比亚迪车型的最新报价、图片、配置、外观颜色、级别、车身结构、口碑分 …",
+      "license_note": "Public search-result snippet; quoted for research with attribution.",
+      "agent_approved": true,
+      "needs_review": [
+        "entity_disambiguation",
+        "type_confirmation"
+      ],
+      "agent_review_notes": "rule-based fallback (no LLM configured): verb 'investor' matched; counterparty extracted by name pattern; REQUIRES human spot-check"
+    },
+    {
+      "title": "【比亚迪】比亚迪汽车报价_图片_比亚迪新款车型_网易汽车",
+      "source_url": "https://product.auto.163.com/brand/1654.html",
+      "publisher": "product.auto.163.com",
+      "source_type": "unknown",
+      "published_at": null,
+      "accessed_at": "2026-08-22",
+      "access_restriction": "public",
+      "evidence_locator": "Search result snippet for query category 'investor'",
+      "quote": "比亚迪 比亚迪是一家致力于“用技术创新，满足人们对美好生活的向往”的高新技术企业。 比亚迪成立于1995年2月，经过20多年的高速 …",
+      "license_note": "Public search-result snippet; quoted for research with attribution.",
+      "agent_approved": true,
+      "needs_review": [
+        "entity_disambiguation",
+        "type_confirmation"
+      ],
+      "agent_review_notes": "rule-based fallback (no LLM configured): verb 'investor' matched; counterparty extracted by name pattern; REQUIRES human spot-check"
+    }
+  ],
+  "staging_version": "1.0",
+  "research_target": "c_1de9a5e2",
+  "generated_at": "2026-08-22",
+  "protocol": "docs/research_agent_protocol.md",
+  "merged": true,
+  "merged_into": "rel_inv_001",
+  "merged_evidence_ids": [
+    "ev_inv_001",
+    "ev_inv_001b",
+    "ev_inv_001c",
+    "ev_inv_001d"
+  ],
+  "merged_at": "2026-08-22"
+}

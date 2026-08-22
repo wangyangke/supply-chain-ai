@@ -256,12 +256,14 @@ class TestResearchAgent:
     """Online research endpoints: POST /api/v1/research + polling."""
 
     def test_zero_config_accepted_202(self, client, monkeypatch):
-        """Without any API keys the endpoint still accepts the job (DuckDuckGo
+        """Without any API keys the endpoint still accepts the job (Bing
         + rule-based fallback).  It no longer hard-fails with 503."""
+        import uuid
         for var in ("SCR_TAVILY_API_KEY", "SCR_BRAVE_API_KEY",
                     "SCR_LLM_BASE_URL", "SCR_LLM_API_KEY"):
             monkeypatch.delenv(var, raising=False)
-        resp = client.post("/api/v1/research", json={"query": "ZeroConfigTestCorp"})
+        unique_name = f"TestCorp_{uuid.uuid4().hex[:8]}"
+        resp = client.post("/api/v1/research", json={"query": unique_name})
         assert resp.status_code == 202
         assert "job_id" in resp.json()
 

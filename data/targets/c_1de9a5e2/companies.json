@@ -1,0 +1,68 @@
+[
+  {
+    "id": "c_1de9a5e2",
+    "name": "比亚迪",
+    "stock_code": "",
+    "exchange": "",
+    "isin": "",
+    "country": "CN",
+    "entity_type": "target",
+    "sector": "",
+    "description": "Research target '比亚迪', auto-registered in rule-based mode (no LLM configured). Verify and enrich identity fields manually."
+  },
+  {
+    "id": "c_325c50a9",
+    "name": "比亚迪汽车",
+    "stock_code": "",
+    "exchange": "",
+    "isin": "",
+    "country": "CN",
+    "entity_type": "related",
+    "sector": "",
+    "description": "Auto-extracted counterparty of 比亚迪 (rule-based mode; verify identity manually)."
+  },
+  {
+    "id": "c_f7a3f9c5",
+    "name": "业务横跨汽车",
+    "stock_code": "",
+    "exchange": "",
+    "isin": "",
+    "country": "CN",
+    "entity_type": "related",
+    "sector": "",
+    "description": "Auto-extracted counterparty of 比亚迪 (rule-based mode; verify identity manually)."
+  },
+  {
+    "id": "c_c4a43513",
+    "name": "业务布局涵盖汽车",
+    "stock_code": "",
+    "exchange": "",
+    "isin": "",
+    "country": "CN",
+    "entity_type": "related",
+    "sector": "",
+    "description": "Auto-extracted counterparty of 比亚迪 (rule-based mode; verify identity manually)."
+  },
+  {
+    "id": "c_620a106a",
+    "name": "比亚迪股份有限公司",
+    "stock_code": "",
+    "exchange": "",
+    "isin": "",
+    "country": "CN",
+    "entity_type": "related",
+    "sector": "",
+    "description": "Auto-extracted counterparty of 比亚迪 (rule-based mode; verify identity manually)."
+  },
+  {
+    "id": "c_7b22b6d9",
+    "name": "电控等新能源汽车",
+    "stock_code": "",
+    "exchange": "",
+    "isin": "",
+    "country": "CN",
+    "entity_type": "related",
+    "sector": "",
+    "description": "Auto-extracted counterparty of 比亚迪 (rule-based mode; verify identity manually)."
+  }
+]

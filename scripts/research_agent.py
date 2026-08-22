@@ -19,8 +19,9 @@ pipeline WITHOUT human intervention:
   6. score+check  scripts/sync_scores.py --write + scripts/validate_data.py
 
 Configuration (env, ALL OPTIONAL — the agent works zero-config):
-  SCR_SEARCH_BACKEND   tavily | brave | duckduckgo
-                       (default: duckduckgo — free, no key required;
+  SCR_SEARCH_BACKEND   bing | duckduckgo | tavily | brave
+                       (default: bing — free, no key required, works behind CN proxies;
+                        duckduckgo also free but may be blocked by some CN proxies;
                         tavily/brave are optional quality upgrades)
   SCR_TAVILY_API_KEY   for the tavily backend (optional)
   SCR_BRAVE_API_KEY    for the brave backend (optional)
@@ -48,10 +49,11 @@ import re
 import subprocess
 import sys
 import urllib.parse
-import urllib.request
 from datetime import date
 from pathlib import Path
 from typing import Any, Callable, Optional
+
+import httpx
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
@@ -84,14 +86,68 @@ REL_TYPES = "supplier|customer|partner|investor_or_investee|peer"
 # Default backends (all optional; zero-config fallback = duckduckgo + rules)
 # ---------------------------------------------------------------------------
 
-def backend_duckduckgo(query: str, max_results: int = 8) -> list[dict[str, Any]]:
-    """Free, keyless search backend via DuckDuckGo's HTML endpoint."""
-    req = urllib.request.Request(
-        "https://html.duckduckgo.com/html/?q=" + urllib.parse.quote(query),
-        headers={"User-Agent": "Mozilla/5.0 (compatible; SupplyChainResearch/1.1)"},
+def _html_unescape(text: str) -> str:
+    """Minimal HTML entity unescape for search snippets."""
+    for entity, char in [("&ensp;", " "), ("&#0183;", "·"), ("&middot;", "·"),
+                         ("&amp;", "&"), ("&lt;", "<"), ("&gt;", ">"),
+                         ("&quot;", '"'), ("&#39;", "'"), ("&nbsp;", " ")]:
+        text = text.replace(entity, char)
+    return text
+
+
+def backend_bing(query: str, max_results: int = 8) -> list[dict[str, Any]]:
+    """Free, keyless search backend via Bing (works behind CN proxies)."""
+    resp = httpx.get(
+        "https://www.bing.com/search",
+        params={"q": query, "mkt": "zh-CN", "count": max_results},
+        headers={"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                 "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                 "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8"},
+        timeout=30,
+        follow_redirects=True,
     )
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        html = resp.read().decode("utf-8", errors="replace")
+    resp.raise_for_status()
+    html = resp.text
+    hits = []
+    blocks = re.findall(r'<li class="b_algo"[^>]*>(.*?)</li>', html, re.S)
+    for block in blocks[:max_results]:
+        h2 = re.search(r'<h2[^>]*>(.*?)</h2>', block, re.S)
+        if not h2:
+            continue
+        m = re.search(r'<a[^>]*href="([^"]+)"[^>]*>(.*?)</a>', h2.group(1), re.S)
+        if not m:
+            continue
+        url, title = m.group(1), re.sub(r"<[^>]+>", "", m.group(2)).strip()
+        if not url.startswith("http"):
+            continue
+        ps = re.findall(r'<p[^>]*>(.*?)</p>', block, re.S)
+        snippet = ""
+        for p in ps:
+            clean = re.sub(r"<[^>]+>", "", p).strip()
+            if clean and len(clean) > 10:
+                snippet = _html_unescape(clean)
+                break
+        hits.append({
+            "title": _html_unescape(title),
+            "url": canonicalize_url(url),
+            "snippet": snippet,
+            "published_at": None,
+        })
+    return hits
+
+
+def backend_duckduckgo(query: str, max_results: int = 8) -> list[dict[str, Any]]:
+    """Free, keyless search backend via DuckDuckGo's HTML endpoint.
+    NOTE: DuckDuckGo may be unreachable behind some CN proxies — use bing instead."""
+    resp = httpx.get(
+        "https://html.duckduckgo.com/html/",
+        params={"q": query},
+        headers={"User-Agent": "Mozilla/5.0 (compatible; SupplyChainResearch/1.1)"},
+        timeout=30,
+        follow_redirects=True,
+    )
+    resp.raise_for_status()
+    html = resp.text
     hits = []
     # result links: <a class="result__a" href="//duckduckgo.com/l/?uddg=<enc>...">title</a>
     # snippets:      <a class="result__snippet" ...>snippet</a>
@@ -114,18 +170,21 @@ def backend_duckduckgo(query: str, max_results: int = 8) -> list[dict[str, Any]]
 
 def default_search_fn() -> SearchFn:
     """Backend chain: explicit SCR_SEARCH_BACKEND -> keyed backend if its key
-    exists -> duckduckgo (free, zero-config default)."""
+    exists -> bing (free, zero-config default, works behind CN proxies)."""
     backend = os.environ.get("SCR_SEARCH_BACKEND", "").lower()
+    if backend == "duckduckgo":
+        return backend_duckduckgo
     if backend == "brave" and os.environ.get("SCR_BRAVE_API_KEY"):
         key = os.environ["SCR_BRAVE_API_KEY"]
         def _search(query: str, max_results: int = 8) -> list[dict[str, Any]]:
-            req = urllib.request.Request(
-                "https://api.search.brave.com/res/v1/web/search?q="
-                + urllib.parse.quote(query) + f"&count={max_results}",
+            resp = httpx.get(
+                "https://api.search.brave.com/res/v1/web/search",
+                params={"q": query, "count": max_results},
                 headers={"X-Subscription-Token": key, "Accept": "application/json"},
+                timeout=30,
             )
-            with urllib.request.urlopen(req, timeout=30) as resp:
-                data = json.loads(resp.read())
+            resp.raise_for_status()
+            data = resp.json()
             return [
                 {"title": r.get("title", ""), "url": r.get("url", ""),
                  "snippet": r.get("description", ""), "published_at": r.get("age")}
@@ -136,13 +195,13 @@ def default_search_fn() -> SearchFn:
     if backend == "tavily" and os.environ.get("SCR_TAVILY_API_KEY"):
         key = os.environ["SCR_TAVILY_API_KEY"]
         def _search(query: str, max_results: int = 8) -> list[dict[str, Any]]:
-            body = json.dumps({"api_key": key, "query": query, "max_results": max_results}).encode()
-            req = urllib.request.Request(
-                "https://api.tavily.com/search", data=body,
-                headers={"Content-Type": "application/json"},
+            resp = httpx.post(
+                "https://api.tavily.com/search",
+                json={"api_key": key, "query": query, "max_results": max_results},
+                timeout=30,
             )
-            with urllib.request.urlopen(req, timeout=30) as resp:
-                data = json.loads(resp.read())
+            resp.raise_for_status()
+            data = resp.json()
             return [
                 {"title": r.get("title", ""), "url": r.get("url", ""),
                  "snippet": r.get("content", ""), "published_at": r.get("published_date")}
@@ -150,7 +209,7 @@ def default_search_fn() -> SearchFn:
             ]
         return _search
 
-    return backend_duckduckgo
+    return backend_bing
 
 
 def default_llm_fn() -> Optional[LlmFn]:
@@ -161,20 +220,21 @@ def default_llm_fn() -> Optional[LlmFn]:
     if not base or not key:
         return None
     def _llm(system: str, user: str) -> str:
-        body = json.dumps({
-            "model": model,
-            "messages": [
-                {"role": "system", "content": system},
-                {"role": "user", "content": user},
-            ],
-            "temperature": 0.1,
-        }).encode()
-        req = urllib.request.Request(
-            base + "/chat/completions", data=body,
-            headers={"Content-Type": "application/json", "Authorization": f"Bearer {key}"},
+        resp = httpx.post(
+            base + "/chat/completions",
+            json={
+                "model": model,
+                "messages": [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user},
+                ],
+                "temperature": 0.1,
+            },
+            headers={"Authorization": f"Bearer {key}"},
+            timeout=120,
         )
-        with urllib.request.urlopen(req, timeout=120) as resp:
-            data = json.loads(resp.read())
+        resp.raise_for_status()
+        data = resp.json()
         return data["choices"][0]["message"]["content"]
     return _llm
 
@@ -332,6 +392,13 @@ class ResearchAgent:
             raise ValueError("LLM identity resolution incomplete (need name + description)")
         return out
 
+    @staticmethod
+    def _guess_country(text: str) -> str:
+        """Best-effort country guess from text content (rule-based mode only)."""
+        if re.search(r"[一-鿿]", text):
+            return "CN"
+        return ""
+
     def _resolve_identity_heuristic(self, query: str) -> dict[str, Any]:
         """Zero-config identity: no LLM — slug from the query, details left to
         the evidence (the target's own company record is descriptive only)."""
@@ -343,7 +410,7 @@ class ResearchAgent:
             "name": query,
             "stock_code": "",
             "exchange": "",
-            "country": "",
+            "country": self._guess_country(query),
             "sector": "",
             "description": (
                 f"Research target '{query}', auto-registered in rule-based mode "
@@ -477,7 +544,7 @@ class ResearchAgent:
                     "stock_code": "",
                     "exchange": "",
                     "isin": "",
-                    "country": "",
+                    "country": self._guess_country(cp_name + " " + text),
                     "entity_type": "related",
                     "sector": "",
                     "description": f"Auto-extracted counterparty of {identity['name']} (rule-based mode; verify identity manually).",

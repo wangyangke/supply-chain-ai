@@ -1,0 +1,50 @@
+{
+  "counterparty": {
+    "id": "c_f7a3f9c5",
+    "name": "业务横跨汽车",
+    "stock_code": "",
+    "exchange": "",
+    "isin": "",
+    "country": "CN",
+    "entity_type": "related",
+    "sector": "",
+    "description": "Auto-extracted counterparty of 比亚迪 (rule-based mode; verify identity manually)."
+  },
+  "relationship": {
+    "type": "investor_or_investee",
+    "direction": "c_f7a3f9c5 <-> c_1de9a5e2",
+    "valid_from": null,
+    "valid_until": null,
+    "summary": "Auto-staged investor_or_investee relationship between 业务横跨汽车 and 比亚迪 (rule-based extraction; needs human review)."
+  },
+  "candidates": [
+    {
+      "title": "公司简介-比亚迪",
+      "source_url": "https://www.bydglobal.com/cn/AboutByd/CompanyIntro.html",
+      "publisher": "bydglobal.com",
+      "source_type": "unknown",
+      "published_at": null,
+      "accessed_at": "2026-08-22",
+      "access_restriction": "public",
+      "evidence_locator": "Search result snippet for query category 'investor'",
+      "quote": "3 天之前 · 比亚迪成立于1994年11月18日， 总部位于广东省深圳市， 是在香港和深圳两地上市的世界500强企业，业务横跨汽车、电子 …",
+      "license_note": "Public search-result snippet; quoted for research with attribution.",
+      "agent_approved": true,
+      "needs_review": [
+        "entity_disambiguation",
+        "type_confirmation"
+      ],
+      "agent_review_notes": "rule-based fallback (no LLM configured): verb 'investor' matched; counterparty extracted by name pattern; REQUIRES human spot-check"
+    }
+  ],
+  "staging_version": "1.0",
+  "research_target": "c_1de9a5e2",
+  "generated_at": "2026-08-22",
+  "protocol": "docs/research_agent_protocol.md",
+  "merged": true,
+  "merged_into": "rel_inv_002",
+  "merged_evidence_ids": [
+    "ev_inv_002"
+  ],
+  "merged_at": "2026-08-22"
+}
