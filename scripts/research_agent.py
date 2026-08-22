@@ -69,6 +69,27 @@ from research_harvest import (  # noqa: E402
     guess_source_type,
 )
 
+# Official / statutory source types assert relationships directly; media and
+# analyst outlets report them (indirectly); reference / informal / unknown
+# sources are only contextual for a given edge. This mirrors the Schema 2.0
+# evidence.support_level semantics so agent-generated items are auditable.
+_DIRECT_SOURCE_TYPES = {
+    "sec_filing", "exchange_filing", "government",
+    "company_ir", "company_press_release",
+}
+_INDIRECT_SOURCE_TYPES = {
+    "business_media", "analyst_research", "industry_database",
+}
+
+
+def guess_support_level(source_type: str) -> str:
+    """Heuristic support_level for an agent-generated evidence item."""
+    if source_type in _DIRECT_SOURCE_TYPES:
+        return "direct"
+    if source_type in _INDIRECT_SOURCE_TYPES:
+        return "indirect"
+    return "contextual"
+
 SearchFn = Callable[[str, int], list[dict[str, Any]]]
 LlmFn = Callable[[str, str], str]
 StepFn = Callable[[str, str], None]
@@ -568,11 +589,19 @@ class ResearchAgent:
                 "source_url": canonicalize_url(url),
                 "publisher": urllib.parse.urlparse(url).netloc.removeprefix("www."),
                 "source_type": guess_source_type(url, h.get("title", "")).value,
+                "independence_group": urllib.parse.urlparse(url).netloc.removeprefix("www."),
+                "support_level": guess_support_level(
+                    guess_source_type(url, h.get("title", "")).value
+                ),
                 "published_at": h.get("published_at"),
                 "accessed_at": date.today().isoformat(),
                 "access_restriction": guess_access_restriction(url).value,
                 "evidence_locator": f"Search result snippet for query category '{category}'",
                 "quote": (h.get("snippet") or h.get("title", "")).strip(),
+                "access_notes": (
+                    "Aggregated web-search snippet (rule-based fallback, no LLM); "
+                    "verify the quoted claim against the primary source."
+                ),
                 "license_note": "Public search-result snippet; quoted for research with attribution.",
                 "agent_approved": True,
                 "needs_review": ["entity_disambiguation", "type_confirmation"],

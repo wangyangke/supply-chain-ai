@@ -50,6 +50,8 @@ def make_ev(**kw) -> Evidence:
         source_url="https://example.com/x",
         publisher="Example Corp",
         source_type="reference",
+        independence_group="example.com",
+        support_level="indirect",
         published_at=date(2026, 1, 1),
         accessed_at=AS_OF,
         evidence_locator="Section 1",

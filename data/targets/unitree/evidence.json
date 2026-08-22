@@ -10,7 +10,10 @@
     "evidence_locator": "NVIDIA press release (GTC Taipei), 'Availability' section",
     "access_restriction": "public",
     "license_note": "Public web publication; quoted for research with attribution.",
-    "quote": "The NVIDIA Isaac GR00T Reference Humanoid Robot will be available from Unitree in late 2026. The NVIDIA Isaac GR00T reference workflow for Unitree G1 is expected to be available soon on GitHub and Hugging Face for robot developers."
+    "quote": "The NVIDIA Isaac GR00T Reference Humanoid Robot will be available from Unitree in late 2026. The NVIDIA Isaac GR00T reference workflow for Unitree G1 is expected to be available soon on GitHub and Hugging Face for robot developers.",
+    "independence_group": "NVIDIA Corporation official press release (syndicated via ADVFN)",
+    "support_level": "direct",
+    "access_notes": null
   },
   {
     "id": "ev_par_001b",
@@ -23,7 +26,10 @@
     "evidence_locator": "NVIDIA press release, platform description paragraph",
     "access_restriction": "public",
     "license_note": "Public web publication; quoted for research with attribution.",
-    "quote": "The NVIDIA Isaac GR00T developer platform will also support the Unitree G1 humanoid robot, extending the same development approach to a robot widely used by researchers and humanoid developers across leading institutions."
+    "quote": "The NVIDIA Isaac GR00T developer platform will also support the Unitree G1 humanoid robot, extending the same development approach to a robot widely used by researchers and humanoid developers across leading institutions.",
+    "independence_group": "NVIDIA Corporation official press release (via Google News)",
+    "support_level": "direct",
+    "access_notes": null
   },
   {
     "id": "ev_par_001c",
@@ -36,7 +42,10 @@
     "evidence_locator": "IBTimes news article, lead paragraphs",
     "access_restriction": "public",
     "license_note": "Public web publication; quoted for research with attribution.",
-    "quote": "The company announced Monday that its Isaac GR00T humanoid robot developer platform will support Unitree's G1 humanoid robot and a new reference design using Unitree hardware, Nvidia computing, and mechanical hands from Singapore-based Sharpa."
+    "quote": "The company announced Monday that its Isaac GR00T humanoid robot developer platform will support Unitree's G1 humanoid robot and a new reference design using Unitree hardware, Nvidia computing, and mechanical hands from Singapore-based Sharpa.",
+    "independence_group": "International Business Times",
+    "support_level": "indirect",
+    "access_notes": null
   },
   {
     "id": "ev_inv_001",
@@ -49,7 +58,10 @@
     "evidence_locator": "Article '多层次资本共助硬科技成长', section 产业资本'组团'入局, citing Unitree 招股意向书",
     "access_restriction": "public",
     "license_note": "Public web publication; quoted for research with attribution.",
-    "quote": "美团系通过汉海信息、Galaxy Z、成都龙珠3家主体合计持有宇树科技9.6488%的股份，是所有外部机构股东中持股比例最高的。其中，汉海信息持有宇树科技7.61%的股份，为宇树科技第三大股东。"
+    "quote": "美团系通过汉海信息、Galaxy Z、成都龙珠3家主体合计持有宇树科技9.6488%的股份，是所有外部机构股东中持股比例最高的。其中，汉海信息持有宇树科技7.61%的股份，为宇树科技第三大股东。",
+    "independence_group": "中国金融新闻网 (China Financial News)",
+    "support_level": "indirect",
+    "access_notes": null
   },
   {
     "id": "ev_inv_001b",
@@ -62,7 +74,10 @@
     "evidence_locator": "Article section '成长期产业赋能型投资方(2021-2024)', B+ round paragraph",
     "access_restriction": "public",
     "license_note": "Public web publication; quoted for research with attribution.",
-    "quote": "2024 年 9 月 B+ 轮融资落地……其中美团系通过汉海信息、Galaxy Z、成都龙珠三家主体联合投资，成为第一大外部机构股东，核心探索人形机器人在外卖配送等本地生活场景的落地应用。"
+    "quote": "2024 年 9 月 B+ 轮融资落地……其中美团系通过汉海信息、Galaxy Z、成都龙珠三家主体联合投资，成为第一大外部机构股东，核心探索人形机器人在外卖配送等本地生活场景的落地应用。",
+    "independence_group": "凤凰网财经 (ifeng Finance)",
+    "support_level": "indirect",
+    "access_notes": null
   },
   {
     "id": "ev_inv_002",
@@ -75,7 +90,10 @@
     "evidence_locator": "Article '多层次资本共助硬科技成长', C-round funding paragraph, citing Unitree 招股意向书",
     "access_restriction": "public",
     "license_note": "Public web publication; quoted for research with attribution.",
-    "quote": "招股意向书显示，截至招股意向书签署日，腾讯科技直接持有宇树科技217.917万股。……2025年6月宇树科技C轮融资中，从增资款来看，腾讯科技、中移和创、无锡锦秋各出资8000.08万元。"
+    "quote": "招股意向书显示，截至招股意向书签署日，腾讯科技直接持有宇树科技217.917万股。……2025年6月宇树科技C轮融资中，从增资款来看，腾讯科技、中移和创、无锡锦秋各出资8000.08万元。",
+    "independence_group": "中国金融新闻网 (China Financial News)",
+    "support_level": "indirect",
+    "access_notes": null
   },
   {
     "id": "ev_inv_003",
@@ -88,7 +106,10 @@
     "evidence_locator": "Article '多层次资本共助硬科技成长', C-round paragraph, citing Unitree 招股意向书",
     "access_restriction": "public",
     "license_note": "Public web publication; quoted for research with attribution.",
-    "quote": "阿里巴巴集团间接全资子公司杭州灏月持有宇树科技163.4346万股。蚂蚁集团全资子公司上海云玚持有宇树科技81.7236万股。"
+    "quote": "阿里巴巴集团间接全资子公司杭州灏月持有宇树科技163.4346万股。蚂蚁集团全资子公司上海云玚持有宇树科技81.7236万股。",
+    "independence_group": "中国金融新闻网 (China Financial News)",
+    "support_level": "indirect",
+    "access_notes": null
   },
   {
     "id": "ev_peer_001",
@@ -101,7 +122,10 @@
     "evidence_locator": "Article production-volume comparison paragraph",
     "access_restriction": "public",
     "license_note": "Public web publication; quoted for research with attribution.",
-    "quote": "横向对比国内四家主流人形机器人企业，数据全部采用官方公开口径：宇树科技纯双足人形18000台；智元机器人纯双足人形7000台；优必选全系列人形机器人累计下线约3000台。"
+    "quote": "横向对比国内四家主流人形机器人企业，数据全部采用官方公开口径：宇树科技纯双足人形18000台；智元机器人纯双足人形7000台；优必选全系列人形机器人累计下线约3000台。",
+    "independence_group": "中华网 (china.com)",
+    "support_level": "indirect",
+    "access_notes": null
   },
   {
     "id": "ev_peer_001b",
@@ -114,6 +138,9 @@
     "evidence_locator": "Article section '三强对决: 宇树、优必选、智元的路线之争'",
     "access_restriction": "public",
     "license_note": "Public web publication; quoted for research with attribution.",
-    "quote": "2026年的中国人形机器人赛道，已经形成了三足鼎立的格局。但三家公司，走的是三条截然不同的路。……优必选：全栈全场景的理想主义。"
+    "quote": "2026年的中国人形机器人赛道，已经形成了三足鼎立的格局。但三家公司，走的是三条截然不同的路。……优必选：全栈全场景的理想主义。",
+    "independence_group": "虎嗅网 (Huxiu)",
+    "support_level": "indirect",
+    "access_notes": null
   }
 ]

@@ -34,7 +34,7 @@ from pathlib import Path as _Path
 from pydantic import BaseModel
 
 from .models import HealthResponse
-from .scoring import score_relationship
+from .scoring import score_relationship, scoring_methodology
 from .store import DatasetError, Store, TargetRegistry
 
 app = FastAPI(
@@ -160,6 +160,18 @@ def health(target: Optional[str] = Query(None, description="Research target id")
         evidence=stats["evidence"],
         server_time=datetime.now(timezone.utc),
     )
+
+
+@app.get("/api/v1/scoring-methodology", tags=["meta"])
+def get_scoring_methodology() -> dict:
+    """Return the canonical, machine-readable scoring rubric.
+
+    The Dashboard renders this verbatim (no hard-coded numbers in the UI),
+    so the documentation, UI and engine cannot drift apart. The payload is
+    produced by ``src.scoring.scoring_methodology()`` directly from the
+    engine constants.
+    """
+    return scoring_methodology()
 
 
 @app.get("/api/v1/targets", tags=["meta"])

@@ -27,6 +27,7 @@ if str(PROJECT_ROOT) not in sys.path:
 from src.models import (
     AccessRestriction,
     EntityType,
+    EvidenceSupportLevel,
     RelationshipStatus,
     RelationshipType,
     SourceType,
@@ -39,6 +40,8 @@ VALID_STATUSES = {s.value for s in RelationshipStatus}
 VALID_ENTITY_TYPES = {e.value for e in EntityType}
 VALID_SOURCE_TYPES = {s.value for s in SourceType}
 VALID_ACCESS = {a.value for a in AccessRestriction}
+VALID_SUPPORT_LEVELS = {s.value for s in EvidenceSupportLevel}
+SUPPORTED_SCHEMA_VERSIONS = {"1.0", "2.0"}
 
 
 class Report:
@@ -60,8 +63,11 @@ class Report:
 def validate(store: Store, report: Report) -> None:
     # ---- dataset.json -----------------------------------------------------
     ds = store.dataset
-    if ds.schema_version != "1.0":
-        report.err(f"dataset.json: unsupported schema_version '{ds.schema_version}'")
+    if ds.schema_version not in SUPPORTED_SCHEMA_VERSIONS:
+        report.err(
+            f"dataset.json: unsupported schema_version '{ds.schema_version}' "
+            f"(supported: {', '.join(sorted(SUPPORTED_SCHEMA_VERSIONS))})"
+        )
     if not ds.research_target:
         report.err("dataset.json: missing research_target")
     target = store.get_company(ds.research_target)
@@ -86,6 +92,12 @@ def validate(store: Store, report: Report) -> None:
             report.err(f"evidence {eid}: invalid source_type '{ev.source_type.value}'")
         if ev.access_restriction.value not in VALID_ACCESS:
             report.err(f"evidence {eid}: invalid access_restriction '{ev.access_restriction.value}'")
+        # Schema 2.0 provenance fields (deliverable #3): every item must
+        # declare its lineage group and how directly it supports the edge.
+        if not ev.independence_group.strip():
+            report.err(f"evidence {eid}: empty independence_group (provenance lineage)")
+        if ev.support_level.value not in VALID_SUPPORT_LEVELS:
+            report.err(f"evidence {eid}: invalid support_level '{ev.support_level.value}'")
         if not ev.source_url.startswith("https://"):
             report.warn(f"evidence {eid}: source_url is not https: {ev.source_url[:60]}")
         if ev.published_at and ev.accessed_at and ev.published_at > ev.accessed_at:

@@ -10,7 +10,10 @@
     "evidence_locator": "10-K FY2026, Item 1 Business — Manufacturing section, sentence listing foundries",
     "access_restriction": "public",
     "license_note": "SEC filings are public domain under U.S. law; EDGAR is a public service.",
-    "quote": "We utilize foundries, such as Taiwan Semiconductor Manufacturing Company Limited, or TSMC, and Samsung Electronics Co., Ltd., or Samsung, to produce our semiconductor wafers."
+    "quote": "We utilize foundries, such as Taiwan Semiconductor Manufacturing Company Limited, or TSMC, and Samsung Electronics Co., Ltd., or Samsung, to produce our semiconductor wafers.",
+    "independence_group": "U.S. Securities and Exchange Commission (NVIDIA FY2026 Form 10-K)",
+    "support_level": "direct",
+    "access_notes": null
   },
   {
     "id": "ev_sup_002",
@@ -23,7 +26,10 @@
     "evidence_locator": "10-K FY2026, Item 1 Business — Manufacturing section, sentence listing memory suppliers",
     "access_restriction": "public",
     "license_note": "SEC filings are public domain under U.S. law; EDGAR is a public service.",
-    "quote": "We purchase memory from SK Hynix Inc., Micron Technology, Inc., and Samsung."
+    "quote": "We purchase memory from SK Hynix Inc., Micron Technology, Inc., and Samsung.",
+    "independence_group": "U.S. Securities and Exchange Commission (NVIDIA FY2026 Form 10-K)",
+    "support_level": "direct",
+    "access_notes": null
   },
   {
     "id": "ev_sup_003",
@@ -36,7 +42,10 @@
     "evidence_locator": "10-K FY2026, Item 1 Business — Manufacturing section, sentence listing memory suppliers",
     "access_restriction": "public",
     "license_note": "SEC filings are public domain under U.S. law; EDGAR is a public service.",
-    "quote": "We purchase memory from SK Hynix Inc., Micron Technology, Inc., and Samsung."
+    "quote": "We purchase memory from SK Hynix Inc., Micron Technology, Inc., and Samsung.",
+    "independence_group": "U.S. Securities and Exchange Commission (NVIDIA FY2026 Form 10-K)",
+    "support_level": "direct",
+    "access_notes": null
   },
   {
     "id": "ev_sup_004",
@@ -49,7 +58,10 @@
     "evidence_locator": "Article: 'ASML may have played key role in Nvidia becoming world's most valuable company'",
     "access_restriction": "public",
     "license_note": "Public news article; reproduced for research citation only.",
-    "quote": "These machines are purchased by semiconductor foundries, such as Taiwan-based TSMC, which manufactures chips on behalf of designers such as Nvidia. ... ASML is not a direct supplier to Nvidia, but it supplies TSMC with the extreme ultraviolet (EUV) lithography machines needed to fabricate Nvidia's most advanced chips."
+    "quote": "These machines are purchased by semiconductor foundries, such as Taiwan-based TSMC, which manufactures chips on behalf of designers such as Nvidia. ... ASML is not a direct supplier to Nvidia, but it supplies TSMC with the extreme ultraviolet (EUV) lithography machines needed to fabricate Nvidia's most advanced chips.",
+    "independence_group": "The Times of India (technology section)",
+    "support_level": "indirect",
+    "access_notes": null
   },
   {
     "id": "ev_cus_001",
@@ -62,7 +74,10 @@
     "evidence_locator": "'AI Chip Owners Documentation' — table of Nvidia revenue share by hyperscaler",
     "access_restriction": "public",
     "license_note": "Public research documentation; aggregated analyst estimates.",
-    "quote": "The Information reports that Nvidia sources told them that Microsoft was Nvidia's biggest customer in 2024. ... Microsoft 19% [share of Nvidia total revenue], 21% [share of data center revenue]."
+    "quote": "The Information reports that Nvidia sources told them that Microsoft was Nvidia's biggest customer in 2024. ... Microsoft 19% [share of Nvidia total revenue], 21% [share of data center revenue].",
+    "independence_group": "Epoch AI (data research institute)",
+    "support_level": "indirect",
+    "access_notes": null
   },
   {
     "id": "ev_cus_001b",
@@ -75,7 +90,10 @@
     "evidence_locator": "Article: 'Big Tech's spending drove Nvidia's rise' — Bloomberg estimates",
     "access_restriction": "public",
     "license_note": "Public news article citing Bloomberg compiled estimates.",
-    "quote": "Microsoft (MSFT) is the largest driver of Nvidia's revenue, followed by Meta (META), Amazon (AMZN), and Google parent Alphabet (GOOG), according to Bloomberg estimates."
+    "quote": "Microsoft (MSFT) is the largest driver of Nvidia's revenue, followed by Meta (META), Amazon (AMZN), and Google parent Alphabet (GOOG), according to Bloomberg estimates.",
+    "independence_group": "Yahoo Finance (citing Bloomberg estimates)",
+    "support_level": "indirect",
+    "access_notes": null
   },
   {
     "id": "ev_cus_002",
@@ -88,7 +106,10 @@
     "evidence_locator": "Article: 'Big Tech's spending drove Nvidia's rise' — Bloomberg estimates",
     "access_restriction": "public",
     "license_note": "Public news article citing Bloomberg compiled estimates.",
-    "quote": "25% of Meta's capital expenditures go to Nvidia and the company accounts for just over 9% of Nvidia's annual revenue."
+    "quote": "25% of Meta's capital expenditures go to Nvidia and the company accounts for just over 9% of Nvidia's annual revenue.",
+    "independence_group": "Yahoo Finance (citing Bloomberg estimates)",
+    "support_level": "indirect",
+    "access_notes": null
   },
   {
     "id": "ev_cus_003",
@@ -101,7 +122,10 @@
     "evidence_locator": "'AI Chip Owners Documentation' — Amazon row in revenue-share table",
     "access_restriction": "public",
     "license_note": "Public research documentation; aggregated analyst estimates.",
-    "quote": "Amazon 7% [share of Nvidia total revenue], 8% [share of data center revenue]. ... media reports corroborate that Google and Amazon are still major Nvidia purchasers as of 2025."
+    "quote": "Amazon 7% [share of Nvidia total revenue], 8% [share of data center revenue]. ... media reports corroborate that Google and Amazon are still major Nvidia purchasers as of 2025.",
+    "independence_group": "Epoch AI (data research institute)",
+    "support_level": "indirect",
+    "access_notes": null
   },
   {
     "id": "ev_cus_004",
@@ -114,7 +138,10 @@
     "evidence_locator": "'AI Chip Owners Documentation' — Alphabet/Google row in revenue-share table",
     "access_restriction": "public",
     "license_note": "Public research documentation; aggregated analyst estimates.",
-    "quote": "Google 7% [share of Nvidia total revenue], 8% [share of data center revenue]. ... As of August 2024, Google had placed orders for 400,000 GB200s (worth approximately $15 billion) with Nvidia."
+    "quote": "Google 7% [share of Nvidia total revenue], 8% [share of data center revenue]. ... As of August 2024, Google had placed orders for 400,000 GB200s (worth approximately $15 billion) with Nvidia.",
+    "independence_group": "Epoch AI (data research institute)",
+    "support_level": "indirect",
+    "access_notes": null
   },
   {
     "id": "ev_cus_005",
@@ -127,7 +154,10 @@
     "evidence_locator": "Article: 'Dell's AI-Driven Server Surge...' — Q2 FY2025 AI server revenue",
     "access_restriction": "public",
     "license_note": "Public financial news article.",
-    "quote": "Dell's AI server revenue surged 69% to $12.9B in Q2 2025, driven by $11.7B backlog and NVIDIA partnerships. ... the AI Factory initiative with NVIDIA."
+    "quote": "Dell's AI server revenue surged 69% to $12.9B in Q2 2025, driven by $11.7B backlog and NVIDIA partnerships. ... the AI Factory initiative with NVIDIA.",
+    "independence_group": "AInvest (financial news)",
+    "support_level": "indirect",
+    "access_notes": null
   },
   {
     "id": "ev_par_001",
@@ -140,7 +170,10 @@
     "evidence_locator": "Press release: 'Accenture and NVIDIA Lead Enterprises into Era of AI'",
     "access_restriction": "public",
     "license_note": "Official company press release; public.",
-    "quote": "Accenture and NVIDIA today announced an expanded partnership, including Accenture's formation of a new NVIDIA Business Group ... using Accenture's AI Refinery, which uses the full NVIDIA AI stack — including NVIDIA AI Foundry, NVIDIA AI Enterprise and NVIDIA Omniverse."
+    "quote": "Accenture and NVIDIA today announced an expanded partnership, including Accenture's formation of a new NVIDIA Business Group ... using Accenture's AI Refinery, which uses the full NVIDIA AI stack — including NVIDIA AI Foundry, NVIDIA AI Enterprise and NVIDIA Omniverse.",
+    "independence_group": "Accenture Newsroom (official press release)",
+    "support_level": "direct",
+    "access_notes": null
   },
   {
     "id": "ev_par_002",
@@ -153,7 +186,10 @@
     "evidence_locator": "Press release: 'ServiceNow partners with Nvidia to accelerate enterprise adoption of Agentic AI'",
     "access_restriction": "public",
     "license_note": "Official company press release; public.",
-    "quote": "ServiceNow (NYSE: NOW) today announced a major expansion to its strategic partnership with NVIDIA to accelerate enterprise adoption of Agentic AI. The companies will use NVIDIA NIM Agent Blueprints to co-develop native AI Agents within the ServiceNow platform."
+    "quote": "ServiceNow (NYSE: NOW) today announced a major expansion to its strategic partnership with NVIDIA to accelerate enterprise adoption of Agentic AI. The companies will use NVIDIA NIM Agent Blueprints to co-develop native AI Agents within the ServiceNow platform.",
+    "independence_group": "ServiceNow Newsroom (official press release)",
+    "support_level": "direct",
+    "access_notes": null
   },
   {
     "id": "ev_par_003",
@@ -166,7 +202,10 @@
     "evidence_locator": "Press release: 'Snowflake and NVIDIA Team to Help Businesses Harness Their Data for Generative AI'",
     "access_restriction": "public",
     "license_note": "Official company press release; public.",
-    "quote": "Snowflake (NYSE: SNOW) and NVIDIA today announced at Snowflake Summit 2023 that they are partnering ... With the NVIDIA NeMo platform ... Snowflake will enable enterprises to use data in their Snowflake accounts to make custom LLMs for advanced generative AI services."
+    "quote": "Snowflake (NYSE: SNOW) and NVIDIA today announced at Snowflake Summit 2023 that they are partnering ... With the NVIDIA NeMo platform ... Snowflake will enable enterprises to use data in their Snowflake accounts to make custom LLMs for advanced generative AI services.",
+    "independence_group": "NVIDIA Newsroom (official press release)",
+    "support_level": "direct",
+    "access_notes": null
   },
   {
     "id": "ev_par_003b",
@@ -179,7 +218,10 @@
     "evidence_locator": "Press release: 'Snowflake Teams with NVIDIA to Deliver Full-Stack AI Platform' (GTC 2024)",
     "access_restriction": "public",
     "license_note": "Official company press release; public.",
-    "quote": "Snowflake today announced at NVIDIA GTC an expanded collaboration with NVIDIA ... bringing together the full-stack NVIDIA accelerated platform with the trusted data foundation and secure AI of Snowflake's Data Cloud."
+    "quote": "Snowflake today announced at NVIDIA GTC an expanded collaboration with NVIDIA ... bringing together the full-stack NVIDIA accelerated platform with the trusted data foundation and secure AI of Snowflake's Data Cloud.",
+    "independence_group": "Snowflake Investor Relations (official press release)",
+    "support_level": "direct",
+    "access_notes": null
   },
   {
     "id": "ev_par_004",
@@ -192,7 +234,10 @@
     "evidence_locator": "Press release: 'Cisco Delivers AI Innovations across Neocloud, Enterprise and Telecom with NVIDIA' (GTC DC 2025)",
     "access_restriction": "public",
     "license_note": "Official company press release; public.",
-    "quote": "Cisco (NASDAQ: CSCO) today introduced major advancements to accelerate secure, scalable AI ... the Cisco N9100, the first NVIDIA partner-developed data center switch based on NVIDIA Spectrum-X Ethernet switch silicon. ... Cisco Secure AI Factory with NVIDIA."
+    "quote": "Cisco (NASDAQ: CSCO) today introduced major advancements to accelerate secure, scalable AI ... the Cisco N9100, the first NVIDIA partner-developed data center switch based on NVIDIA Spectrum-X Ethernet switch silicon. ... Cisco Secure AI Factory with NVIDIA.",
+    "independence_group": "Cisco Newsroom (official press release)",
+    "support_level": "direct",
+    "access_notes": null
   },
   {
     "id": "ev_par_004b",
@@ -205,7 +250,10 @@
     "evidence_locator": "Blog post: 'Cisco and NVIDIA Advance Security for Enterprise AI Factories' (Cisco Live San Diego)",
     "access_restriction": "public",
     "license_note": "Official NVIDIA blog post; public.",
-    "quote": "Announced today at the Cisco Live conference in San Diego, the Cisco AI Defense and Hypershield security solutions tap into NVIDIA AI to deliver comprehensive visibility, validation and runtime protection across entire AI workflows. This builds on the Cisco Secure AI Factory with NVIDIA unveiled at the NVIDIA GTC conference in March."
+    "quote": "Announced today at the Cisco Live conference in San Diego, the Cisco AI Defense and Hypershield security solutions tap into NVIDIA AI to deliver comprehensive visibility, validation and runtime protection across entire AI workflows. This builds on the Cisco Secure AI Factory with NVIDIA unveiled at the NVIDIA GTC conference in March.",
+    "independence_group": "NVIDIA Blog (official NVIDIA channel)",
+    "support_level": "direct",
+    "access_notes": null
   },
   {
     "id": "ev_inv_001",
@@ -218,7 +266,10 @@
     "evidence_locator": "CoreWeave article — 'Investments' and 'NVIDIA' sections",
     "access_restriction": "public",
     "license_note": "Wikipedia CC BY-SA; underlying sources are WSJ/Forbes/Reuters/CNA news reports.",
-    "quote": "In April 2023, Nvidia invested $100 million in CoreWeave. ... In January 2026, CoreWeave received $2 billion in investment from NVIDIA at a purchase price of $87.20 per share as they expand their partnership."
+    "quote": "In April 2023, Nvidia invested $100 million in CoreWeave. ... In January 2026, CoreWeave received $2 billion in investment from NVIDIA at a purchase price of $87.20 per share as they expand their partnership.",
+    "independence_group": "Wikipedia (citing WSJ, Forbes, Reuters, CNA)",
+    "support_level": "contextual",
+    "access_notes": null
   },
   {
     "id": "ev_inv_001b",
@@ -231,7 +282,10 @@
     "evidence_locator": "CoreWeave article — GPU supply & supercomputer sections",
     "access_restriction": "public",
     "license_note": "Wikipedia CC BY-SA; underlying sources are WSJ/Anandtech/Reuters.",
-    "quote": "Its $1.6 billion supercomputer data center for Nvidia in Plano, Texas, has been described by Nvidia as the fastest AI supercomputer in the world. ... CoreWeave was among the first cloud service providers to receive shipments of Nvidia's new Blackwell hardware."
+    "quote": "Its $1.6 billion supercomputer data center for Nvidia in Plano, Texas, has been described by Nvidia as the fastest AI supercomputer in the world. ... CoreWeave was among the first cloud service providers to receive shipments of Nvidia's new Blackwell hardware.",
+    "independence_group": "Wikipedia (citing WSJ, Anandtech, Reuters)",
+    "support_level": "contextual",
+    "access_notes": null
   },
   {
     "id": "ev_inv_001c",
@@ -244,7 +298,10 @@
     "evidence_locator": "Press release: 'NVIDIA and CoreWeave Strengthen Collaboration to Accelerate Buildout of AI Factories'",
     "access_restriction": "public",
     "license_note": "Official company press release; public.",
-    "quote": "NVIDIA (Nasdaq: NVDA) and CoreWeave, Inc. (Nasdaq: CRWV) today announced an expansion of their long-standing complementary relationship to enable CoreWeave to accelerate the buildout of more than 5 gigawatts of AI factories by 2030 ... In addition, NVIDIA has invested $2 billion in CoreWeave Class A common stock at a purchase price of $87.20 per share."
+    "quote": "NVIDIA (Nasdaq: NVDA) and CoreWeave, Inc. (Nasdaq: CRWV) today announced an expansion of their long-standing complementary relationship to enable CoreWeave to accelerate the buildout of more than 5 gigawatts of AI factories by 2030 ... In addition, NVIDIA has invested $2 billion in CoreWeave Class A common stock at a purchase price of $87.20 per share.",
+    "independence_group": "CoreWeave Newsroom (joint NVIDIA-CoreWeave press release)",
+    "support_level": "direct",
+    "access_notes": null
   },
   {
     "id": "ev_inv_002",
@@ -257,7 +314,10 @@
     "evidence_locator": "Press release: 'Recursion Announces Collaboration and $50 Million Investment from NVIDIA' (July 12, 2023)",
     "access_restriction": "public",
     "license_note": "Official company press release; public.",
-    "quote": "Recursion (NASDAQ: RXRX) ... announced a $50 million investment and collaboration with NVIDIA. ... NVIDIA will assist in optimizing these models, provide priority access to computational resources on NVIDIA's cloud service DGX Cloud."
+    "quote": "Recursion (NASDAQ: RXRX) ... announced a $50 million investment and collaboration with NVIDIA. ... NVIDIA will assist in optimizing these models, provide priority access to computational resources on NVIDIA's cloud service DGX Cloud.",
+    "independence_group": "Recursion Pharmaceuticals Investor Relations (official press release, GlobeNewswire)",
+    "support_level": "direct",
+    "access_notes": null
   },
   {
     "id": "ev_inv_003",
@@ -270,7 +330,10 @@
     "evidence_locator": "SoundHound article — funding and NVIDIA stake-sale sections",
     "access_restriction": "public",
     "license_note": "Wikipedia CC BY-SA; underlying sources are VentureBeat and Reuters.",
-    "quote": "In January 2017, the company raised another $75 million in an investment round that included Nvidia ... In February 2025, Nvidia disclosed in a regulatory filing that it had sold its stake in SoundHound."
+    "quote": "In January 2017, the company raised another $75 million in an investment round that included Nvidia ... In February 2025, Nvidia disclosed in a regulatory filing that it had sold its stake in SoundHound.",
+    "independence_group": "Wikipedia (citing VentureBeat 2017; Reuters 2025)",
+    "support_level": "contextual",
+    "access_notes": null
   },
   {
     "id": "ev_inv_003b",
@@ -283,7 +346,10 @@
     "evidence_locator": "Reuters: 'Nvidia cuts stake in Arm Holdings, discloses position in China's WeRide' (Feb 14, 2025)",
     "access_restriction": "public",
     "license_note": "Reuters wire report; reproduced for research citation only.",
-    "quote": "Feb 14 (Reuters) - Nvidia NVDA.O reduced its stake in British chip firm Arm Holdings ARM.O by about 44% and exited its holdings in Serve Robotics SERV.O and SoundHound AI SOUN.O in the fourth quarter, a regulatory filing showed on Friday."
+    "quote": "Feb 14 (Reuters) - Nvidia NVDA.O reduced its stake in British chip firm Arm Holdings ARM.O by about 44% and exited its holdings in Serve Robotics SERV.O and SoundHound AI SOUN.O in the fourth quarter, a regulatory filing showed on Friday.",
+    "independence_group": "Reuters news wire (syndicated via Stockopedia)",
+    "support_level": "indirect",
+    "access_notes": null
   },
   {
     "id": "ev_peer_001",
@@ -296,7 +362,10 @@
     "evidence_locator": "10-K FY2026, Item 1 Business — Competition section, list of competitors",
     "access_restriction": "public",
     "license_note": "SEC filings are public domain under U.S. law; EDGAR is a public service.",
-    "quote": "such as Advanced Micro Devices, Inc., or AMD, Huawei Technologies Co. Ltd., or Huawei, and Intel Corporation, or Intel ... competitors ... such as Ambarella, Inc., AMD, Broadcom, Intel, Qualcomm Incorporated, Renesas Electronics Corporation, and Samsung."
+    "quote": "such as Advanced Micro Devices, Inc., or AMD, Huawei Technologies Co. Ltd., or Huawei, and Intel Corporation, or Intel ... competitors ... such as Ambarella, Inc., AMD, Broadcom, Intel, Qualcomm Incorporated, Renesas Electronics Corporation, and Samsung.",
+    "independence_group": "U.S. Securities and Exchange Commission (NVIDIA FY2026 Form 10-K)",
+    "support_level": "direct",
+    "access_notes": null
   },
   {
     "id": "ev_peer_002",
@@ -309,7 +378,10 @@
     "evidence_locator": "10-K FY2026, Item 1 Business — Competition section, list of competitors",
     "access_restriction": "public",
     "license_note": "SEC filings are public domain under U.S. law; EDGAR is a public service.",
-    "quote": "such as Advanced Micro Devices, Inc., or AMD, Huawei Technologies Co. Ltd., or Huawei, and Intel Corporation, or Intel"
+    "quote": "such as Advanced Micro Devices, Inc., or AMD, Huawei Technologies Co. Ltd., or Huawei, and Intel Corporation, or Intel",
+    "independence_group": "U.S. Securities and Exchange Commission (NVIDIA FY2026 Form 10-K)",
+    "support_level": "direct",
+    "access_notes": null
   },
   {
     "id": "ev_peer_003",
@@ -322,7 +394,10 @@
     "evidence_locator": "10-K FY2026, Item 1 Business — Competition section, list of networking competitors",
     "access_restriction": "public",
     "license_note": "SEC filings are public domain under U.S. law; EDGAR is a public service.",
-    "quote": "such as AMD, Arista Networks, Broadcom, Cisco Systems, Inc., Hewlett Packard Enterprise Company, Huawei, Intel, Lumentum Holdings Inc., and Marvell Technology, Inc."
+    "quote": "such as AMD, Arista Networks, Broadcom, Cisco Systems, Inc., Hewlett Packard Enterprise Company, Huawei, Intel, Lumentum Holdings Inc., and Marvell Technology, Inc.",
+    "independence_group": "U.S. Securities and Exchange Commission (NVIDIA FY2026 Form 10-K)",
+    "support_level": "direct",
+    "access_notes": null
   },
   {
     "id": "ev_peer_004",
@@ -335,7 +410,10 @@
     "evidence_locator": "10-K FY2026, Item 1 Business — Competition section, list of embedded/automotive competitors",
     "access_restriction": "public",
     "license_note": "SEC filings are public domain under U.S. law; EDGAR is a public service.",
-    "quote": "such as Ambarella, Inc., AMD, Broadcom, Intel, Qualcomm Incorporated, Renesas Electronics Corporation, and Samsung, or companies with internal teams designing SoC products for their own products and services, such as Tesla, Inc."
+    "quote": "such as Ambarella, Inc., AMD, Broadcom, Intel, Qualcomm Incorporated, Renesas Electronics Corporation, and Samsung, or companies with internal teams designing SoC products for their own products and services, such as Tesla, Inc.",
+    "independence_group": "U.S. Securities and Exchange Commission (NVIDIA FY2026 Form 10-K)",
+    "support_level": "direct",
+    "access_notes": null
   },
   {
     "id": "ev_par_005",
@@ -348,7 +426,10 @@
     "evidence_locator": "Oracle press release 'NVIDIA Chooses Oracle Cloud Infrastructure for AI Services', lead paragraph",
     "access_restriction": "public",
     "license_note": "Public company press release.",
-    "quote": "NVIDIA has selected OCI as the first hyperscale cloud provider to offer NVIDIA DGX Cloud, an AI supercomputing service, at massive scale."
+    "quote": "NVIDIA has selected OCI as the first hyperscale cloud provider to offer NVIDIA DGX Cloud, an AI supercomputing service, at massive scale.",
+    "independence_group": "Oracle Corporation",
+    "support_level": "direct",
+    "access_notes": null
   },
   {
     "id": "ev_par_005b",
@@ -361,7 +442,10 @@
     "evidence_locator": "Oracle press release 'Oracle and NVIDIA to Deliver Sovereign AI Worldwide', 'NVIDIA Grace Blackwell Comes to DGX Cloud on OCI' section",
     "access_restriction": "public",
     "license_note": "Public company press release.",
-    "quote": "To meet escalating customer demand for increasingly complex AI models, the companies are adding NVIDIA Grace Blackwell to NVIDIA DGX Cloud on OCI."
+    "quote": "To meet escalating customer demand for increasingly complex AI models, the companies are adding NVIDIA Grace Blackwell to NVIDIA DGX Cloud on OCI.",
+    "independence_group": "Oracle Corporation",
+    "support_level": "direct",
+    "access_notes": null
   },
   {
     "id": "ev_par_005c",
@@ -374,6 +458,9 @@
     "evidence_locator": "NVIDIA official blog, 'Oracle Cloud Infrastructure Deploys Thousands of NVIDIA Blackwell GPUs', opening paragraphs",
     "access_restriction": "public",
     "license_note": "Public company blog post.",
-    "quote": "Oracle has stood up and optimized its first wave of liquid-cooled NVIDIA GB200 NVL72 racks in its data centers. Thousands of NVIDIA Blackwell GPUs are now being deployed and ready for customer use on NVIDIA DGX Cloud and Oracle Cloud Infrastructure (OCI)."
+    "quote": "Oracle has stood up and optimized its first wave of liquid-cooled NVIDIA GB200 NVL72 racks in its data centers. Thousands of NVIDIA Blackwell GPUs are now being deployed and ready for customer use on NVIDIA DGX Cloud and Oracle Cloud Infrastructure (OCI).",
+    "independence_group": "NVIDIA Corporation",
+    "support_level": "direct",
+    "access_notes": null
   }
 ]

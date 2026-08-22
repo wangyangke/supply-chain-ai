@@ -413,3 +413,93 @@ def expected_band(score: float) -> str:
     if score >= 40:
         return "inferred"
     return "unknown"
+
+
+def scoring_methodology() -> dict:
+    """Canonical, machine-readable rubric used by the docs and the API.
+
+    The Dashboard fetches ``GET /api/v1/scoring-methodology`` and renders
+    this verbatim, so the documentation, UI and code cannot drift apart.
+    It exactly mirrors the constants the engine uses — nothing here is a
+    copy-paste that could rot.
+    """
+
+    def _scale_to_points(scale):
+        # EVIDENCE_COUNT_SCALE is [(threshold, points), ...]; expose the
+        # meaningful non-zero steps.
+        return [
+            {"min_independent_sources": threshold, "points": points}
+            for threshold, points in scale
+            if points > 0
+        ]
+
+    return {
+        "schema_version": "2.0",
+        "weights": {
+            "authority": 25,
+            "evidence_quality": 25,
+            "recency": 20,
+            "specificity": 20,
+            "quantifiability": 10,
+        },
+        "authority_tiers": AUTHORITY_TIERS,
+        "evidence_quality": {
+            "basis": "number of independent source URLs",
+            "scale": _scale_to_points(EVIDENCE_COUNT_SCALE),
+            "note": (
+                "Distinct source URLs count once; duplicate URLs are "
+                "de-duplicated. independence_group further records the "
+                "underlying lineage so syndicated/derivative copies are not "
+                "mistaken for independent sources (deliverable #3)."
+            ),
+        },
+        "recency_bands_days": [
+            {"maximum_days": maximum_days, "points": points}
+            for maximum_days, points in RECENCY_BANDS
+        ],
+        "specificity": {
+            "cap": SPECIFICITY_CAP,
+            "term_points": SPECIFICITY_TERM_POINTS,
+            "weak_term_penalty": WEAK_TERM_PENALTY,
+            "direct_statement_bonus": DIRECT_STATEMENT_BONUS,
+            "scanned_fields": ["evidence.quote", "relationship.summary"],
+            "note": (
+                "Only evidence fields are scored; Relationship.summary is "
+                "presentation text and merely participates in the specificity "
+                "scan, never in authority or evidence_quality."
+            ),
+        },
+        "quantifiability": {
+            "cap": 10,
+            "scored_fields": ["evidence.quote", "relationship.summary"],
+        },
+        "refinements": {
+            "official_ongoing_freshness": (
+                "Official confirmation (sec/exchange filing, government, "
+                "company IR/press release) of an *ongoing* relationship "
+                "(valid_until is None or in the future) scores the top recency "
+                "band — the source asserts the relationship still holds as of "
+                "the snapshot. Terminated relationships decay normally."
+            ),
+            "direct_statement_bonus": (
+                "An official source that names the counterparty in an explicit "
+                "relationship context earns a bonus; third-party estimates do "
+                "not, distinguishing a named claim from an inference."
+            ),
+            "weak_language_penalty": (
+                "Hedged language ('reportedly', 'may', 'sources say'...) is "
+                "penalized as a signal of inference rather than confirmation."
+            ),
+        },
+        "status_bands": {
+            "confirmed": ">= 70",
+            "inferred": "40-69",
+            "unknown": "< 40",
+        },
+        "support_level_field": (
+            "evidence.support_level (direct | indirect | contextual) is captured "
+            "and validated for every item; it encodes how directly each item "
+            "supports the edge, independent of source authority, so reviewers "
+            "can audit co-occurrence vs. genuine support."
+        ),
+    }

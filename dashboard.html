@@ -71,6 +71,10 @@
   .badge-partner { background: #e8f5e9; color: #2e7d32; }
   .badge-investor { background: #fff3e0; color: #e65100; }
   .badge-peer { background: #fce4ec; color: #c62828; }
+  /* Schema 2.0 evidence support level */
+  .badge-support-direct { background: #d4edda; color: #155724; }
+  .badge-support-indirect { background: #fff3cd; color: #856404; }
+  .badge-support-contextual { background: #e2e3e5; color: #41464b; }
   /* Score bar */
   .score-bar { width: 80px; height: 8px; border-radius: 4px; background: #e9ecef; overflow: hidden; display: inline-block; vertical-align: middle; margin-right: 6px; }
   .score-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
@@ -278,16 +282,20 @@
   <div class="tab-pane" id="tab-scoring">
     <div class="section-title">Confidence Scoring Engine (0–100)</div>
     <p style="color:var(--text-secondary);margin-bottom:16px">Every relationship is scored across 5 weighted dimensions. The score determines its epistemic status: <b>≥70 = confirmed</b>, <b>40–69 = inferred</b>, <b>&lt;40 = unknown</b>.</p>
+    <div id="methodology-live"></div>
+    <div id="methodology-static">
     <table>
       <thead><tr><th>Dimension</th><th>Max</th><th>What It Measures</th></tr></thead>
       <tbody>
-        <tr><td><b>Authority</b></td><td>25</td><td>Source credibility: SEC filing (25) &gt; official IR (20) &gt; business media (14) &gt; Wikipedia (10) &gt; blog (6)</td></tr>
-        <tr><td><b>Evidence Quality</b></td><td>25</td><td>Number of independent sources: 1 = 10, 2 = 18, 3+ = 25. Same-URL duplicates count as one.</td></tr>
-        <tr><td><b>Recency</b></td><td>20</td><td>How fresh is the evidence? &lt;6mo = 20, &lt;1yr = 16, &lt;2yr = 12, &lt;3yr = 6, &gt;3yr = 0. <b>Official ongoing relationships stay at 20.</b></td></tr>
+        <tr><td><b>Authority</b></td><td>25</td><td>Source credibility: SEC filing (25) &gt; official IR (20) &gt; business media (16) &gt; reference (10) &gt; informal (4)</td></tr>
+        <tr><td><b>Evidence Quality</b></td><td>25</td><td>Number of independent sources: 1 = 16, 2 = 21, 3 = 24, 4+ = 25. Same-URL duplicates count as one. <code>independence_group</code> records lineage so syndicated copies aren't double-counted.</td></tr>
+        <tr><td><b>Recency</b></td><td>20</td><td>How fresh is the evidence? &lt;6mo = 20, &lt;1yr = 16, &lt;2yr = 12, &lt;3yr = 8, &lt;5yr = 4, older = 1. <b>Official ongoing relationships stay at 20.</b></td></tr>
         <tr><td><b>Specificity</b></td><td>20</td><td>Does the evidence name both parties and the relationship type? Direct official statement = +5 bonus.</td></tr>
         <tr><td><b>Quantifiability</b></td><td>10</td><td>Are there hard numbers (revenue %, investment $, stake %)? Both money + percentage = 10; one = 5; none = 0.</td></tr>
       </tbody>
     </table>
+    <p style="color:var(--text-secondary);font-size:12px;margin-top:8px">Numbers above are the engine's canonical weights (offline snapshot). When served by the API, this tab renders live from <code>GET /api/v1/scoring-methodology</code> so it can never drift from the code.</p>
+    </div>
     <div class="section-title">Two Refinements</div>
     <div style="background:var(--surface);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:16px">
       <p><b>1. Official Ongoing Relationship Recency Rule</b><br>If a relationship is still valid (<code>valid_until is null</code>) and backed by an official source (SEC filing, exchange filing, government, company IR, or company press release), recency stays at full 20 — an officially ongoing relationship is inherently fresh.</p>
@@ -328,10 +336,27 @@ function companyName(id) { return DATA.companies[id] ? DATA.companies[id].name :
 function companyTicker(id) { return DATA.companies[id] ? DATA.companies[id].stock_code : ''; }
 function scoreClass(s) { return s >= 70 ? 'score-high' : s >= 40 ? 'score-mid' : 'score-low'; }
 function statusBadge(s) { return '<span class="badge badge-' + s + '">' + s + '</span>'; }
+// XSS hardening: every data-derived string rendered via innerHTML is escaped.
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+// Only allow http(s) links in evidence; everything else becomes a no-op anchor.
+function safeUrl(u) {
+  try {
+    const url = new URL(u, location.href);
+    if (url.protocol === 'http:' || url.protocol === 'https:') return url.href;
+  } catch (e) { /* not a valid URL */ }
+  return '#';
+}
 function typeBadge(t) {
   const map = {supplier:'badge-supplier',customer:'badge-customer',partner:'badge-partner',investor_or_investee:'badge-investor',peer:'badge-peer'};
   const labels = {supplier:'Supplier',customer:'Customer',partner:'Partner',investor_or_investee:'Investor',peer:'Peer'};
-  return '<span class="badge ' + (map[t]||'') + '">' + (labels[t]||t) + '</span>';
+  return '<span class="badge ' + (map[t]||'') + '">' + esc(labels[t]||t) + '</span>';
 }
 function scoreBar(s) { return '<div class="score-bar"><div class="score-fill ' + scoreClass(s) + '" style="width:' + s + '%"></div></div>' + s; }
 function validPeriod(r) {
@@ -378,7 +403,7 @@ function renderOverview() {
   // Key relationships
   const keyRels = rels.filter(r => r.confidence_score >= 75).sort((a,b) => b.confidence_score - a.confidence_score);
   document.getElementById('key-body').innerHTML = keyRels.map(r => {
-    return '<tr onclick="showRelDetail(\''+r.id+'\')"><td>' + r.id + '</td><td>' + typeBadge(r.type) + '</td><td>' + companyName(r.source_company_id) + ' → ' + companyName(r.target_company_id) + '</td><td>' + statusBadge(r.status) + '</td><td>' + scoreBar(r.confidence_score) + '</td><td>' + r.evidence_ids.length + '</td><td>' + validPeriod(r) + '</td></tr>';
+    return '<tr onclick="showRelDetail(\''+r.id+'\')"><td>' + esc(r.id) + '</td><td>' + typeBadge(r.type) + '</td><td>' + esc(companyName(r.source_company_id)) + ' → ' + esc(companyName(r.target_company_id)) + '</td><td>' + statusBadge(r.status) + '</td><td>' + scoreBar(r.confidence_score) + '</td><td>' + r.evidence_ids.length + '</td><td>' + esc(validPeriod(r)) + '</td></tr>';
   }).join('');
 }
 
@@ -424,7 +449,7 @@ function applyFilters() {
   });
 
   document.getElementById('rel-body').innerHTML = filtered.map(r => {
-    return '<tr onclick="showRelDetail(\''+r.id+'\')"><td>' + r.id + '</td><td>' + typeBadge(r.type) + '</td><td>' + companyName(r.source_company_id) + ' → ' + companyName(r.target_company_id) + '</td><td>' + statusBadge(r.status) + '</td><td>' + scoreBar(r.confidence_score) + '</td><td>' + r.evidence_ids.length + '</td><td>' + validPeriod(r) + '</td></tr>';
+    return '<tr onclick="showRelDetail(\''+r.id+'\')"><td>' + esc(r.id) + '</td><td>' + typeBadge(r.type) + '</td><td>' + esc(companyName(r.source_company_id)) + ' → ' + esc(companyName(r.target_company_id)) + '</td><td>' + statusBadge(r.status) + '</td><td>' + scoreBar(r.confidence_score) + '</td><td>' + r.evidence_ids.length + '</td><td>' + esc(validPeriod(r)) + '</td></tr>';
   }).join('');
 }
 
@@ -445,7 +470,7 @@ function renderCompanies() {
   const typeColors = {target: 'badge-confirmed', related: 'badge-investor'};
   document.getElementById('comp-body').innerHTML = comps.map(c => {
     const relCount = DATA.relationships.filter(r => r.source_company_id === c.id || r.target_company_id === c.id).length;
-    return '<tr onclick="showCompanyDetail(\''+c.id+'\')"><td>' + c.id + '</td><td><b>' + c.name + '</b></td><td>' + (c.stock_code||'') + '</td><td>' + (c.exchange||'') + '</td><td>' + (c.country||'') + '</td><td><span class="badge ' + (typeColors[c.entity_type]||'') + '">' + c.entity_type + '</span></td><td>' + (c.sector||'') + '</td></tr>';
+    return '<tr onclick="showCompanyDetail(\''+c.id+'\')"><td>' + esc(c.id) + '</td><td><b>' + esc(c.name) + '</b></td><td>' + esc(c.stock_code||'') + '</td><td>' + esc(c.exchange||'') + '</td><td>' + esc(c.country||'') + '</td><td><span class="badge ' + (typeColors[c.entity_type]||'') + '">' + c.entity_type + '</span></td><td>' + esc(c.sector||'') + '</td></tr>';
   }).join('');
 }
 
@@ -461,32 +486,41 @@ function showRelDetail(relId) {
   const dimLabels = {authority:'Authority', evidence_quality:'Evidence Quality', recency:'Recency', specificity:'Specificity', quantifiability:'Quantifiability'};
 
   let evidenceHtml = (r.evidence_items||[]).map((e,i) => {
+    const supportBadge = e.support_level
+      ? ' <span class="badge badge-support-' + esc(e.support_level) + '">' + esc(e.support_level) + '</span>'
+      : '';
+    const prov = [
+      e.independence_group ? '<span><b>Lineage:</b> ' + esc(e.independence_group) + '</span>' : '',
+      e.access_notes ? '<span><b>Access notes:</b> ' + esc(e.access_notes) + '</span>' : '',
+    ].join('');
     return '<div class="evidence-card">' +
-      '<div class="ev-header"><span class="badge badge-' + (e.access_restriction||'public') + '">' + (e.access_restriction||'public') + '</span><span class="ev-type">' + (e.source_type||'') + '</span></div>' +
-      '<div class="ev-meta"><span><b>Publisher:</b> ' + (e.publisher||'') + '</span><span><b>Published:</b> ' + (e.published_at||'') + '</span></div>' +
-      (e.quote ? '<div class="ev-quote">"' + e.quote + '"</div>' : '') +
+      '<div class="ev-header"><span class="badge badge-' + esc(e.access_restriction||'public') + '">' + esc(e.access_restriction||'public') + '</span><span class="ev-type">' + esc(e.source_type||'') + '</span>' + supportBadge + '</div>' +
+      '<div class="ev-meta"><span><b>Publisher:</b> ' + esc(e.publisher||'') + '</span><span><b>Published:</b> ' + esc(e.published_at||'') + '</span></div>' +
+      (e.quote ? '<div class="ev-quote">"' + esc(e.quote) + '"</div>' : '') +
       '<div class="ev-meta">' +
-        '<a href="' + e.source_url + '" target="_blank">Source URL ↗</a>' +
-        '<span><b>Locator:</b> ' + (e.evidence_locator||'') + '</span>' +
-        '<span><b>License:</b> ' + (e.license_note||'') + '</span>' +
-        '<span><b>Accessed:</b> ' + (e.accessed_at||'') + '</span>' +
-      '</div></div>';
+        '<a href="' + safeUrl(e.source_url) + '" target="_blank" rel="noopener noreferrer">Source URL ↗</a>' +
+        '<span><b>Locator:</b> ' + esc(e.evidence_locator||'') + '</span>' +
+        '<span><b>License:</b> ' + esc(e.license_note||'') + '</span>' +
+        '<span><b>Accessed:</b> ' + esc(e.accessed_at||'') + '</span>' +
+      '</div>' +
+      (prov ? '<div class="ev-meta">' + prov + '</div>' : '') +
+      '</div>';
   }).join('');
 
   document.getElementById('modal-content').innerHTML =
     '<button class="close-btn" onclick="closeModal()">×</button>' +
-    '<h2>' + typeBadge(r.type) + ' ' + r.id + '</h2>' +
-    '<div style="color:var(--text-secondary);margin-top:4px">' + (src.name||r.source_company_id) + ' (' + (src.stock_code||'') + ') → ' + (tgt.name||r.target_company_id) + ' (' + (tgt.stock_code||'') + ')</div>' +
-    '<div style="margin-top:8px">' + statusBadge(r.status) + ' ' + scoreBar(r.confidence_score) + ' <span class="pill">Band: ' + (bd.band||r.status) + '</span></div>' +
-    (r.summary ? '<div style="margin-top:12px;font-size:13px">' + r.summary + '</div>' : '') +
-    '<div style="margin-top:8px;font-size:12px;color:var(--text-secondary)"><b>Valid:</b> ' + validPeriod(r) + '</div>' +
-    '<div class="modal-section"><h3>Score Breakdown (Total: ' + (bd.total||r.confidence_score) + '/100)</h3>' +
+    '<h2>' + typeBadge(r.type) + ' ' + esc(r.id) + '</h2>' +
+    '<div style="color:var(--text-secondary);margin-top:4px">' + esc(src.name||r.source_company_id) + ' (' + esc(src.stock_code||'') + ') → ' + esc(tgt.name||r.target_company_id) + ' (' + esc(tgt.stock_code||'') + ')</div>' +
+    '<div style="margin-top:8px">' + statusBadge(r.status) + ' ' + scoreBar(r.confidence_score) + ' <span class="pill">Band: ' + esc(bd.band||r.status) + '</span></div>' +
+    (r.summary ? '<div style="margin-top:12px;font-size:13px">' + esc(r.summary) + '</div>' : '') +
+    '<div style="margin-top:8px;font-size:12px;color:var(--text-secondary)"><b>Valid:</b> ' + esc(validPeriod(r)) + '</div>' +
+    '<div class="modal-section"><h3>Score Breakdown (Total: ' + esc(bd.total||r.confidence_score) + '/100)</h3>' +
     '<div class="score-breakdown">' +
       Object.entries(dimLabels).map(([k,label]) => {
         const v = dims[k] || 0;
         const max = dimMax[k];
         const pct = (v/max)*100;
-        return '<div class="score-dim"><div class="dim-name">' + label + ' (' + v + '/' + max + ')</div><div class="dim-val">' + v + '</div><div class="dim-bar"><div class="dim-bar-fill" style="width:' + pct + '%"></div></div></div>';
+        return '<div class="score-dim"><div class="dim-name">' + esc(label) + ' (' + v + '/' + max + ')</div><div class="dim-val">' + v + '</div><div class="dim-bar"><div class="dim-bar-fill" style="width:' + pct + '%"></div></div></div>';
       }).join('') +
     '</div></div>' +
     '<div class="modal-section"><h3>Evidence (' + (r.evidence_items||[]).length + ' items)</h3>' + (evidenceHtml || '<p style="color:var(--text-secondary)">No evidence linked.</p>') + '</div>';
@@ -502,15 +536,15 @@ function showCompanyDetail(compId) {
   let relsHtml = rels.map(r => {
     const other = r.source_company_id === compId ? r.target_company_id : r.source_company_id;
     const dir = r.source_company_id === compId ? '→' : '←';
-    return '<tr onclick="showRelDetail(\''+r.id+'\')"><td>' + typeBadge(r.type) + '</td><td>' + dir + ' ' + companyName(other) + '</td><td>' + statusBadge(r.status) + '</td><td>' + scoreBar(r.confidence_score) + '</td></tr>';
+    return '<tr onclick="showRelDetail(\''+r.id+'\')"><td>' + typeBadge(r.type) + '</td><td>' + dir + ' ' + esc(companyName(other)) + '</td><td>' + statusBadge(r.status) + '</td><td>' + scoreBar(r.confidence_score) + '</td></tr>';
   }).join('');
 
   document.getElementById('modal-content').innerHTML =
     '<button class="close-btn" onclick="closeModal()">×</button>' +
-    '<h2>' + c.name + '</h2>' +
-    '<div style="color:var(--text-secondary);margin-top:4px">' + (c.stock_code||'') + ' · ' + (c.exchange||'') + ' · ' + (c.country||'') + ' · ISIN: ' + (c.isin||'') + '</div>' +
-    '<div style="margin-top:8px"><span class="badge ' + (c.entity_type==='target'?'badge-confirmed':'badge-investor') + '">' + c.entity_type + '</span> <span class="pill">' + (c.sector||'') + '</span></div>' +
-    (c.description ? '<div style="margin-top:12px;font-size:13px">' + c.description + '</div>' : '') +
+    '<h2>' + esc(c.name) + '</h2>' +
+    '<div style="color:var(--text-secondary);margin-top:4px">' + esc(c.stock_code||'') + ' · ' + esc(c.exchange||'') + ' · ' + esc(c.country||'') + ' · ISIN: ' + esc(c.isin||'') + '</div>' +
+    '<div style="margin-top:8px"><span class="badge ' + (c.entity_type==='target'?'badge-confirmed':'badge-investor') + '">' + c.entity_type + '</span> <span class="pill">' + esc(c.sector||'') + '</span></div>' +
+    (c.description ? '<div style="margin-top:12px;font-size:13px">' + esc(c.description) + '</div>' : '') +
     '<div class="modal-section"><h3>Relationships (' + rels.length + ')</h3>' +
     '<table><thead><tr><th>Type</th><th>Counterparty</th><th>Status</th><th>Score</th></tr></thead><tbody>' + relsHtml + '</tbody></table></div>';
 
@@ -645,9 +679,9 @@ function renderHeader() {
     'Supply Chain & Partnership Research — ' + t.name + (t.stock_code ? ' (' + t.stock_code + ')' : '');
   const compCount = Object.keys(DATA.companies).length;
   document.getElementById('hdr-meta').innerHTML =
-    '<div class="meta-badge">Research Target: <b>' + t.name + '</b></div>' +
-    '<div class="meta-badge">Ticker: <b>' + (t.stock_code || '-') + ' / ' + (t.exchange || '-') + '</b></div>' +
-    '<div class="meta-badge">As-of: <b>' + DATA.dataset.as_of + '</b></div>' +
+    '<div class="meta-badge">Research Target: <b>' + esc(t.name) + '</b></div>' +
+    '<div class="meta-badge">Ticker: <b>' + esc(t.stock_code || '-') + ' / ' + esc(t.exchange || '-') + '</b></div>' +
+    '<div class="meta-badge">As-of: <b>' + esc(DATA.dataset.as_of) + '</b></div>' +
     '<div class="meta-badge">Companies: <b>' + compCount + '</b></div>' +
     '<div class="meta-badge">Relationships: <b>' + DATA.relationships.length + '</b></div>' +
     '<div class="meta-badge">Evidence: <b>' + Object.keys(DATA.evidence).length + '</b></div>';
@@ -655,7 +689,7 @@ function renderHeader() {
   sel.innerHTML = Object.keys(ALL_DATA.targets).map(id => {
     const tt = ALL_DATA.targets[id];
     const tc = tt.companies[tt.dataset.research_target];
-    return '<option value="' + id + '"' + (id === tid ? ' selected' : '') + '>' + tc.name + '</option>';
+    return '<option value="' + id + '"' + (id === tid ? ' selected' : '') + '>' + esc(tc.name) + '</option>';
   }).join('');
 }
 
@@ -687,7 +721,7 @@ function _researchSetState(title, spinnerClass) {
 function _researchRenderSteps(steps) {
   const box = document.getElementById('research-steps');
   box.innerHTML = steps.map(s =>
-    '<div>[' + s.step + '] ' + String(s.detail).replace(/</g, '&lt;') + '</div>'
+    '<div>[' + esc(s.step) + '] ' + esc(s.detail) + '</div>'
   ).join('');
   box.scrollTop = box.scrollHeight;
 }
@@ -766,12 +800,47 @@ async function loadTargetIntoDashboard(tid) {
   switchTarget(tid);   // re-renders header incl. switcher with the new option, then switches to it
 }
 
+// --- Live scoring methodology (anti-drift: rendered from the API) ---
+async function loadMethodology() {
+  if (location.protocol === 'file:') return;  // offline snapshot uses static table
+  try {
+    const resp = await fetch('/api/v1/scoring-methodology');
+    if (!resp.ok) return;
+    const m = await resp.json();
+    const w = m.weights || {};
+    const tiers = m.authority_tiers || {};
+    const bands = m.status_bands || {};
+    const dimRows = Object.entries(w).map(([k, v]) =>
+      '<tr><td><b>' + k.replace(/_/g, ' ') + '</b></td><td>' + v + '</td><td style="color:var(--text-secondary)">engine dimension</td></tr>'
+    ).join('');
+    const tierRows = Object.entries(tiers).sort((a, b) => b[1] - a[1]).map(([k, v]) =>
+      '<tr><td><code>' + k + '</code></td><td>' + v + '</td></tr>'
+    ).join('');
+    const bandRows = Object.entries(bands).map(([k, v]) =>
+      '<tr><td><b>' + k + '</b></td><td>' + v + '</td></tr>'
+    ).join('');
+    const html =
+      '<div class="section-title">Dimensions (live from engine)</div>' +
+      '<table><thead><tr><th>Dimension</th><th>Weight</th><th></th></tr></thead><tbody>' + dimRows + '</tbody></table>' +
+      '<div class="section-title">Authority tiers (source_type → points)</div>' +
+      '<table><thead><tr><th>source_type</th><th>Points</th></tr></thead><tbody>' + tierRows + '</tbody></table>' +
+      '<div class="section-title">Status bands</div>' +
+      '<table><thead><tr><th>Status</th><th>Score</th></tr></thead><tbody>' + bandRows + '</tbody></table>' +
+      (esc(m.support_level_field) ? '<p style="color:var(--text-secondary);font-size:12px;margin-top:8px">' + esc(m.support_level_field) + '</p>' : '');
+    const live = document.getElementById('methodology-live');
+    const stat = document.getElementById('methodology-static');
+    if (live) live.innerHTML = html;
+    if (stat) stat.style.display = 'none';
+  } catch (e) { /* keep static fallback */ }
+}
+
 // --- Init ---
 renderHeader();
 renderOverview();
 applyFilters();
 renderCompanies();
 renderScoreDist();
+loadMethodology();
 </script>
 </body>
 </html>

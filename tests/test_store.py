@@ -20,7 +20,7 @@ class TestLoading:
         assert len(store.evidence) == 29
 
     def test_dataset_metadata(self, dataset):
-        assert dataset.schema_version == "1.0"
+        assert dataset.schema_version == "2.0"
         assert dataset.research_target == "nvidia"
         assert dataset.as_of.isoformat() == "2026-08-21"
 

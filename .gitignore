@@ -9,3 +9,7 @@ venv/
 htmlcov/
 .DS_Store
 *.log
+
+# Untracked reference copy of the V2 repo used only for the Schema 2.0 / methodology
+# port. Deliberately NOT committed (per project instruction).
+supply-chain-research-mainV2/

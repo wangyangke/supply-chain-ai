@@ -153,10 +153,13 @@ def main() -> int:
             "source_url": c["source_url"],
             "publisher": c["publisher"],
             "source_type": c.get("source_type", "unknown"),
+            "independence_group": c.get("independence_group") or c.get("publisher", "unknown"),
+            "support_level": c.get("support_level", "indirect"),
             "published_at": c.get("published_at"),
             "accessed_at": c.get("accessed_at") or date.today().isoformat(),
             "evidence_locator": c["evidence_locator"],
             "access_restriction": c.get("access_restriction", "unknown"),
+            "access_notes": c.get("access_notes"),
             "license_note": c.get("license_note", ""),
             "quote": c["quote"],
         })

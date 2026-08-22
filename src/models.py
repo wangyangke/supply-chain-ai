@@ -71,6 +71,22 @@ class SourceType(str, Enum):
     UNKNOWN = "unknown"
 
 
+class EvidenceSupportLevel(str, Enum):
+    """How directly an evidence item supports the represented edge.
+
+    Deliberately separate from ``source_type``: an authoritative source can
+    still be merely contextual for a particular relationship (e.g. a co-
+    mention in an unrelated press release). This is the field that lets the
+    research judge and the reviewer distinguish a named claim from a
+    coincidence — the core of deliverable #3 (entity ambiguity / source
+    conflict / co-occurrence misjudgment).
+    """
+
+    DIRECT = "direct"
+    INDIRECT = "indirect"
+    CONTEXTUAL = "contextual"
+
+
 # ---------------------------------------------------------------------------
 # Evidence
 # ---------------------------------------------------------------------------
@@ -88,6 +104,22 @@ class Evidence(BaseModel):
         default=SourceType.UNKNOWN,
         description="Source taxonomy used by the scoring engine for authority weighting",
     )
+    independence_group: str = Field(
+        min_length=1,
+        description=(
+            "Underlying evidence lineage (provenance group). Derivative or "
+            "syndicated documents share one group even when their URLs differ, "
+            "so the same press release's reprints/aggregations are not double-"
+            "counted as independent sources."
+        ),
+    )
+    support_level: EvidenceSupportLevel = Field(
+        description=(
+            "Whether this item directly, indirectly, or contextually supports "
+            "the edge. Independent of source_type: an authoritative source can "
+            "still be only contextual for a given relationship."
+        ),
+    )
     published_at: Optional[date] = Field(
         default=None, description="When the source was published (if known)"
     )
@@ -98,6 +130,13 @@ class Evidence(BaseModel):
     access_restriction: AccessRestriction = Field(
         default=AccessRestriction.PUBLIC,
         description="Access / licensing restriction of the source",
+    )
+    access_notes: Optional[str] = Field(
+        default=None,
+        description=(
+            "Observed availability, generation, or access caveats for reviewer "
+            "use (e.g. AI-generated snippet, paywall, comparison evidence)."
+        ),
     )
     license_note: str = Field(
         default="", description="License or terms note for the source"

@@ -10,7 +10,10 @@
     "evidence_locator": "Search result snippet for query category 'partner_supplier'",
     "access_restriction": "public",
     "license_note": "Public search-result snippet; quoted for research with attribution.",
-    "quote": "这些Tesla在华的预订用户称：Tesla或没有按照应有的“既定顺序”交车，一些较晚订车的北京和上海用户已经被通知可以提车，而其它 …"
+    "quote": "这些Tesla在华的预订用户称：Tesla或没有按照应有的“既定顺序”交车，一些较晚订车的北京和上海用户已经被通知可以提车，而其它 …",
+    "independence_group": "baike.baidu.com",
+    "support_level": "contextual",
+    "access_notes": null
   },
   {
     "id": "ev_par_002",
@@ -23,7 +26,10 @@
     "evidence_locator": "Search result snippet for query category 'partner_supplier'",
     "access_restriction": "public",
     "license_note": "Public search-result snippet; quoted for research with attribution.",
-    "quote": "尼古拉&#183;特斯拉（英文：Nikola Tesla，1856年7月10日—1943年1月7日），出生在克罗地亚斯米湾村，毕业于奥地利格拉茨科技大学， …"
+    "quote": "尼古拉&#183;特斯拉（英文：Nikola Tesla，1856年7月10日—1943年1月7日），出生在克罗地亚斯米湾村，毕业于奥地利格拉茨科技大学， …",
+    "independence_group": "baike.baidu.com",
+    "support_level": "contextual",
+    "access_notes": null
   },
   {
     "id": "ev_inv_001",
@@ -36,7 +42,10 @@
     "evidence_locator": "Search result snippet for query category 'investor'",
     "access_restriction": "public",
     "license_note": "Public search-result snippet; quoted for research with attribution.",
-    "quote": "这些Tesla在华的预订用户称：Tesla或没有按照应有的“既定顺序”交车，一些较晚订车的北京和上海用户已经被通知可以提车，而其它 …"
+    "quote": "这些Tesla在华的预订用户称：Tesla或没有按照应有的“既定顺序”交车，一些较晚订车的北京和上海用户已经被通知可以提车，而其它 …",
+    "independence_group": "baike.baidu.com",
+    "support_level": "contextual",
+    "access_notes": null
   },
   {
     "id": "ev_inv_002",
@@ -49,7 +58,10 @@
     "evidence_locator": "Search result snippet for query category 'investor'",
     "access_restriction": "public",
     "license_note": "Public search-result snippet; quoted for research with attribution.",
-    "quote": "尼古拉&#183;特斯拉（英文：Nikola Tesla，1856年7月10日—1943年1月7日），出生在克罗地亚斯米湾村，毕业于奥地利格拉茨科技大学， …"
+    "quote": "尼古拉&#183;特斯拉（英文：Nikola Tesla，1856年7月10日—1943年1月7日），出生在克罗地亚斯米湾村，毕业于奥地利格拉茨科技大学， …",
+    "independence_group": "baike.baidu.com",
+    "support_level": "contextual",
+    "access_notes": null
   },
   {
     "id": "ev_peer_001",
@@ -62,7 +74,10 @@
     "evidence_locator": "Search result snippet for query category 'peer_customer'",
     "access_restriction": "public",
     "license_note": "Public search-result snippet; quoted for research with attribution.",
-    "quote": "这些Tesla在华的预订用户称：Tesla或没有按照应有的“既定顺序”交车，一些较晚订车的北京和上海用户已经被通知可以提车，而其它 …"
+    "quote": "这些Tesla在华的预订用户称：Tesla或没有按照应有的“既定顺序”交车，一些较晚订车的北京和上海用户已经被通知可以提车，而其它 …",
+    "independence_group": "baike.baidu.com",
+    "support_level": "contextual",
+    "access_notes": null
   },
   {
     "id": "ev_peer_002",
@@ -75,6 +90,9 @@
     "evidence_locator": "Search result snippet for query category 'peer_customer'",
     "access_restriction": "public",
     "license_note": "Public search-result snippet; quoted for research with attribution.",
-    "quote": "尼古拉&#183;特斯拉（英文：Nikola Tesla，1856年7月10日—1943年1月7日），出生在克罗地亚斯米湾村，毕业于奥地利格拉茨科技大学， …"
+    "quote": "尼古拉&#183;特斯拉（英文：Nikola Tesla，1856年7月10日—1943年1月7日），出生在克罗地亚斯米湾村，毕业于奥地利格拉茨科技大学， …",
+    "independence_group": "baike.baidu.com",
+    "support_level": "contextual",
+    "access_notes": null
   }
 ]
