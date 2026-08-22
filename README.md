@@ -16,7 +16,7 @@
 | 公司实体 | NVIDIA Corporation（美国特拉华州注册，总部 Santa Clara, CA） |
 | 证券标识 | 股票代码 **NVDA**，交易所 **NASDAQ** |
 | 研究时间截点（as-of） | **2026-08-21**（`data/targets/nvidia/dataset.json` 中的 `as_of`） |
-| 覆盖范围 | 21 家关联上市公司、5 类关系（21 条）、29 条证据 |
+| 覆盖范围 | 22 家关联上市公司、5 类关系（21 条）、29 条证据 |
 | 覆盖实体 | TSMC、SK Hynix、Micron、ASML、Microsoft、Meta、Amazon、Alphabet、Dell、Accenture、ServiceNow、Snowflake、Cisco、Oracle、CoreWeave、Recursion、SoundHound、AMD、Intel、Broadcom、Qualcomm |
 
 **第二目标：宇树科技（Unitree Robotics）** —— 完整走 agent 研究通道接入（搜索 → 核验 → staging → 合入 → 重算）：
@@ -132,7 +132,7 @@ uvicorn src.api:app --host 127.0.0.1 --port 8000
 
 **多目标**：所有数据端点支持 `?target=<id>` 查询参数（默认 nvidia）；未知目标返回 404 `target_not_found`。
 
-**在线研究（dashboard 搜索框 / POST /api/v1/research）**：配置 `SCR_TAVILY_API_KEY`（或 `SCR_BRAVE_API_KEY`）+ `SCR_LLM_BASE_URL` / `SCR_LLM_API_KEY`（任意 OpenAI 兼容网关，见 `.env.example`）后，在仪表盘右上角搜索框输入任意公司名 → agent 后台执行完整管线（身份解析 → 脚手架 → 分类搜索 → LLM 按 protocol 核验 → 合入 → 引擎重算 → 独立校验）→ 结果缓存到 `data/targets/<id>/` 并自动出现在切换列表。未配置密钥时端点返回 503 `research_not_configured`，已提交的目标快照不受影响；重复研究已存在目标返回 409。命令行等价物：`python scripts/research_agent.py "公司名"`。
+**在线研究（dashboard 搜索框 / POST /api/v1/research）**：**零配置即可用**——默认走 Bing 免费搜索后端（无需密钥）+ 规则核验降级（无 LLM 时）；配置 `SCR_TAVILY_API_KEY`（或 `SCR_BRAVE_API_KEY`）+ `SCR_LLM_BASE_URL` / `SCR_LLM_API_KEY`（任意 OpenAI 兼容网关，见 `.env.example`）可升级为 LLM 核验的高质量模式。在仪表盘右上角搜索框输入任意公司名 → agent 后台执行完整管线（身份解析 → 脚手架 → 分类搜索 → 核验 → 合入 → 引擎重算 → 独立校验）→ 结果缓存到 `data/targets/<id>/` 并自动出现在切换列表。重复研究已存在目标返回 409；在线研究产出的目标建议人工抽检后再对外展示（标 `needs_review`）。命令行等价物：`python scripts/research_agent.py "公司名"`。
 
 **输入校验**：`relationship_type` 限定五类枚举、`status` 限定三态（非法值 422）；`min_confidence > max_confidence` 返回 422 `invalid_range`；`page`/`page_size` 有界；未知资源返回结构化 404（`{"detail": {"error": "...", "message": "..."}}`）。
 
@@ -176,7 +176,7 @@ docker compose up
 
 > 镜像由 GitHub Actions 自动构建并发布至 GHCR（`ghcr.io/wangyangke/supply-chain-ai`），每次 push 到 `main` 或打 `v*` tag 自动更新 `latest`。
 
-> **在线研究配置**：容器内启用搜索框需传入密钥（`docker run -e SCR_TAVILY_API_KEY=... -e SCR_LLM_BASE_URL=... -e SCR_LLM_API_KEY=...`）；研究结果写入容器内 `data/targets/`，挂卷可持久化（`-v $(pwd)/data:/app/data`）。
+> **在线研究配置**：默认零配置即可用（容器内 Bing 免费搜索 + 规则核验）。如需更高质量结果，可传入密钥升级（`docker run -e SCR_TAVILY_API_KEY=... -e SCR_LLM_BASE_URL=... -e SCR_LLM_API_KEY=...`）；研究结果写入容器内 `data/targets/`，挂卷可持久化（`-v $(pwd)/data:/app/data`）。
 
 ## 7. CLI（`scrs`）
 
@@ -212,8 +212,8 @@ scrs graph [--json]
 | `SCR_TARGET` | `nvidia` | 默认研究目标（CLI 全局 `--target` 等价） |
 | `SCR_HOST` / `SCR_PORT` | `127.0.0.1` / `8000` | API 监听地址 |
 | `SCR_EDGAR_USER_AGENT` | 模板值 | 仅供采集脚本使用，EDGAR 要求带联系信息的 UA |
-| `SCR_SEARCH_BACKEND` | `tavily` | 在线研究的搜索后端（tavily / brave） |
-| `SCR_TAVILY_API_KEY` / `SCR_BRAVE_API_KEY` | 空 | 在线研究搜索密钥（未配置则研究端点 503，其余功能不受影响） |
+| `SCR_SEARCH_BACKEND` | `bing` | 在线研究的搜索后端（bing 免费默认 / tavily / brave；tavily/brave 需对应密钥） |
+| `SCR_TAVILY_API_KEY` / `SCR_BRAVE_API_KEY` | 空 | 在线研究搜索密钥（可选；未配置则使用免费的 Bing 后端 + 规则核验降级） |
 | `SCR_LLM_BASE_URL` / `SCR_LLM_API_KEY` / `SCR_LLM_MODEL` | 空 | 在线研究的 LLM 网关（OpenAI 兼容，用于身份解析与证据核验） |
 
 **启动 / 测试**：
@@ -260,7 +260,7 @@ python scripts/validate_data.py --data data/targets/unitree
 **Agent 研究通道**（10-K 之外的第二条采集线）：来源分级、实体消歧、来源冲突仲裁、时效判定与共现防误判需要搜索 + 判断能力，由 agent 按 **[docs/research_agent_protocol.md](docs/research_agent_protocol.md)** 作业，机械部分（搜索执行 / 去重 / 字段归一化 / review 标记）由 `scripts/research_harvest.py` 自动化：
 
 ```bash
-# agent 搜索产出原始命中（或直接调 tavily/brave 后端，需 API key）
+# agent 搜索产出原始命中（默认 Bing 免费后端无需密钥；或配 SCR_TAVILY_API_KEY/SCR_BRAVE_API_KEY 使用 tavily/brave 后端）
 python scripts/research_harvest.py --backend manual --input hits.jsonl \
     --target nvidia --out data/targets/nvidia/staging/candidates.json
 # agent 按 protocol §5-§8 逐条核验（消歧 / 共现防误判 / 原文引用 / 仲裁）后合入

@@ -702,7 +702,7 @@ async function startResearch() {
     document.getElementById('research-steps').innerHTML =
       '<div>当前是本地文件模式（file://），数据为内嵌快照，无法启动 agent。</div>' +
       '<div>启动方式：<code>docker run --rm -p 8000:8000 ghcr.io/wangyangke/supply-chain-ai:latest</code> 或 <code>uvicorn src.api:app --port 8000</code>，然后访问 <code>http://localhost:8000/</code>。</div>' +
-      '<div>零配置即可研究（DuckDuckGo 搜索 + 规则核验）；配置 SCR_TAVILY_API_KEY 和 SCR_LLM_BASE_URL / SCR_LLM_API_KEY 可获得更高质量结果。</div>';
+      '<div>零配置即可研究（Bing 免费搜索 + 规则核验）；配置 SCR_TAVILY_API_KEY（或 SCR_BRAVE_API_KEY）和 SCR_LLM_BASE_URL / SCR_LLM_API_KEY 可获得更高质量结果。</div>';
     return;
   }
   document.getElementById('search-btn').disabled = true;

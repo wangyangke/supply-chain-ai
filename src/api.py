@@ -362,7 +362,7 @@ def _slugify(value: str) -> str:
 def _agent_mode_info() -> str:
     """Describe the active research agent configuration (informational only).
 
-    The agent is always usable — DuckDuckGo is the zero-config search default
+    The agent is always usable — Bing is the zero-config search default
     and rule-based verification kicks in when no LLM key is present.  Tavily /
     Brave / LLM keys are optional quality upgrades.
     """
@@ -371,8 +371,10 @@ def _agent_mode_info() -> str:
         search = "brave"
     elif backend == "tavily" and os.environ.get("SCR_TAVILY_API_KEY"):
         search = "tavily"
-    else:
+    elif backend == "duckduckgo":
         search = "duckduckgo"
+    else:
+        search = "bing"
     llm = "llm" if (os.environ.get("SCR_LLM_BASE_URL") and os.environ.get("SCR_LLM_API_KEY")) else "rule-based"
     return f"{search}+{llm}"
 

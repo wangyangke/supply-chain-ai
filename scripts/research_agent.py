@@ -83,7 +83,7 @@ REL_TYPES = "supplier|customer|partner|investor_or_investee|peer"
 
 
 # ---------------------------------------------------------------------------
-# Default backends (all optional; zero-config fallback = duckduckgo + rules)
+# Default backend (all optional; zero-config fallback = bing + rules)
 # ---------------------------------------------------------------------------
 
 def _html_unescape(text: str) -> str:
