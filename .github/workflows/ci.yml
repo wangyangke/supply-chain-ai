@@ -32,13 +32,13 @@ jobs:
 
       - name: Validate committed dataset snapshots (all targets)
         run: |
-          for t in nvidia unitree tesla c_1de9a5e2; do
+          for t in nvidia unitree; do
             python scripts/validate_data.py --data data/targets/$t
           done
 
       - name: Verify scores are engine-reproducible (all targets)
         run: |
-          for t in nvidia unitree tesla c_1de9a5e2; do
+          for t in nvidia unitree; do
             python scripts/sync_scores.py --data data/targets/$t
           done
 

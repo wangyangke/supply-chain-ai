@@ -17,7 +17,7 @@ This round ports three "hard assets" from V2 into the multi-target `supply-chain
 
 | # | Hard asset (from V2) | Ported into `supply-chain-ai` | Result |
 |---|---|---|---|
-| 1 | Schema 2.0 evidence provenance (`independence_group` / `support_level` / `access_notes`) | `src/models.py`, `scripts/validate_data.py`, `scripts/research_agent.py`, `scripts/merge_staged.py`; 4 datasets backfilled to `schema_version: "2.0"` | ✅ PASS |
+| 1 | Schema 2.0 evidence provenance (`independence_group` / `support_level` / `access_notes`) | `src/models.py`, `scripts/validate_data.py`, `scripts/research_agent.py`, `scripts/merge_staged.py`; 2 datasets backfilled to `schema_version: "2.0"` | ✅ PASS |
 | 2 | Scoring methodology document + endpoint | `docs/scoring_methodology.md`, `GET /api/v1/scoring-methodology`, dashboard live-render (anti-drift) | ✅ PASS |
 | 3 | Acceptance report + browser XSS test | this report + `tests/test_dashboard_browser.py`; dashboard hardened with `esc()` / `safeUrl()` | ✅ PASS (browser runtime UNVERIFIED here) |
 
@@ -31,9 +31,9 @@ This round ports three "hard assets" from V2 into the multi-target `supply-chain
 |---|---|---|
 | Tests (pytest) | **PASS** | 121 passed, 1 skipped (browser), 0 failed |
 | Coverage | **PASS** | 93.76% (threshold 90%) |
-| Data integrity — 4 targets | **PASS** | nvidia / unitree / tesla / c_1de9a5e2 all `VALID` |
+| Data integrity — 2 targets | **PASS** | nvidia / unitree all `VALID` |
 | Scoring reproducibility (dry-run) | **PASS** | 0 deltas; every stored status matches engine band |
-| Schema 2.0 adoption | **PASS** | 4 / 4 datasets `schema_version == "2.0"` |
+| Schema 2.0 adoption | **PASS** | 2 / 2 datasets `schema_version == "2.0"` |
 | Methodology endpoint (live) | **PASS** | `GET /api/v1/scoring-methodology` → canonical rubric (§3.4) |
 | Dashboard anti-drift | **PASS** | methodology tab fetched live; static fallback hidden |
 | XSS hardening (code) | **PASS** | `esc()` / `safeUrl()` neutralize payloads — measured (§3.6) |
@@ -54,15 +54,13 @@ pytest --cov=src     → TOTAL 785 stmts, 49 missed, 93.76% (≥ 90% required)
 ```
 The single skipped test is `tests/test_dashboard_browser.py` (browser UI), skipped via `pytest.importorskip("playwright")`.
 
-### 3.2 Data integrity — all four targets
+### 3.2 Data integrity — both targets
 Run with `python scripts/validate_data.py --data data/targets/<id> [--strict]`:
 
 | Target | Companies | Relationships | Evidence | Result |
 |---|---:|---:|---:|---|
 | nvidia | 22 | 21 | 29 | VALID (1 *by-design* warning under `--strict`, see §4) |
 | unitree | 6 | 5 | 9 | VALID |
-| tesla | 3 | 6 | 6 | VALID |
-| c_1de9a5e2 | 6 | 15 | 24 | VALID |
 
 Schema 2.0 checks enforced by the validator:
 - `dataset.schema_version ∈ {"1.0", "2.0"}`;
@@ -103,7 +101,7 @@ The same function (`scoring_methodology()` in `src/scoring.py`) feeds the endpoi
 - **`src/models.py`** — new `EvidenceSupportLevel(str, Enum)` (`direct` / `indirect` / `contextual`); `Evidence` gains three required fields: `independence_group: str` (min_length 1), `support_level: EvidenceSupportLevel`, `access_notes: Optional[str]`. `extra="forbid"` retained.
 - **`scripts/research_agent.py`** — `guess_support_level()` heuristic + lineage captured as `independence_group` (URL netloc) at candidate-build time.
 - **`scripts/merge_staged.py`** — merge maps the three fields from staged candidates.
-- **Backfill** — `nvidia` (29), `unitree` (9), `tesla` (6), `c_1de9a5e2` (24) evidence items backfilled; every dataset bumped to `schema_version: "2.0"`.
+- **Backfill** — `nvidia` (29), `unitree` (9) evidence items backfilled; every dataset bumped to `schema_version: "2.0"`.
 - **Tests** — `tests/test_scoring.py` fixtures and `tests/test_store.py` (`schema_version == "2.0"`) updated; suite green.
 
 ### 3.6 XSS hardening (core of hard asset #3)
@@ -153,7 +151,7 @@ No regressions were introduced; the 121-test suite and 93.76% coverage are uncha
 
 - [x] Tests PASS (121 passed, 1 skipped)
 - [x] Coverage ≥ 90% (93.76%)
-- [x] 4 datasets VALID (Schema 2.0)
+- [x] 2 datasets VALID (Schema 2.0)
 - [x] Scoring reproducible (0 deltas)
 - [x] Methodology endpoint live + canonical
 - [x] Dashboard anti-drift (live fetch, static fallback hidden)

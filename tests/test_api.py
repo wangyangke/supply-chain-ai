@@ -255,10 +255,17 @@ class TestMultiTarget:
 class TestResearchAgent:
     """Online research endpoints: POST /api/v1/research + polling."""
 
-    def test_zero_config_accepted_202(self, client, monkeypatch):
+    def test_zero_config_accepted_202(self, client, monkeypatch, tmp_path):
         """Without any API keys the endpoint still accepts the job (Bing
         + rule-based fallback).  It no longer hard-fails with 503."""
         import uuid
+
+        # Neutralize the background agent so the test never writes test
+        # targets into the committed data/ directory. We only assert that
+        # the endpoint accepts the job and returns a job_id.
+        import src.api as api_mod
+        monkeypatch.setattr(api_mod, "_run_research_job", lambda *a, **kw: None)
+
         for var in ("SCR_TAVILY_API_KEY", "SCR_BRAVE_API_KEY",
                     "SCR_LLM_BASE_URL", "SCR_LLM_API_KEY"):
             monkeypatch.delenv(var, raising=False)

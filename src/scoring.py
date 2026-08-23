@@ -460,10 +460,13 @@ def scoring_methodology() -> dict:
                 "mistaken for independent sources (deliverable #3)."
             ),
         },
-        "recency_bands_days": [
-            {"maximum_days": maximum_days, "points": points}
-            for maximum_days, points in RECENCY_BANDS
-        ],
+        "recency_decay": {
+            "model": "exponential",
+            "half_life_days": RECENCY_HALF_LIFE_DAYS,
+            "max_points": RECENCY_MAX_POINTS,
+            "floor": RECENCY_FLOOR,
+            "formula": "max(MAX_POINTS * exp(-age_days / HALF_LIFE_DAYS), FLOOR)",
+        },
         "specificity": {
             "cap": SPECIFICITY_CAP,
             "term_points": SPECIFICITY_TERM_POINTS,

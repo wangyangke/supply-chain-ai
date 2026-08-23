@@ -21,7 +21,7 @@ import urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PY = sys.executable
-TARGETS = ["nvidia", "unitree", "tesla", "c_1de9a5e2"]
+TARGETS = ["nvidia", "unitree"]
 PORT = 8123
 METHODOLOGY_OK = "All stored statuses match the engine score bands."
 

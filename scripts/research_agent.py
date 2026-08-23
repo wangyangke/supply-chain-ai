@@ -94,13 +94,96 @@ SearchFn = Callable[[str, int], list[dict[str, Any]]]
 LlmFn = Callable[[str, str], str]
 StepFn = Callable[[str, str], None]
 
-SEARCH_QUERIES = [
-    ("partner_supplier", "{name} partnership supplier collaboration 合作伙伴 供应商"),
-    ("investor", "{name} investors shareholders funding round 投资方 股东 融资"),
-    ("peer_customer", "{name} competitors peers customers 竞争对手 客户"),
-]
-
 REL_TYPES = "supplier|customer|partner|investor_or_investee|peer"
+
+
+def _is_chinese_name(name: str) -> bool:
+    """Return True if the query contains CJK characters."""
+    return bool(re.search(r"[\u4e00-\u9fff]", name))
+
+
+def _contains_target(text: str, target_name: str) -> bool:
+    """Check whether a search result snippet/title actually mentions the target.
+
+    For Chinese names that share common characters (e.g. 智元科技 -> actual company
+    name is 智元创新；宇树科技), the target literal may not appear in the result.
+    We therefore accept either the full target name or any two consecutive
+    characters (bigram) from it. This is still strict enough to drop dictionary
+    pages that only contain the single shared character (智/宇).
+    """
+    text = text.lower()
+    target = target_name.lower()
+    if target in text:
+        return True
+    if len(target) >= 2:
+        bigrams = {target[i:i + 2] for i in range(len(target) - 1)}
+        return any(bg in text for bg in bigrams)
+    return text == target
+
+
+def _search_quality_score(hits: list[dict], target_name: str) -> float:
+    """Ratio of hits that actually mention the target."""
+    if not hits:
+        return 0.0
+    ok = sum(1 for h in hits if _contains_target(
+        f"{h.get('title', '')} {h.get('snippet', '')}", target_name))
+    return ok / len(hits)
+
+
+def _primary_query(category: str, name: str, is_chinese: bool) -> str:
+    """Build the primary search query for a category.
+
+    Chinese-only templates work better for Chinese company names because mixing
+    English relationship keywords with a Chinese name confuses Bing's HTML search
+    and causes it to fall back to partial-character matches.
+    """
+    if is_chinese:
+        templates = {
+            "partner_supplier": "{name} 合作 供应商 合作伙伴",
+            "investor": "{name} 投资 股东 融资",
+            "peer_customer": "{name} 竞品 竞争对手 客户",
+        }
+    else:
+        templates = {
+            "partner_supplier": "{name} partnership supplier collaboration",
+            "investor": "{name} investors shareholders funding round",
+            "peer_customer": "{name} competitors peers customers",
+        }
+    return templates.get(category, "{name}").format(name=name)
+
+
+def _fallback_queries(category: str, name: str, is_chinese: bool) -> list[str]:
+    """Return progressively more specific fallback queries.
+
+    For Chinese names that Bing mis-parses, site-restricted queries on Chinese
+    business/tech databases (itjuzi, 36kr) are often the only way to get
+    relevant hits in zero-config mode.
+    """
+    if not is_chinese:
+        # For English names, try the original bilingual templates as fallbacks.
+        return [
+            f"{name} partnership supplier collaboration 合作伙伴 供应商",
+            f"{name} investors shareholders funding round 投资方 股东 融资",
+            f"{name} competitors peers customers 竞争对手 客户",
+        ]
+    if category == "investor":
+        return [
+            f"{name} 融资 site:itjuzi.com",
+            f"{name} 融资 site:36kr.com",
+            f"{name} 投资 股东",
+        ]
+    if category == "partner_supplier":
+        return [
+            f"{name} 合作 site:36kr.com",
+            f"{name} 供应链 site:36kr.com",
+            f"{name} 供应商 合作",
+        ]
+    # peer_customer
+    return [
+        f"{name} site:itjuzi.com",
+        f"{name} 竞品 site:36kr.com",
+        f"{name} 对比",
+    ]
 
 
 # ---------------------------------------------------------------------------
@@ -350,13 +433,42 @@ class ResearchAgent:
         # 3+4) search & verify per category
         target_dir = self.data_root / "targets" / tid
         staging_files: list[Path] = []
-        for category, q_template in SEARCH_QUERIES:
-            q = q_template.format(name=identity["name"])
+        is_chinese = _is_chinese_name(identity["name"])
+        for category in ("partner_supplier", "investor", "peer_customer"):
+            q = _primary_query(category, identity["name"], is_chinese)
             self._step("search", f"[{category}] {q}")
             hits = self.search_fn(q, 8)
-            self._step("search", f"[{category}] {len(hits)} hits")
+            score = _search_quality_score(hits, identity["name"])
+            self._step("search", f"[{category}] {len(hits)} hits (quality {score:.2f})")
+
+            # If search quality is poor (common for Chinese names with shared
+            # characters like 智/宇 on Bing HTML), try fallback queries.
+            if score < 0.5 and hits:
+                for fbq in _fallback_queries(category, identity["name"], is_chinese):
+                    if fbq == q:
+                        continue
+                    self._step("search", f"[{category}] fallback: {fbq}")
+                    fb_hits = self.search_fn(fbq, 8)
+                    # Merge new, unique URLs.
+                    seen = {h.get("url", "") for h in hits}
+                    for h in fb_hits:
+                        if h.get("url", "") and h.get("url", "") not in seen:
+                            hits.append(h)
+                            seen.add(h.get("url", ""))
+                    new_score = _search_quality_score(hits, identity["name"])
+                    self._step("search", f"[{category}] {len(hits)} hits after fallback (quality {new_score:.2f})")
+                    if new_score >= 0.5:
+                        break
+
+            # Drop hits that do not actually mention the target. This prevents
+            # rule-based extraction from inventing relationships out of generic
+            # dictionary pages that Bing returns for ambiguous names.
+            hits = [h for h in hits if _contains_target(
+                f"{h.get('title', '')} {h.get('snippet', '')}", identity["name"])]
+            self._step("search", f"[{category}] {len(hits)} hits after relevance filter")
             if not hits:
                 continue
+
             self._step("verify", f"[{category}] verifying {len(hits)} hits ({self.mode} mode)")
             stagings = self._verify_batch(identity, category, hits)
             for i, doc in enumerate(stagings):
@@ -517,7 +629,7 @@ class ResearchAgent:
         r"(?:Inc\.?|Corp(?:oration)?\.?|Ltd\.?|LLC|PLC|N\.V\.|SE|AG|Group|Holdings|"
         r"Technologies|Technology|Motors|Electronics|Systems|Semiconductors?))\b")
     _ZH_COMPANY_RE = re.compile(
-        r"([一-鿿]{2,8}(?:公司|集团|科技|股份|电子|汽车|银行|证券|电器|重工))")
+        r"([一-鿿]{2,8}(?:公司|集团|科技|股份|电子|汽车|银行|证券|电器|重工|机器人|智能|航空|医药|能源|通信|半导体|芯片|软件))")
 
     def _extract_counterparty(self, text: str, target_name: str) -> Optional[str]:
         """Pull a company-like entity mention that is not the target itself."""
